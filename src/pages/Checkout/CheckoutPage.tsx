@@ -150,8 +150,8 @@ const CheckoutPage: React.FC = () => {
   };
 
   const breadcrumbItems = [
-    { label: 'Account', href: '/profile' },
-    { label: 'My Account', href: '/profile' },
+    { label: 'Account', href: '/account' },
+    { label: 'My Account', href: '/account' },
     { label: 'Product', href: '/products' },
     { label: 'View Cart', href: '/cart' },
     { label: 'CheckOut', isCurrentPage: true },

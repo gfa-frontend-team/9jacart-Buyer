@@ -10,13 +10,13 @@ const HomePage: React.FC = () => {
     <div className="bg-white min-h-screen">
       {/* Hero Section */}
       <HeroSection />
-      
+
       {/* Flash Sales Section */}
       <FlashSales />
 
       {/* Category Showcase */}
       <CategoryShowcase />
-      
+
       {/* Featured Products */}
       <FeaturedProducts />
 

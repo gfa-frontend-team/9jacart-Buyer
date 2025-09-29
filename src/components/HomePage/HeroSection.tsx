@@ -1,4 +1,6 @@
-import React, { useMemo } from "react";
+
+
+import React, {} from "react";
 import CategoriesSidebar from "./CategoriesSidebar";
 import HeroCarousel, { type CarouselSlide } from "./HeroCarousel";
 import { mockCategories } from "../../data/mockData";
@@ -34,15 +36,11 @@ const slides: CarouselSlide[] = [
 ];
 
 const HeroSection: React.FC = () => {
-  const categories = useMemo(
-    () => [...mockCategories.map((c) => c.name).filter(Boolean)],
-    []
-  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-stretch">
-        <CategoriesSidebar categories={categories} />
+        <CategoriesSidebar categories={mockCategories} />
         <HeroCarousel slides={slides} />
       </div>
     </div>

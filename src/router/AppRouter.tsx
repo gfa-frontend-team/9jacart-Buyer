@@ -170,10 +170,6 @@ import TrackOrderPage from "../pages/Orders/TrackOrderPage";
 
 // Account pages
 import AccountPage from "../pages/Account/AccountPage";
-import ProfilePage from "../pages/Account/ProfilePage";
-import SettingsPage from "../pages/Account/SettingsPage";
-import AddressesPage from "../pages/Account/AddressesPage";
-import PaymentMethodsPage from "../pages/Account/PaymentMethodsPage";
 import WishlistPage from "../pages/Account/WishlistPage";
 
 // Auth pages
@@ -190,8 +186,12 @@ import SearchResultsPage from "../pages/Search/SearchResultsPage";
 import NotFoundPage from "../pages/Error/NotFoundPage";
 import UIComponentsDemo from "../pages/Demo/UIComponentsDemo";
 
+// Services pages
+import { ServicesLandingPage, ServicesPage } from "../pages/Services";
+
 // Layout components
 import AuthLayout from "../components/Layout/AuthLayout";
+import { ProtectedRoute } from "../components/Auth";
 
 // Scroll to Top Component
 const ScrollToTop: React.FC = () => {
@@ -256,40 +256,44 @@ const router = createBrowserRouter([
       },
       {
         path: "orders",
-        element: <OrdersPage />,
+        element: (
+          <ProtectedRoute>
+            <OrdersPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "orders/:id",
-        element: <OrderDetailPage />,
+        element: (
+          <ProtectedRoute>
+            <OrderDetailPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "track-order/:id",
-        element: <TrackOrderPage />,
+        element: (
+          <ProtectedRoute>
+            <TrackOrderPage />
+          </ProtectedRoute>
+        ),
       },
       // Account routes
       {
         path: "account",
-        element: <AccountPage />,
-      },
-      {
-        path: "profile",
-        element: <ProfilePage />,
-      },
-      {
-        path: "settings",
-        element: <SettingsPage />,
-      },
-      {
-        path: "addresses",
-        element: <AddressesPage />,
-      },
-      {
-        path: "payment-methods",
-        element: <PaymentMethodsPage />,
+        element: (
+          <ProtectedRoute>
+            <AccountPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "wishlist",
-        element: <WishlistPage />,
+        element: (
+          <ProtectedRoute>
+            <WishlistPage />
+          </ProtectedRoute>
+        ),
       },
       // Support routes
       {
@@ -299,6 +303,15 @@ const router = createBrowserRouter([
       {
         path: "faq",
         element: <FAQPage />,
+      },
+      // Services routes
+      {
+        path: "services",
+        element: <ServicesLandingPage />,
+      },
+      {
+        path: "services/:subcategory",
+        element: <ServicesPage />,
       },
       // Category and search routes
       {

@@ -13,7 +13,7 @@ import { Button } from "../UI/Button";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useCartStore } from "../../store/useCartStore";
-// import { useWishlistStore } from "../../store/useWishlistStore";
+import { useWishlistStore } from "../../store/useWishlistStore";
 import useClickOutside from "../../hooks/useClickOutside";
 import logoImage from "../../assets/logo.png";
 
@@ -21,7 +21,7 @@ const NewHeader: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { getTotalItems } = useCartStore();
-  // const { getTotalItems: getWishlistItems } = useWishlistStore();
+  const { getTotalItems: getWishlistItems } = useWishlistStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -47,7 +47,7 @@ const NewHeader: React.FC = () => {
   ];
 
   const totalItems = getTotalItems();
-  // const wishlistItems = getWishlistItems();
+  const wishlistItems = getWishlistItems();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +117,7 @@ const NewHeader: React.FC = () => {
                         </div>
                         <div className="space-y-1">
                           <Link
-                            to="/profile"
+                            to="/account"
                             className="block px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                             onClick={() => setShowAccountMenu(false)}
                           >
@@ -135,7 +135,7 @@ const NewHeader: React.FC = () => {
                             className="block px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                             onClick={() => setShowAccountMenu(false)}
                           >
-                            Your Wishlist
+                            Your Wishlist {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
                             to="/account"
@@ -331,7 +331,7 @@ const NewHeader: React.FC = () => {
                         </div>
                         <div className="space-y-1">
                           <Link
-                            to="/profile"
+                            to="/account"
                             className="block px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                             onClick={() => setShowAccountMenu(false)}
                           >
@@ -349,7 +349,7 @@ const NewHeader: React.FC = () => {
                             className="block px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                             onClick={() => setShowAccountMenu(false)}
                           >
-                            Your Wishlist
+                            Your Wishlist {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
                             to="/account"
@@ -430,21 +430,22 @@ const NewHeader: React.FC = () => {
 
               {/* Cart */}
               <Link to="/cart" className="flex items-center">
-              <Button
-                variant="ghost"
-                asChild
-                className="flex items-center text-white hover:bg-none px-3 py-2 relative"
-              >
-                
-                  <ShoppingCart className="w-6 h-6" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#8DEB6E] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                      {totalItems > 99 ? "99+" : totalItems}
-                    </span>
-                  )}
-                  <span className="ml-2 font-medium">Cart</span>
-              </Button>
-                </Link>
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="flex items-center text-white hover:bg-none px-3 py-2 relative"
+                >
+                  <div>
+                    <ShoppingCart className="w-6 h-6" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-[#8DEB6E] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                        {totalItems > 99 ? "99+" : totalItems}
+                      </span>
+                    )}
+                    <span className="ml-2 font-medium">Cart</span>
+                  </div>
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -519,6 +520,13 @@ const NewHeader: React.FC = () => {
             {/* Mobile Navigation Links */}
             <div className="border-t border-border pt-3 space-y-2">
               <Link
+                to="/services"
+                className="block py-2 hover:text-primary transition-colors"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                Services
+              </Link>
+              <Link
                 to="/products"
                 className="block py-2 hover:text-primary transition-colors"
                 onClick={() => setShowMobileMenu(false)}
@@ -547,4 +555,4 @@ const NewHeader: React.FC = () => {
   );
 };
 
-export default NewHeader; 
+export default NewHeader;

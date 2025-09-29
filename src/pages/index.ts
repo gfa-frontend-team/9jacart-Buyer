@@ -14,10 +14,7 @@ export { default as OrdersPage } from './Orders/OrdersPage';
 export { default as OrderDetailPage } from './Orders/OrderDetailPage';
 
 // Account
-export { default as ProfilePage } from './Account/ProfilePage';
-export { default as SettingsPage } from './Account/SettingsPage';
-export { default as AddressesPage } from './Account/AddressesPage';
-export { default as PaymentMethodsPage } from './Account/PaymentMethodsPage';
+export { default as AccountPage } from './Account/AccountPage';
 export { default as WishlistPage } from './Account/WishlistPage';
 
 // Auth
