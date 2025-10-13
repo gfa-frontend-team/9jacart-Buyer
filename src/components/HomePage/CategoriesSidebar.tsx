@@ -146,17 +146,17 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block border-r border-gray-200 pr-4 lg:pr-6">
+      <aside className="hidden lg:block lg:col-span-1 border-r border-gray-200 pr-4 lg:pr-6">
         <div className="sticky top-4">
-          <ul className="space-y-3">
+          <ul className="space-y-2 lg:space-y-3">
             {mainCategories.map((category) => renderCategoryItem(category))}
           </ul>
         </div>
       </aside>
 
       {/* Mobile Categories - Horizontal scroll */}
-      <div className="lg:hidden mb-4 -mx-4 px-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="lg:hidden mb-3 sm:mb-4 -mx-4 px-4">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {mainCategories.slice(0, 8).map((category) => {
             const subcategories = getSubcategories(category.id);
             const hasSubcategories = subcategories.length > 0;
@@ -165,7 +165,7 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
               <button
                 key={`mobile-${category.id}`}
                 onClick={() => handleCategoryClick(category)}
-                className="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors"
+                className="flex-shrink-0 px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-full text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
               >
                 {category.name}
                 {hasSubcategories && <span className="ml-1">›</span>}

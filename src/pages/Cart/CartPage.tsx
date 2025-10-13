@@ -85,27 +85,29 @@ const CartPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 touch-target"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-            <Badge variant="secondary" className="ml-2">
-              {totalItems} {totalItems === 1 ? 'item' : 'items'}
-            </Badge>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Shopping Cart</h1>
+              <Badge variant="secondary" className="w-fit">
+                {totalItems} {totalItems === 1 ? 'item' : 'items'}
+              </Badge>
+            </div>
           </div>
           
           {items.length > 0 && (
             <Button
               variant="outline"
               onClick={() => setShowClearModal(true)}
-              className="text-red-600 border-red-200 hover:bg-red-50"
+              className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto touch-target"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear Cart
@@ -113,7 +115,7 @@ const CartPage: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (

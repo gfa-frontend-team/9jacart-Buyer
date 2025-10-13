@@ -33,7 +33,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   }, [active]);
 
   return (
-    <section className="lg:col-span-4 relative overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+    <section className="lg:col-span-3 xl:col-span-4 relative overflow-hidden rounded-lg border border-gray-200 shadow-sm">
       {/* Slides */}
       <div className={`relative ${height}`}>
         {slides.map((slide, idx) => (

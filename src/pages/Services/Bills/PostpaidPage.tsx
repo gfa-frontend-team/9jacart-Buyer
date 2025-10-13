@@ -76,13 +76,13 @@ const PostpaidPage: React.FC = () => {
   const selectedProvider = providers.find(p => p.id === formData.provider);
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-          <Receipt className="w-8 h-8 text-primary" />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
+          <Receipt className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Postpaid Bills</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">Postpaid Bills</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-4 sm:px-0">
           Pay your postpaid bills quickly and securely
         </p>
       </div>
@@ -101,20 +101,20 @@ const PostpaidPage: React.FC = () => {
               <label className="text-sm font-medium text-foreground">
                 Select Service Provider
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {providers.map((provider) => (
                   <button
                     key={provider.id}
                     type="button"
                     onClick={() => handleProviderSelect(provider.id)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       formData.provider === provider.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="text-2xl mb-2">{provider.icon}</div>
-                    <span className="text-sm font-medium">{provider.name}</span>
+                    <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{provider.icon}</div>
+                    <span className="text-xs sm:text-sm font-medium">{provider.name}</span>
                   </button>
                 ))}
               </div>

@@ -17,8 +17,8 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-[#182F38] text-white">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-8 sm:mb-12">
           {/* Know Us More */}
           <div>
             <h3 className="text-lg font-semibold mb-6 text-white">Know Us More</h3>
@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 border-t border-gray-600 pt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 border-t border-gray-600 pt-6 lg:pt-8">
           {/* Logo and Subscribe */}
           <div className="lg:col-span-1">
             <div className="flex items-center mb-4">
@@ -145,12 +145,12 @@ const Footer: React.FC = () => {
               
               {/* App Store Buttons */}
               <div className="space-y-2">
-                <div className="bg-black rounded px-3 py-1 text-xs text-white border border-gray-600">
-                  <div className="text-[8px] text-gray-300">GET IT ON</div>
+                <div className="bg-black rounded px-4 py-2 text-sm text-white border border-gray-600 touch-target-sm">
+                  <div className="text-[10px] text-gray-300">GET IT ON</div>
                   <div className="font-semibold">Google Play</div>
                 </div>
-                <div className="bg-black rounded px-3 py-1 text-xs text-white border border-gray-600">
-                  <div className="text-[8px] text-gray-300">Download on the</div>
+                <div className="bg-black rounded px-4 py-2 text-sm text-white border border-gray-600 touch-target-sm">
+                  <div className="text-[10px] text-gray-300">Download on the</div>
                   <div className="font-semibold">App Store</div>
                 </div>
               </div>

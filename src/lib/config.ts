@@ -1,11 +1,19 @@
 // App configuration
 export const config = {
   app: {
-    name: import.meta.env.VITE_APP_NAME || 'Store',
+    name: import.meta.env.VITE_APP_NAME || '9jaCart',
     url: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
   },
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+    baseUrl: import.meta.env.VITE_API_URL || 'https://api.9jacart.ng',
+    basicAuth: {
+      username: import.meta.env.VITE_API_BASIC_USERNAME || 'admin@example.com',
+      password: import.meta.env.VITE_API_BASIC_PASSWORD || 'admin123',
+    },
+  },
+  auth: {
+    tokenKey: 'auth-token',
+    storageKey: 'auth-storage',
   },
   features: {
     // Feature flags for development

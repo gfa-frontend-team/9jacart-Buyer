@@ -1,0 +1,110 @@
+import { ApiError } from '../api/client';
+
+// API error handling utilities
+export const apiErrorUtils = {
+  // Extract user-friendly error message from API error
+  getErrorMessage: (error: unknown): string => {
+    if (error instanceof ApiError) {
+      // Handle specific API error responses
+      if (error.data && typeof error.data === 'object' && 'messages' in error.data) {
+        const messages = (error.data as Record<string, unknown>).messages as Record<string, string>;
+        
+        // Handle field-specific errors
+        if (messages.emailAddress) {
+          return messages.emailAddress;
+        }
+        if (messages.firstName) {
+          return messages.firstName;
+        }
+        if (messages.lastName) {
+          return messages.lastName;
+        }
+        if (messages.currentPassword) {
+          return messages.currentPassword;
+        }
+        if (messages.error) {
+          return messages.error;
+        }
+      }
+      
+      // Handle general API errors
+      if (error.message) {
+        return error.message;
+      }
+      
+      // Handle HTTP status codes
+      switch (error.status) {
+        case 400:
+          return 'Invalid request. Please check your input.';
+        case 401:
+          return 'Invalid credentials. Please try again.';
+        case 403:
+          return 'Access denied.';
+        case 404:
+          return 'Resource not found.';
+        case 500:
+          return 'Server error. Please try again later.';
+        default:
+          return 'An unexpected error occurred.';
+      }
+    }
+    
+    // Handle network errors
+    if (error instanceof Error) {
+      if (error.message.includes('fetch')) {
+        return 'Network error. Please check your connection.';
+      }
+      return error.message;
+    }
+    
+    return 'An unexpected error occurred.';
+  },
+
+  // Check if error is a validation error (400 with field messages)
+  isValidationError: (error: unknown): error is ApiError => {
+    return error instanceof ApiError && 
+           error.status === 400 && 
+           error.data !== null &&
+           error.data !== undefined &&
+           typeof error.data === 'object' && 
+           'messages' in error.data;
+  },
+
+  // Get field-specific validation errors
+  getValidationErrors: (error: unknown): Record<string, string> => {
+    if (!apiErrorUtils.isValidationError(error)) {
+      return {};
+    }
+    
+    const apiError = error as ApiError;
+    const messages = ((apiError.data as Record<string, unknown>)?.messages as Record<string, string>) || {};
+    
+    // Map API field names to form field names
+    const fieldMap: Record<string, string> = {
+      emailAddress: 'email',
+      firstName: 'firstName',
+      lastName: 'lastName',
+      currentPassword: 'currentPassword',
+    };
+    
+    const validationErrors: Record<string, string> = {};
+    
+    Object.entries(messages).forEach(([field, message]) => {
+      const formField = fieldMap[field] || field;
+      validationErrors[formField] = message as string;
+    });
+    
+    return validationErrors;
+  },
+
+  // Check if error is authentication related
+  isAuthError: (error: unknown): boolean => {
+    return error instanceof ApiError && 
+           (error.status === 401 || error.status === 403);
+  },
+
+  // Check if error is network related
+  isNetworkError: (error: unknown): boolean => {
+    return error instanceof ApiError && error.status === 0;
+  },
+};

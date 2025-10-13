@@ -15,6 +15,15 @@ const LoginPage: React.FC = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check for success messages from URL params
+  React.useEffect(() => {
+    const message = searchParams.get('message');
+    if (message === 'registration-success') {
+      setSuccessMessage('Registration successful! Please check your email to verify your account, then login.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +41,7 @@ const LoginPage: React.FC = () => {
       const redirectTo = searchParams.get('redirect') || '/';
       navigate(redirectTo);
     } catch (error) {
-      setError('Invalid email or password. Please try again.');
+      setError(error instanceof Error ? error.message : 'Login failed. Please try again.');
     }
   };
 
@@ -54,6 +63,12 @@ const LoginPage: React.FC = () => {
           </Link>
         </p>
       </div>
+
+      {successMessage && (
+        <Alert variant="default" className="mb-6 border-green-200 bg-green-50 text-green-800">
+          {successMessage}
+        </Alert>
+      )}
 
       {error && (
         <Alert variant="destructive" className="mb-6">
@@ -140,13 +155,13 @@ const LoginPage: React.FC = () => {
         {/* Demo Login Helper */}
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
           <p className="text-sm text-blue-800 mb-2">
-            <strong>Demo Login:</strong> Use any email and password to login
+            <strong>Demo Login:</strong> Use the test credentials
           </p>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setFormData({ email: 'demo@example.com', password: 'password' })}
+            onClick={() => setFormData({ email: 'johne@example.com', password: 'P@$$23' })}
             className="text-blue-600 border-blue-300 hover:bg-blue-100"
           >
             Fill Demo Credentials

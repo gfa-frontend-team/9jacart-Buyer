@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button, Alert } from '../../components/UI';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { register, isLoading } = useAuthStore();
   
   const [showPassword, setShowPassword] = useState(false);
@@ -48,11 +47,10 @@ const RegisterPage: React.FC = () => {
         password: formData.password,
       });
       
-      // Redirect to the intended page or home
-      const redirectTo = searchParams.get('redirect') || '/';
-      navigate(redirectTo);
+      // Registration successful - redirect to login with success message
+      navigate('/auth/login?message=registration-success');
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      setError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
     }
   };
 

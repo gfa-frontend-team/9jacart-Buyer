@@ -11,14 +11,12 @@ interface ProductCardProps {
   product: ProductSummary | Product;
   showQuickAdd?: boolean;
   className?: string;
-  size?: "sm" | "md" | "lg";
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   product,
   showQuickAdd = true,
   className,
-  size = "md",
 }) => {
   const { addItem } = useCartStore();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isItemInWishlist } = useWishlistStore();
@@ -192,17 +190,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const discount =
     typeof product.price === "object" ? product.price.discount : undefined;
 
-  const sizeClasses = {
-    sm: "max-w-[200px]",
-    md: "max-w-[280px]",
-    lg: "max-w-[320px]",
-  };
-
   return (
     <Card
       className={cn(
-        "group relative bg-white border-none border-0 rounded-none overflow-hidden   cursor-pointer",
-        sizeClasses[size],
+        "group relative bg-white border-none border-0 rounded-none overflow-hidden cursor-pointer w-full",
         className
       )}
     >
@@ -220,11 +211,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
             )}
 
             {/* Action Buttons */}
-            <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+            <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200">
               <Button
                 size="icon"
                 variant="outline"
-                className="w-8 h-8 bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-white shadow-sm"
+                className="w-10 h-10 sm:w-8 sm:h-8 bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-white shadow-sm touch-target-sm"
                 onClick={handleWishlist}
               >
                 <Heart
@@ -237,7 +228,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               <Button
                 size="icon"
                 variant="outline"
-                className="w-8 h-8 bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-white shadow-sm"
+                className="w-10 h-10 sm:w-8 sm:h-8 bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-white shadow-sm touch-target-sm"
               >
                 <Eye className="w-4 h-4 text-gray-600" />
               </Button>
@@ -277,7 +268,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {/* Product Info */}
-          <div className="p-3 sm:p-4 space-y-2">
+          <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
             {/* Brand */}
             {"brand" in product && product.brand && (
               <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">

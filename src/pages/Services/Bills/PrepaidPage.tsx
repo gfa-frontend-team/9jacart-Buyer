@@ -85,13 +85,13 @@ const PrepaidPage: React.FC = () => {
   const selectedProvider = providers.find(p => p.id === formData.provider);
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-          <Zap className="w-8 h-8 text-primary" />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
+          <Zap className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Prepaid Electricity</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">Prepaid Electricity</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-4 sm:px-0">
           Buy electricity units for your prepaid meter
         </p>
       </div>
@@ -110,25 +110,25 @@ const PrepaidPage: React.FC = () => {
               <label className="text-sm font-medium text-foreground">
                 Select Electricity Provider
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {providers.map((provider) => (
                   <button
                     key={provider.id}
                     type="button"
                     onClick={() => handleProviderSelect(provider.id)}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                    className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all ${
                       formData.provider === provider.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${provider.color} rounded-full flex items-center justify-center text-white font-bold`}>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 ${provider.color} rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0`}>
                         {provider.name.charAt(0)}
                       </div>
-                      <div>
-                        <div className="font-medium">{provider.name}</div>
-                        <div className="text-xs text-muted-foreground">{provider.fullName}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-sm sm:text-base">{provider.name}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground truncate">{provider.fullName}</div>
                       </div>
                     </div>
                   </button>
@@ -186,7 +186,7 @@ const PrepaidPage: React.FC = () => {
                 </label>
                 
                 {/* Quick Amount Buttons */}
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">
                   {quickAmounts.map((amount) => (
                     <Button
                       key={amount}
@@ -194,7 +194,7 @@ const PrepaidPage: React.FC = () => {
                       variant={formData.amount === amount.toString() ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleAmountSelect(amount)}
-                      className="text-xs"
+                      className="text-xs sm:text-sm py-2 px-1 sm:px-2"
                     >
                       ₦{amount.toLocaleString()}
                     </Button>

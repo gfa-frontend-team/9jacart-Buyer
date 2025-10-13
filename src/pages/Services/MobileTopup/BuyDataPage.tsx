@@ -76,13 +76,13 @@ const BuyDataPage: React.FC = () => {
     : null;
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-          <Wifi className="w-8 h-8 text-primary" />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
+          <Wifi className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Buy Mobile Data</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">Buy Mobile Data</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-4 sm:px-0">
           Purchase data bundles for your mobile device
         </p>
       </div>
@@ -117,20 +117,20 @@ const BuyDataPage: React.FC = () => {
               <label className="text-sm font-medium text-foreground">
                 Select Network
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {networks.map((network) => (
                   <button
                     key={network.id}
                     type="button"
                     onClick={() => handleNetworkSelect(network.id)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       formData.network === network.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 ${network.color} rounded-full mx-auto mb-2`}></div>
-                    <span className="text-sm font-medium">{network.name}</span>
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 ${network.color} rounded-full mx-auto mb-1 sm:mb-2`}></div>
+                    <span className="text-xs sm:text-sm font-medium">{network.name}</span>
                   </button>
                 ))}
               </div>
@@ -142,23 +142,23 @@ const BuyDataPage: React.FC = () => {
                 <label className="text-sm font-medium text-foreground">
                   Select Data Plan
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   {dataPlans[formData.network]?.map((plan) => (
                     <button
                       key={plan.id}
                       type="button"
                       onClick={() => handleDataPlanSelect(plan.id)}
-                      className={`p-4 rounded-lg border-2 text-left transition-all ${
+                      className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all ${
                         formData.dataPlan === plan.id
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="font-medium text-lg">{plan.name}</span>
-                        <Badge variant="secondary">₦{plan.price}</Badge>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 mb-1 sm:mb-2">
+                        <span className="font-medium text-base sm:text-lg">{plan.name}</span>
+                        <Badge variant="secondary" className="w-fit">₦{plan.price}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Valid for {plan.validity}
                       </p>
                     </button>

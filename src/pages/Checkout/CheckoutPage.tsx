@@ -266,7 +266,7 @@ const CheckoutPage: React.FC = () => {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
           {/* Billing Details Form */}
           <div>
             <Card>
@@ -281,7 +281,7 @@ const CheckoutPage: React.FC = () => {
                   )}
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-4 sm:space-y-6">
                   {/* First Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

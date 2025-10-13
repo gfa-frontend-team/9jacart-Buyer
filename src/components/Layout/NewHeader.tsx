@@ -104,7 +104,7 @@ const NewHeader: React.FC = () => {
 
                 {/* Account Dropdown */}
                 {showAccountMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover text-popover-foreground rounded-md shadow-lg border border-border z-50">
+                  <div className="absolute right-0 top-full mt-1 w-64 sm:w-72 md:w-80 bg-popover text-popover-foreground rounded-md shadow-lg border border-border z-50">
                     {isAuthenticated ? (
                       <div className="p-4">
                         <div className="border-b border-border pb-3 mb-3">
@@ -243,7 +243,7 @@ const NewHeader: React.FC = () => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className={cn(
                       "bg-[#8DEB6E] text-foreground px-3 py-2",
-                      "appearance-none pr-8 w-[100px]"
+                      "appearance-none pr-8 min-w-[100px] w-auto max-w-[140px]"
                     )}
                   >
                     {categories.map((category) => (
@@ -318,7 +318,7 @@ const NewHeader: React.FC = () => {
 
                 {/* Account Dropdown - Same as mobile */}
                 {showAccountMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-64 bg-popover text-popover-foreground rounded-md shadow-lg border border-border z-50">
+                  <div className="absolute right-0 top-full mt-1 w-64 sm:w-72 md:w-80 bg-popover text-popover-foreground rounded-md shadow-lg border border-border z-50">
                     {isAuthenticated ? (
                       <div className="p-4">
                         <div className="border-b border-border pb-3 mb-3">
@@ -460,12 +460,12 @@ const NewHeader: React.FC = () => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className={cn(
                       "bg-[#8DEB6E] text-foreground px-2 sm:px-3 py-2 text-xs sm:text-sm",
-                      "appearance-none pr-6 sm:pr-8"
+                      "appearance-none pr-6 sm:pr-8 min-w-[80px] w-auto"
                     )}
                   >
-                    {categories.slice(0, 4).map((category) => (
+                    {categories.slice(0, 6).map((category) => (
                       <option key={category} value={category}>
-                        {category === "Home & Garden" ? "Home" : category}
+                        {category.length > 8 ? category.substring(0, 8) + "..." : category}
                       </option>
                     ))}
                   </select>

@@ -241,12 +241,55 @@ export interface Order {
 
 // User types
 export interface User {
-  id: string;
-  email: string;
+  id: string; // Maps to buyerId from API
+  email: string; // Maps to emailAddress from API
   firstName: string;
   lastName: string;
-  phone?: string;
+  phone?: string; // Maps to phoneNumber from API
   avatar?: string;
+  token?: string; // JWT token from API
+  isActive?: boolean; // Maps to isActive from API
+  isEmailVerified?: boolean; // Maps to isEmailVerified from API
+  verifiedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Profile-specific types
+export interface UserProfile extends User {
+  addresses: UserAddress[];
+}
+
+export interface UserAddress {
+  id: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+// Auth-related types
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+// Profile update types
+export interface ProfileUpdateData {
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface PasswordUpdateData {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
 }
 
 // Address types

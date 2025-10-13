@@ -47,13 +47,13 @@ const BuyAirtimePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-          <Phone className="w-8 h-8 text-primary" />
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-6 sm:mb-8 lg:mb-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
+          <Phone className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Buy Airtime</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 sm:mb-3">Buy Airtime</h1>
+        <p className="text-sm sm:text-base text-muted-foreground px-4 sm:px-0">
           Recharge your phone or someone else's instantly
         </p>
       </div>
@@ -88,20 +88,20 @@ const BuyAirtimePage: React.FC = () => {
               <label className="text-sm font-medium text-foreground">
                 Select Network
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {networks.map((network) => (
                   <button
                     key={network.id}
                     type="button"
                     onClick={() => handleNetworkSelect(network.id)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                       formData.network === network.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className={`w-8 h-8 ${network.color} rounded-full mx-auto mb-2`}></div>
-                    <span className="text-sm font-medium">{network.name}</span>
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 ${network.color} rounded-full mx-auto mb-1 sm:mb-2`}></div>
+                    <span className="text-xs sm:text-sm font-medium">{network.name}</span>
                   </button>
                 ))}
               </div>
@@ -114,7 +114,7 @@ const BuyAirtimePage: React.FC = () => {
               </label>
               
               {/* Quick Amount Buttons */}
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">
                 {quickAmounts.map((amount) => (
                   <Button
                     key={amount}
@@ -122,7 +122,7 @@ const BuyAirtimePage: React.FC = () => {
                     variant={formData.amount === amount.toString() ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleAmountSelect(amount)}
-                    className="text-xs"
+                    className="text-xs sm:text-sm py-2 px-2 sm:px-3"
                   >
                     ₦{amount}
                   </Button>

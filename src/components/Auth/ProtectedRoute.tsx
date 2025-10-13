@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Loading } from '../UI/Loading';
@@ -12,8 +12,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   redirectTo = '/auth/login' 
 }) => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, checkAuthStatus } = useAuthStore();
   const location = useLocation();
+
+  // Check auth status on mount and when location changes
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus, location.pathname]);
 
   // Show loading while checking authentication
   if (isLoading) {

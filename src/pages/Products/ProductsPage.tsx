@@ -44,16 +44,16 @@ const ProductsPage: React.FC = () => {
         <Breadcrumb className="mb-6" />
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Products</h1>
+            <p className="text-gray-600 mt-1 sm:mt-2">
               Showing {totalCount} product{totalCount !== 1 ? 's' : ''}
             </p>
           </div>
           
           {/* Search */}
-          <div className="w-full max-w-md">
+          <div className="w-full sm:w-auto sm:max-w-md">
             <input
               type="text"
               placeholder="Search products..."
@@ -66,12 +66,13 @@ const ProductsPage: React.FC = () => {
 
         {/* Products Grid */}
         {products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
             {products.map((product) => (
               <ProductCard 
                 key={product.id} 
                 product={product}
                 showQuickAdd={true}
+                className="w-full"
               />
             ))}
           </div>

@@ -38,8 +38,8 @@ const slides: CarouselSlide[] = [
 const HeroSection: React.FC = () => {
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6 items-stretch">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 items-stretch">
         <CategoriesSidebar categories={mockCategories} />
         <HeroCarousel slides={slides} />
       </div>
