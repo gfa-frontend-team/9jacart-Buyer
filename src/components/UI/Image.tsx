@@ -58,9 +58,10 @@ const Image: React.FC<ImageProps> = ({
   // Update src when in view
   useEffect(() => {
     if (isInView && !hasError) {
-      setCurrentSrc(src);
+      // If src is empty or whitespace, use fallback
+      setCurrentSrc(src && src.trim() ? src : fallback);
     }
-  }, [isInView, src, hasError]);
+  }, [isInView, src, hasError, fallback]);
 
   const handleLoad = () => {
     setIsLoading(false);
@@ -108,7 +109,7 @@ const Image: React.FC<ImageProps> = ({
       {/* Main image */}
       <img
         ref={imgRef}
-        src={currentSrc}
+        src={currentSrc || fallback}
         alt={alt}
         className={cn(
           'w-full h-full transition-all duration-300',

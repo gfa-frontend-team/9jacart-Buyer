@@ -53,6 +53,14 @@ export const useCartStore = create<CartStore>()((set, get) => ({
 
   // Helper to map API items to cart items
   _mapApiItemToCartItem: (apiItem: ApiCartItem, product?: Product): CartItem => {
+    // Handle vendor - can be string or object
+    const vendorId = typeof apiItem.vendor === 'string' 
+      ? apiItem.vendor 
+      : apiItem.vendor.vendorId;
+    const storeName = typeof apiItem.vendor === 'string' 
+      ? apiItem.vendor 
+      : apiItem.vendor.storeName;
+    
     return {
       id: apiItem.productId,
       cartItemId: apiItem.cartItemId,
@@ -97,13 +105,13 @@ export const useCartStore = create<CartStore>()((set, get) => ({
           newArrival: false,
           bestseller: false
         },
-        sellerId: apiItem.vendor,
-        storeName: apiItem.vendor, // Use vendor as storeName fallback
+        sellerId: vendorId,
+        storeName: storeName, // Use extracted storeName
         createdAt: new Date(),
         updatedAt: new Date()
       } as Product,
       quantity: parseInt(apiItem.quantity),
-      vendor: apiItem.vendor,
+      vendor: vendorId, // Store vendorId as string
       price: apiItem.price,
       subtotal: apiItem.subtotal,
       addedAt: apiItem.addedAt,

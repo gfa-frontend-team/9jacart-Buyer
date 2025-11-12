@@ -20,7 +20,7 @@ export interface ApiCartItem {
   cartItemId: string;
   productId: string;
   productName: string;
-  vendor: string;
+  vendor: string | { vendorId: string; storeName: string }; // Can be string or object
   quantity: string; // Backend returns as string
   price: number;
   subtotal: number;
