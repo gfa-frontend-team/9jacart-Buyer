@@ -1,15 +1,16 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import NewHeader from './NewHeader';
-import SecondaryNav from './SecondaryNav';
-import Footer from './Footer';
-
+import React from "react";
+import { Outlet } from "react-router-dom";
+import NewHeader from "./NewHeader";
+import SecondaryNav from "./SecondaryNav";
+import Footer from "./Footer";
 
 const Layout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <NewHeader />
-      <SecondaryNav />
+      <div className="pt-28 lg:pt-20">
+        <SecondaryNav />
+      </div>
       <main className="flex-1">
         <Outlet />
       </main>

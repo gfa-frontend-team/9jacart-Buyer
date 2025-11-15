@@ -1,30 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Breadcrumb, Loading, Alert } from '../../components/UI';
-import ProductCard from '../../components/Product/ProductCard';
-import { useRealProductsList } from '../../hooks/api/useRealProducts';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Breadcrumb, Loading, Alert } from "../../components/UI";
+import ProductCard from "../../components/Product/ProductCard";
+import { useRealProductsList } from "../../hooks/api/useRealProducts";
 
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get('q') || '';
+  const query = searchParams.get("q") || "";
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
-  const { 
-    products, 
-    loading, 
-    error, 
-    pagination
-  } = useRealProductsList({ 
-    page: currentPage, 
-    perPage,
-    ...(query && { search: query })
-  });
+  const { products, loading, error, pagination, refetch } = useRealProductsList(
+    {
+      page: currentPage,
+      perPage,
+      search: query,
+      // ...(query && { search: query })
+    }
+  );
 
   // Reset page when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [query]);
+
+  useEffect(() => {
+    refetch({
+      page: currentPage,
+      perPage,
+      ...(query && { search: query }),
+    });
+  }, [query, currentPage]);
 
   if (loading) {
     return (
@@ -60,18 +66,22 @@ const SearchResultsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Search Results</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Search Results
+            </h1>
             <p className="text-gray-600 mt-1 sm:mt-2">
               {query ? (
                 <>
-                  Results for "<span className="font-medium">{query}</span>" - {products.length} of {pagination.totalItems} product{pagination.totalItems !== 1 ? 's' : ''}
+                  Results for "<span className="font-medium">{query}</span>" -{" "}
+                  {products.length} of {pagination.totalItems} product
+                  {pagination.totalItems !== 1 ? "s" : ""}
                 </>
               ) : (
-                'Enter a search term to find products'
+                "Enter a search term to find products"
               )}
             </p>
           </div>
@@ -82,8 +92,8 @@ const SearchResultsPage: React.FC = () => {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {products.map((product) => (
-                <ProductCard 
-                  key={product.id} 
+                <ProductCard
+                  key={product.id}
                   product={product}
                   showQuickAdd={true}
                   className="w-full"
@@ -105,11 +115,11 @@ const SearchResultsPage: React.FC = () => {
                 >
                   Previous
                 </button>
-                
+
                 <span className="px-4 py-2 text-sm text-gray-600">
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </span>
-                
+
                 <button
                   onClick={() => {
                     if (currentPage < pagination.totalPages) {
@@ -127,7 +137,9 @@ const SearchResultsPage: React.FC = () => {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
-              {query ? `No products found for "${query}"` : 'Enter a search term to find products'}
+              {query
+                ? `No products found for "${query}"`
+                : "Enter a search term to find products"}
             </p>
             {query && (
               <p className="text-gray-400 mt-2">

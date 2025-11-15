@@ -33,7 +33,10 @@ const NewHeader: React.FC = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       // Account menu
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
         // Add delay on mobile to prevent immediate closing
         const isMobile = window.innerWidth < 768;
         if (isMobile) {
@@ -42,9 +45,12 @@ const NewHeader: React.FC = () => {
           setShowAccountMenu(false);
         }
       }
-      
+
       // Mobile menu
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
         setTimeout(() => setShowMobileMenu(false), 100);
       }
     };
@@ -104,8 +110,24 @@ const NewHeader: React.FC = () => {
     callback?.();
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        document
+          .querySelector("header")
+          ?.classList.add("shadow-2xl", "bg-[#182F38]/98");
+      } else {
+        document
+          .querySelector("header")
+          ?.classList.remove("shadow-2xl", "bg-[#182F38]/98");
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="bg-[#182F38] text-white shadow-sm border-b border-gray-600">
+    <header className="fixed top-0 left-0 w-full z-50 bg-[#182F38]/95 backdrop-blur-md text-white shadow-lg border-b border-gray-700">
       {/* Main Header */}
       <div className="px-2 sm:px-4 py-2 sm:py-3">
         <div className="max-w-7xl mx-auto">
@@ -124,7 +146,11 @@ const NewHeader: React.FC = () => {
 
             {/* Logo - Centered on mobile */}
             <Link to="/" className="flex items-center flex-shrink-0">
-              <img src={logoImage} alt="9ja-cart" className="h-6 sm:h-8 w-auto" />
+              <img
+                src={logoImage}
+                alt="9ja-cart"
+                className="h-6 sm:h-8 w-auto"
+              />
             </Link>
 
             {/* Mobile Right Actions */}
@@ -140,7 +166,7 @@ const NewHeader: React.FC = () => {
 
                 {/* Account Dropdown */}
                 {showAccountMenu && (
-                  <div 
+                  <div
                     className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -150,9 +176,7 @@ const NewHeader: React.FC = () => {
                           <p className="font-medium text-gray-900">
                             {user?.firstName} {user?.lastName}
                           </p>
-                          <p className="text-sm text-gray-500">
-                            {user?.email}
-                          </p>
+                          <p className="text-sm text-gray-500">{user?.email}</p>
                         </div>
                         <div className="space-y-1">
                           <Link
@@ -174,7 +198,8 @@ const NewHeader: React.FC = () => {
                             className="block px-3 py-3 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors min-h-[44px] flex items-center"
                             onClick={(e) => handleMenuItemClick(e)}
                           >
-                            Your Wishlist {wishlistItems > 0 && `(${wishlistItems})`}
+                            Your Wishlist{" "}
+                            {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
                             to="/account"
@@ -185,7 +210,9 @@ const NewHeader: React.FC = () => {
                           </Link>
                           <hr className="my-2 border-gray-200" />
                           <button
-                            onClick={(e) => handleMenuItemClick(e, handleLogout)}
+                            onClick={(e) =>
+                              handleMenuItemClick(e, handleLogout)
+                            }
                             className="w-full text-left px-3 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors min-h-[44px] flex items-center"
                           >
                             Sign Out
@@ -237,8 +264,8 @@ const NewHeader: React.FC = () => {
               </div>
 
               {/* Cart - Mobile */}
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="p-2 text-white hover:bg-white/10 rounded-md transition-colors relative min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -324,9 +351,7 @@ const NewHeader: React.FC = () => {
                     <div className="flex items-center">
                       <User className="w-5 h-5 mr-2" />
                       <div className="text-left">
-                        <div className="text-xs">
-                          Hello, {user?.firstName}
-                        </div>
+                        <div className="text-xs">Hello, {user?.firstName}</div>
                         <div className="font-medium">Account & Lists</div>
                       </div>
                     </div>
@@ -344,7 +369,7 @@ const NewHeader: React.FC = () => {
 
                 {/* Desktop Account Dropdown */}
                 {showAccountMenu && (
-                  <div 
+                  <div
                     className="absolute right-0 top-full mt-1 w-80 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -354,9 +379,7 @@ const NewHeader: React.FC = () => {
                           <p className="font-medium text-gray-900">
                             {user?.firstName} {user?.lastName}
                           </p>
-                          <p className="text-sm text-gray-500">
-                            {user?.email}
-                          </p>
+                          <p className="text-sm text-gray-500">{user?.email}</p>
                         </div>
                         <div className="space-y-1">
                           <Link
@@ -378,7 +401,8 @@ const NewHeader: React.FC = () => {
                             className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
                             onClick={(e) => handleMenuItemClick(e)}
                           >
-                            Your Wishlist {wishlistItems > 0 && `(${wishlistItems})`}
+                            Your Wishlist{" "}
+                            {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
                             to="/account"
@@ -389,7 +413,9 @@ const NewHeader: React.FC = () => {
                           </Link>
                           <hr className="my-2 border-gray-200" />
                           <button
-                            onClick={(e) => handleMenuItemClick(e, handleLogout)}
+                            onClick={(e) =>
+                              handleMenuItemClick(e, handleLogout)
+                            }
                             className="w-full text-left px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
                           >
                             Sign Out
@@ -442,7 +468,7 @@ const NewHeader: React.FC = () => {
 
               {/* Orders */}
               {isAuthenticated && (
-                <Link 
+                <Link
                   to="/orders"
                   className="flex items-center text-sm text-white hover:bg-white/10 hover:text-white px-3 py-2 rounded-md transition-colors"
                 >
@@ -454,8 +480,8 @@ const NewHeader: React.FC = () => {
               )}
 
               {/* Cart */}
-              <Link 
-                to="/cart" 
+              <Link
+                to="/cart"
                 className="flex items-center text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors relative"
               >
                 <ShoppingCart className="w-6 h-6" />
@@ -482,7 +508,9 @@ const NewHeader: React.FC = () => {
                   >
                     {categories.slice(0, 6).map((category) => (
                       <option key={category} value={category}>
-                        {category.length > 8 ? category.substring(0, 8) + "..." : category}
+                        {category.length > 8
+                          ? category.substring(0, 8) + "..."
+                          : category}
                       </option>
                     ))}
                   </select>

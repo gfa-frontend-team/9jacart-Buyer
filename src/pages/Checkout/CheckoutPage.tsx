@@ -1,16 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { CreditCard, Truck, Shield, AlertCircle, User, UserPlus, Plus } from 'lucide-react';
-import { Button, Input, Card, CardContent, Breadcrumb, Alert } from '../../components/UI';
-import { CheckoutSuccess, OrderSummary, AddressSummary, AddressSelector } from '../../components/Checkout';
-import { useCart } from '../../hooks/useCart';
-import { useAuthStore } from '../../store/useAuthStore';
-import { useProfile } from '../../hooks/api/useProfile';
-import { validateBillingDetails, formatPhoneNumber, type BillingDetailsForm, type ValidationError } from '../../lib/checkoutValidation';
-import { orderApi, transformBillingDetails, transformCartItemsToOrderItems, mapPaymentMethodToApi } from '../../api/order';
-import { apiErrorUtils } from '../../utils/api-errors';
-import { cn } from '../../lib/utils';
-import type { UserAddress } from '../../types';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  CreditCard,
+  Truck,
+  Shield,
+  AlertCircle,
+  User,
+  UserPlus,
+  Plus,
+} from "lucide-react";
+import {
+  Button,
+  Input,
+  Card,
+  CardContent,
+  Breadcrumb,
+  Alert,
+} from "../../components/UI";
+import {
+  CheckoutSuccess,
+  OrderSummary,
+  AddressSummary,
+  AddressSelector,
+} from "../../components/Checkout";
+import { useCart } from "../../hooks/useCart";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useProfile } from "../../hooks/api/useProfile";
+import {
+  validateBillingDetails,
+  formatPhoneNumber,
+  type BillingDetailsForm,
+  type ValidationError,
+} from "../../lib/checkoutValidation";
+import {
+  orderApi,
+  transformBillingDetails,
+  transformCartItemsToOrderItems,
+  mapPaymentMethodToApi,
+} from "../../api/order";
+import { apiErrorUtils } from "../../utils/api-errors";
+import { cn } from "../../lib/utils";
+import type { UserAddress } from "../../types";
+import { useNotification } from "@/hooks/useNotification";
 
 interface PaymentMethod {
   id: string;
@@ -20,39 +51,46 @@ interface PaymentMethod {
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
+  const { notify } = useNotification();
+
   const { items, totalPrice, clearAllItems } = useCart();
   const { isAuthenticated, user } = useAuthStore();
-  const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } = useProfile();
-  
+  const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
+    useProfile();
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [saveInfo, setSaveInfo] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState('cash-on-delivery');
+  const [selectedPayment, setSelectedPayment] = useState("cash-on-delivery");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [orderNumber, setOrderNumber] = useState('');
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
+    []
+  );
   const [checkoutAsGuest, setCheckoutAsGuest] = useState(false);
-  
+
   // Address management state
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [showAddressSelector, setShowAddressSelector] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(
+    null
+  );
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
-  
+
   // Coupon state
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState<string | null>(null);
 
   const [billingDetails, setBillingDetails] = useState<BillingDetailsForm>({
-    firstName: '',
-    lastName: '',
-    companyName: '',
-    streetAddress: '',
-    apartment: '',
-    townCity: '',
-    phoneNumber: '',
-    emailAddress: '',
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    streetAddress: "",
+    apartment: "",
+    townCity: "",
+    phoneNumber: "",
+    emailAddress: "",
   });
 
   // Load profile and set up addresses
@@ -66,31 +104,31 @@ const CheckoutPage: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && profile) {
       const defaultAddress = getDefaultAddress();
-      
+
       if (defaultAddress) {
         setSelectedAddress(defaultAddress);
         // Auto-fill form with default address
-        setBillingDetails(prev => ({
+        setBillingDetails((prev) => ({
           ...prev,
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
-          emailAddress: user?.email || '',
-          phoneNumber: user?.phone || '',
+          firstName: user?.firstName || "",
+          lastName: user?.lastName || "",
+          emailAddress: user?.email || "",
+          phoneNumber: user?.phone || "",
           streetAddress: defaultAddress.streetAddress,
           townCity: defaultAddress.city,
-          apartment: '',
-          companyName: '',
+          apartment: "",
+          companyName: "",
         }));
         setShowAddressForm(false); // Hide form since we have default address
       } else {
         // No default address, show form
         setShowAddressForm(true);
-        setBillingDetails(prev => ({
+        setBillingDetails((prev) => ({
           ...prev,
-          firstName: user?.firstName || '',
-          lastName: user?.lastName || '',
-          emailAddress: user?.email || '',
-          phoneNumber: user?.phone || '',
+          firstName: user?.firstName || "",
+          lastName: user?.lastName || "",
+          emailAddress: user?.email || "",
+          phoneNumber: user?.phone || "",
         }));
       }
     } else if (!isAuthenticated && checkoutAsGuest) {
@@ -101,23 +139,23 @@ const CheckoutPage: React.FC = () => {
 
   const paymentMethods: PaymentMethod[] = [
     {
-      id: 'bank-card',
-      name: 'Bank/Card',
+      id: "bank-card",
+      name: "Bank/Card",
       icon: <CreditCard className="w-5 h-5" />,
     },
     {
-      id: 'cash-on-delivery',
-      name: 'Pay on delivery',
+      id: "cash-on-delivery",
+      name: "Pay on delivery",
       icon: <Truck className="w-5 h-5" />,
     },
     {
-      id: 'buy-now-pay-later',
-      name: 'Buy Now, Pay Later',
+      id: "buy-now-pay-later",
+      name: "Buy Now, Pay Later",
       icon: <Shield className="w-5 h-5" />,
     },
     {
-      id: 'emergency-credit',
-      name: 'Emergency Credit',
+      id: "emergency-credit",
+      name: "Emergency Credit",
       icon: <Shield className="w-5 h-5" />,
     },
   ];
@@ -141,12 +179,12 @@ const CheckoutPage: React.FC = () => {
   const handleSelectAddress = (address: UserAddress) => {
     setSelectedAddress(address);
     // Update billing details with selected address
-    setBillingDetails(prev => ({
+    setBillingDetails((prev) => ({
       ...prev,
       streetAddress: address.streetAddress,
       townCity: address.city,
-      apartment: '',
-      companyName: '',
+      apartment: "",
+      companyName: "",
     }));
     setShowAddressSelector(false);
     setShowAddressForm(false);
@@ -157,32 +195,32 @@ const CheckoutPage: React.FC = () => {
     setShowAddressSelector(false);
     setShowAddressForm(true);
     // Clear form for new address
-    setBillingDetails(prev => ({
+    setBillingDetails((prev) => ({
       ...prev,
-      streetAddress: '',
-      apartment: '',
-      townCity: '',
-      companyName: '',
+      streetAddress: "",
+      apartment: "",
+      townCity: "",
+      companyName: "",
     }));
   };
 
   const handleSaveNewAddress = async () => {
     if (!isAuthenticated) return;
-    
+
     try {
-      const newAddress: Omit<UserAddress, 'id' | 'createdAt' | 'updatedAt'> = {
+      const newAddress: Omit<UserAddress, "id" | "createdAt" | "updatedAt"> = {
         streetAddress: billingDetails.streetAddress,
         city: billingDetails.townCity,
-        state: 'Lagos', // Default for now - could be made dynamic
-        zipCode: '100001', // Default for now - could be made dynamic
-        country: 'Nigeria',
+        state: "Lagos", // Default for now - could be made dynamic
+        zipCode: "100001", // Default for now - could be made dynamic
+        country: "Nigeria",
         isDefault: saveInfo, // Use saveInfo checkbox to set as default
       };
 
       await addAddress(newAddress);
       setIsAddingNewAddress(false);
       setShowAddressForm(false);
-      
+
       // Refresh addresses and select the new one
       const addresses = getAddresses();
       const newAddressFromList = addresses[addresses.length - 1]; // Assuming it's the last one
@@ -190,34 +228,34 @@ const CheckoutPage: React.FC = () => {
         setSelectedAddress(newAddressFromList);
       }
     } catch (error) {
-      console.error('Failed to save address:', error);
+      console.error("Failed to save address:", error);
     }
   };
 
   // Coupon handling functions
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
+      setCouponError("Please enter a coupon code");
       return;
     }
 
     setCouponError(null);
-    
+
     // Mock coupon validation - replace with real API call
     const mockCoupons: Record<string, number> = {
-      'SAVE1000': 1000,
-      'DISCOUNT500': 500,
-      'WELCOME200': 200,
+      SAVE1000: 1000,
+      DISCOUNT500: 500,
+      WELCOME200: 200,
     };
 
     const discount = mockCoupons[couponCode.toUpperCase()];
-    
+
     if (discount) {
       setAppliedCoupon(couponCode.toUpperCase());
       setCouponDiscount(discount);
       setCouponError(null);
     } else {
-      setCouponError('Invalid coupon code');
+      setCouponError("Invalid coupon code");
       setAppliedCoupon(null);
       setCouponDiscount(0);
     }
@@ -226,63 +264,74 @@ const CheckoutPage: React.FC = () => {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponDiscount(0);
-    setCouponCode('');
+    setCouponCode("");
     setCouponError(null);
   };
 
-
-
-  const handleInputChange = (field: keyof BillingDetailsForm, value: string) => {
-    setBillingDetails(prev => ({
+  const handleInputChange = (
+    field: keyof BillingDetailsForm,
+    value: string
+  ) => {
+    setBillingDetails((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear validation errors for this field
-    setValidationErrors(prev => prev.filter(error => error.field !== field));
+    setValidationErrors((prev) =>
+      prev.filter((error) => error.field !== field)
+    );
   };
 
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneNumber(value);
-    handleInputChange('phoneNumber', formatted);
+    handleInputChange("phoneNumber", formatted);
   };
 
   const getFieldError = (field: string) => {
-    return validationErrors.find(error => error.field === field)?.message;
+    return validationErrors.find((error) => error.field === field)?.message;
   };
 
   const handlePlaceOrder = async () => {
     // Validate form
     const errors = validateBillingDetails(billingDetails);
-    
+
     if (errors.length > 0) {
+      // errors.forEach((err) => {
+      //   notify({
+      //     type: "error",
+      //     message: err.message,
+      //   });
+      // });
+
       setValidationErrors(errors);
+
       // Scroll to first error
-      const firstErrorField = document.querySelector(`[name="${errors[0].field}"]`);
-      firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const firstErrorField = document.querySelector(
+        `[name="${errors[0].field}"]`
+      );
+      firstErrorField?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     if (items.length === 0) {
-      alert('Your cart is empty');
+      alert("Your cart is empty");
       return;
     }
 
     if (!isAuthenticated) {
-      alert('Please sign in to place an order');
+      alert("Please sign in to place an order");
       return;
     }
 
     setIsProcessing(true);
     setValidationErrors([]);
-    
+
     try {
-      // Transform data for API
       const billingData = transformBillingDetails(billingDetails);
       const orderItems = transformCartItemsToOrderItems(items);
       const paymentMethod = mapPaymentMethodToApi(selectedPayment);
 
-      // Prepare checkout request
       const checkoutRequest = {
         billing: billingData,
         orderItems,
@@ -290,38 +339,54 @@ const CheckoutPage: React.FC = () => {
         ...(appliedCoupon && { couponCode: appliedCoupon }),
       };
 
-      console.log('🛒 Placing order with data:', checkoutRequest);
+      console.log("🛒 Placing order with data:", checkoutRequest);
 
-      // Call checkout API
       const response = await orderApi.checkout(checkoutRequest);
-      
-      if (response.data) {
-        // Set order details from API response
-        setOrderNumber(response.data.orderNumber);
-        
-        // Show success modal
+
+      console.log("🔍 Checkout response:", response);
+
+      // SUCCESS RESPONSE (backend always returns error: false)
+      if (response.error === false) {
+        // Save order number
+        if (response.orderNo) {
+          setOrderNumber(response.orderNo);
+        }
+
+        // PAYSTACK REDIRECT URL
+        if (response.paymentData?.authorizationUrl) {
+          console.log(
+            "🔁 Redirecting to Paystack:",
+            response.paymentData.authorizationUrl
+          );
+
+          await clearAllItems(); // Optional
+          window.location.href = response.paymentData.authorizationUrl;
+          return;
+        }
+
+        // FALLBACK redirectUrl
+        if (response.redirectUrl) {
+          console.log("➡️ Redirecting:", response.redirectUrl);
+
+          await clearAllItems();
+          window.location.href = response.redirectUrl;
+          return;
+        }
+
+        // No redirect → show success modal
         setShowSuccess(true);
-        
-        // Clear cart
         await clearAllItems();
-        
-        console.log('✅ Order placed successfully:', response.data);
-      } else {
-        throw new Error(response.message || 'Failed to place order');
+        return;
       }
+
+      // If API returned error = true
+      throw new Error(response.message || "Failed to place order");
     } catch (error) {
-      console.error('❌ Checkout failed:', error);
-      
+      console.error("❌ Checkout failed:", error);
+
       const errorMessage = apiErrorUtils.getErrorMessage(error);
-      
-      // Check if it's a validation error from API
-      if (error && typeof error === 'object' && 'status' in error && error.status === 400) {
-        alert(`Order validation failed: ${errorMessage}`);
-      } else if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
-        alert('Please sign in again to place your order');
-      } else {
-        alert(`Failed to place order: ${errorMessage}`);
-      }
+
+      alert(`Failed to place order: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -329,24 +394,22 @@ const CheckoutPage: React.FC = () => {
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
-    navigate('/orders', { 
-      state: { 
-        orderPlaced: true, 
+    navigate("/orders", {
+      state: {
+        orderPlaced: true,
         orderTotal: total,
         paymentMethod: selectedPayment,
-        orderNumber: orderNumber
-      } 
+        orderNumber: orderNumber,
+      },
     });
   };
 
-
-
   const breadcrumbItems = [
-    { label: 'Account', href: '/account' },
-    { label: 'My Account', href: '/account' },
-    { label: 'Product', href: '/products' },
-    { label: 'View Cart', href: '/cart' },
-    { label: 'CheckOut', isCurrentPage: true },
+    { label: "Account", href: "/account" },
+    { label: "My Account", href: "/account" },
+    { label: "Product", href: "/products" },
+    { label: "View Cart", href: "/cart" },
+    { label: "CheckOut", isCurrentPage: true },
   ];
 
   if (items.length === 0) {
@@ -354,11 +417,15 @@ const CheckoutPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} className="mb-8" />
-          
+
           <div className="text-center py-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-8">Add some items to your cart to proceed with checkout</p>
-            <Button onClick={() => navigate('/products')}>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Your cart is empty
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Add some items to your cart to proceed with checkout
+            </p>
+            <Button onClick={() => navigate("/products")}>
               Continue Shopping
             </Button>
           </div>
@@ -373,7 +440,7 @@ const CheckoutPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} className="mb-8" />
-          
+
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardContent className="p-8 text-center">
@@ -381,9 +448,10 @@ const CheckoutPage: React.FC = () => {
                   Sign in to checkout
                 </h2>
                 <p className="text-gray-600 mb-8">
-                  Sign in to your account for a faster checkout experience, or continue as a guest.
+                  Sign in to your account for a faster checkout experience, or
+                  continue as a guest.
                 </p>
-                
+
                 <div className="space-y-4">
                   <Button asChild className="w-full" size="lg">
                     <Link to="/auth/login?redirect=/checkout">
@@ -391,31 +459,33 @@ const CheckoutPage: React.FC = () => {
                       Sign In to Your Account
                     </Link>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
                     size="lg"
                     onClick={() => setCheckoutAsGuest(true)}
                   >
                     <UserPlus className="w-5 h-5 mr-2" />
                     Continue as Guest
                   </Button>
-                  
+
                   <div className="text-sm text-gray-500">
-                    Don't have an account?{' '}
-                    <Link 
-                      to="/auth/register?redirect=/checkout" 
+                    Don't have an account?{" "}
+                    <Link
+                      to="/auth/register?redirect=/checkout"
                       className="text-blue-600 hover:text-blue-500 font-medium"
                     >
                       Create one now
                     </Link>
                   </div>
                 </div>
-                
+
                 {/* Benefits of signing in */}
                 <div className="mt-8 p-4 bg-blue-50 rounded-lg text-left">
-                  <h4 className="font-medium text-blue-900 mb-2">Benefits of signing in:</h4>
+                  <h4 className="font-medium text-blue-900 mb-2">
+                    Benefits of signing in:
+                  </h4>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• Faster checkout with saved information</li>
                     <li>• Order tracking and history</li>
@@ -444,14 +514,20 @@ const CheckoutPage: React.FC = () => {
             <div>
               <p className="font-medium">Checking out as guest</p>
               <p className="text-sm text-gray-600">
-                You can{' '}
-                <Link to="/auth/login?redirect=/checkout" className="text-blue-600 hover:text-blue-500 font-medium">
+                You can{" "}
+                <Link
+                  to="/auth/login?redirect=/checkout"
+                  className="text-blue-600 hover:text-blue-500 font-medium"
+                >
                   sign in
-                </Link>{' '}
-                or{' '}
-                <Link to="/auth/register?redirect=/checkout" className="text-blue-600 hover:text-blue-500 font-medium">
+                </Link>{" "}
+                or{" "}
+                <Link
+                  to="/auth/register?redirect=/checkout"
+                  className="text-blue-600 hover:text-blue-500 font-medium"
+                >
                   create an account
-                </Link>{' '}
+                </Link>{" "}
                 for a better experience.
               </p>
             </div>
@@ -464,7 +540,9 @@ const CheckoutPage: React.FC = () => {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Billing Details</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Billing Details
+                  </h2>
                   {isAuthenticated && (
                     <div className="flex items-center text-sm text-green-600">
                       <User className="w-4 h-4 mr-1" />
@@ -476,14 +554,20 @@ const CheckoutPage: React.FC = () => {
                 {/* Address Management Section */}
                 {isAuthenticated && (
                   <div className="mb-6">
-                    {selectedAddress && !showAddressForm && !showAddressSelector && (
-                      <AddressSummary
-                        address={selectedAddress}
-                        onEdit={handleEditAddress}
-                        onChangeAddress={getAddresses().length > 1 ? handleChangeAddress : undefined}
-                        showChangeOption={getAddresses().length > 1}
-                      />
-                    )}
+                    {selectedAddress &&
+                      !showAddressForm &&
+                      !showAddressSelector && (
+                        <AddressSummary
+                          address={selectedAddress}
+                          onEdit={handleEditAddress}
+                          onChangeAddress={
+                            getAddresses().length > 1
+                              ? handleChangeAddress
+                              : undefined
+                          }
+                          showChangeOption={getAddresses().length > 1}
+                        />
+                      )}
 
                     {showAddressSelector && (
                       <AddressSelector
@@ -505,234 +589,268 @@ const CheckoutPage: React.FC = () => {
                 {/* Show form if no address selected, editing, or guest checkout */}
                 {showAddressForm && (
                   <div className="space-y-4 sm:space-y-6">
-                  {/* First Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name*
-                    </label>
-                    <Input
-                      name="firstName"
-                      value={billingDetails.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      className={cn(
-                        "w-full",
-                        getFieldError('firstName') && "border-red-500 focus:ring-red-500"
+                    {/* First Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name*
+                      </label>
+                      <Input
+                        name="firstName"
+                        value={billingDetails.firstName}
+                        onChange={(e) =>
+                          handleInputChange("firstName", e.target.value)
+                        }
+                        className={cn(
+                          "w-full",
+                          getFieldError("firstName") &&
+                            "border-red-500 focus:ring-red-500"
+                        )}
+                        required
+                      />
+                      {getFieldError("firstName") && (
+                        <div className="flex items-center mt-1 text-sm text-red-600">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {getFieldError("firstName")}
+                        </div>
                       )}
-                      required
-                    />
-                    {getFieldError('firstName') && (
-                      <div className="flex items-center mt-1 text-sm text-red-600">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {getFieldError('firstName')}
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Last Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name
-                    </label>
-                    <Input
-                      name="lastName"
-                      value={billingDetails.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
+                    {/* Last Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name
+                      </label>
+                      <Input
+                        name="lastName"
+                        value={billingDetails.lastName}
+                        onChange={(e) =>
+                          handleInputChange("lastName", e.target.value)
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  {/* Company Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Name
-                    </label>
-                    <Input
-                      value={billingDetails.companyName}
-                      onChange={(e) => handleInputChange('companyName', e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
+                    {/* Company Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Company Name
+                      </label>
+                      <Input
+                        value={billingDetails.companyName}
+                        onChange={(e) =>
+                          handleInputChange("companyName", e.target.value)
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  {/* Street Address */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Street Address*
-                    </label>
-                    <Input
-                      name="streetAddress"
-                      value={billingDetails.streetAddress}
-                      onChange={(e) => handleInputChange('streetAddress', e.target.value)}
-                      className={cn(
-                        "w-full",
-                        getFieldError('streetAddress') && "border-red-500 focus:ring-red-500"
+                    {/* Street Address */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Street Address*
+                      </label>
+                      <Input
+                        name="streetAddress"
+                        value={billingDetails.streetAddress}
+                        onChange={(e) =>
+                          handleInputChange("streetAddress", e.target.value)
+                        }
+                        className={cn(
+                          "w-full",
+                          getFieldError("streetAddress") &&
+                            "border-red-500 focus:ring-red-500"
+                        )}
+                        required
+                      />
+                      {getFieldError("streetAddress") && (
+                        <div className="flex items-center mt-1 text-sm text-red-600">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {getFieldError("streetAddress")}
+                        </div>
                       )}
-                      required
-                    />
-                    {getFieldError('streetAddress') && (
-                      <div className="flex items-center mt-1 text-sm text-red-600">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {getFieldError('streetAddress')}
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Apartment */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Apartment, floor, etc. (optional)
-                    </label>
-                    <Input
-                      value={billingDetails.apartment}
-                      onChange={(e) => handleInputChange('apartment', e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
+                    {/* Apartment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Apartment, floor, etc. (optional)
+                      </label>
+                      <Input
+                        value={billingDetails.apartment}
+                        onChange={(e) =>
+                          handleInputChange("apartment", e.target.value)
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  {/* Town/City */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Town/City*
-                    </label>
-                    <Input
-                      name="townCity"
-                      value={billingDetails.townCity}
-                      onChange={(e) => handleInputChange('townCity', e.target.value)}
-                      className={cn(
-                        "w-full",
-                        getFieldError('townCity') && "border-red-500 focus:ring-red-500"
+                    {/* Town/City */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Town/City*
+                      </label>
+                      <Input
+                        name="townCity"
+                        value={billingDetails.townCity}
+                        onChange={(e) =>
+                          handleInputChange("townCity", e.target.value)
+                        }
+                        className={cn(
+                          "w-full",
+                          getFieldError("townCity") &&
+                            "border-red-500 focus:ring-red-500"
+                        )}
+                        required
+                      />
+                      {getFieldError("townCity") && (
+                        <div className="flex items-center mt-1 text-sm text-red-600">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {getFieldError("townCity")}
+                        </div>
                       )}
-                      required
-                    />
-                    {getFieldError('townCity') && (
-                      <div className="flex items-center mt-1 text-sm text-red-600">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {getFieldError('townCity')}
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Phone Number */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number*
-                    </label>
-                    <Input
-                      name="phoneNumber"
-                      type="tel"
-                      value={billingDetails.phoneNumber}
-                      onChange={(e) => handlePhoneChange(e.target.value)}
-                      className={cn(
-                        "w-full",
-                        getFieldError('phoneNumber') && "border-red-500 focus:ring-red-500"
+                    {/* Phone Number */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number*
+                      </label>
+                      <Input
+                        name="phoneNumber"
+                        type="tel"
+                        value={billingDetails.phoneNumber}
+                        onChange={(e) => handlePhoneChange(e.target.value)}
+                        className={cn(
+                          "w-full",
+                          getFieldError("phoneNumber") &&
+                            "border-red-500 focus:ring-red-500"
+                        )}
+                        placeholder="(555) 123-4567"
+                        required
+                      />
+                      {getFieldError("phoneNumber") && (
+                        <div className="flex items-center mt-1 text-sm text-red-600">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {getFieldError("phoneNumber")}
+                        </div>
                       )}
-                      placeholder="(555) 123-4567"
-                      required
-                    />
-                    {getFieldError('phoneNumber') && (
-                      <div className="flex items-center mt-1 text-sm text-red-600">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {getFieldError('phoneNumber')}
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Email Address */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address*
-                    </label>
-                    <Input
-                      name="emailAddress"
-                      type="email"
-                      value={billingDetails.emailAddress}
-                      onChange={(e) => handleInputChange('emailAddress', e.target.value)}
-                      className={cn(
-                        "w-full",
-                        getFieldError('emailAddress') && "border-red-500 focus:ring-red-500"
+                    {/* Email Address */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address*
+                      </label>
+                      <Input
+                        name="emailAddress"
+                        type="email"
+                        value={billingDetails.emailAddress}
+                        onChange={(e) =>
+                          handleInputChange("emailAddress", e.target.value)
+                        }
+                        className={cn(
+                          "w-full",
+                          getFieldError("emailAddress") &&
+                            "border-red-500 focus:ring-red-500"
+                        )}
+                        placeholder="john@example.com"
+                        required
+                      />
+                      {getFieldError("emailAddress") && (
+                        <div className="flex items-center mt-1 text-sm text-red-600">
+                          <AlertCircle className="w-4 h-4 mr-1" />
+                          {getFieldError("emailAddress")}
+                        </div>
                       )}
-                      placeholder="john@example.com"
-                      required
-                    />
-                    {getFieldError('emailAddress') && (
-                      <div className="flex items-center mt-1 text-sm text-red-600">
-                        <AlertCircle className="w-4 h-4 mr-1" />
-                        {getFieldError('emailAddress')}
-                      </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Save address options */}
-                  {isAuthenticated && (showAddressForm || isAddingNewAddress) && (
-                    <div className="flex items-center justify-between pt-4">
-                      <div className="flex items-center space-x-2">
+                    {/* Save address options */}
+                    {isAuthenticated &&
+                      (showAddressForm || isAddingNewAddress) && (
+                        <div className="flex items-center justify-between pt-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              id="save-address"
+                              name="save-address"
+                              type="checkbox"
+                              checked={saveInfo}
+                              onChange={(e) => setSaveInfo(e.target.checked)}
+                              className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                            />
+                            <label
+                              htmlFor="save-address"
+                              className="text-sm text-gray-700"
+                            >
+                              {isAddingNewAddress
+                                ? "Save as new address"
+                                : "Update my saved address"}
+                            </label>
+                          </div>
+
+                          {isAddingNewAddress && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleSaveNewAddress}
+                              className="flex items-center gap-1"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Save Address
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
+                    {/* Guest save info checkbox */}
+                    {!isAuthenticated && checkoutAsGuest && (
+                      <div className="flex items-center space-x-2 pt-4">
                         <input
-                          id="save-address"
-                          name="save-address"
+                          id="save-info"
+                          name="save-info"
                           type="checkbox"
                           checked={saveInfo}
                           onChange={(e) => setSaveInfo(e.target.checked)}
                           className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
                         />
-                        <label htmlFor="save-address" className="text-sm text-gray-700">
-                          {isAddingNewAddress ? 'Save as new address' : 'Update my saved address'}
+                        <label
+                          htmlFor="save-info"
+                          className="text-sm text-gray-700"
+                        >
+                          Save this information for faster check-out next time
                         </label>
                       </div>
-                      
-                      {isAddingNewAddress && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={handleSaveNewAddress}
-                          className="flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Save Address
+                    )}
+
+                    {/* Guest checkout account creation suggestion */}
+                    {!isAuthenticated && checkoutAsGuest && (
+                      <div className="pt-4 p-4 bg-gray-50 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Create an account?
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-3">
+                          Save your information and get faster checkout, order
+                          tracking, and exclusive offers.
+                        </p>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to="/auth/register?redirect=/checkout">
+                            Create Account
+                          </Link>
                         </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Guest save info checkbox */}
-                  {!isAuthenticated && checkoutAsGuest && (
-                    <div className="flex items-center space-x-2 pt-4">
-                      <input
-                        id="save-info"
-                        name="save-info"
-                        type="checkbox"
-                        checked={saveInfo}
-                        onChange={(e) => setSaveInfo(e.target.checked)}
-                        className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
-                      />
-                      <label htmlFor="save-info" className="text-sm text-gray-700">
-                        Save this information for faster check-out next time
-                      </label>
-                    </div>
-                  )}
-
-                  {/* Guest checkout account creation suggestion */}
-                  {!isAuthenticated && checkoutAsGuest && (
-                    <div className="pt-4 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-2">Create an account?</h4>
-                      <p className="text-sm text-gray-600 mb-3">
-                        Save your information and get faster checkout, order tracking, and exclusive offers.
-                      </p>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to="/auth/register?redirect=/checkout">
-                          Create Account
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Address summary for non-form view */}
-                {isAuthenticated && selectedAddress && !showAddressForm && !showAddressSelector && (
-                  <div className="pt-4 text-sm text-muted-foreground">
-                    <p>✓ Using saved address for billing information</p>
-                  </div>
-                )}
+                {isAuthenticated &&
+                  selectedAddress &&
+                  !showAddressForm &&
+                  !showAddressSelector && (
+                    <div className="pt-4 text-sm text-muted-foreground">
+                      <p>✓ Using saved address for billing information</p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </div>
@@ -749,12 +867,13 @@ const CheckoutPage: React.FC = () => {
               showTitle={false}
             />
 
-            
             {/* Coupon Code Section */}
             <Card className="mt-6">
               <CardContent className="p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Coupon Code</h3>
-                
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Coupon Code
+                </h3>
+
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -763,7 +882,12 @@ const CheckoutPage: React.FC = () => {
                         Coupon "{appliedCoupon}" applied
                       </span>
                       <span className="text-sm text-green-600">
-                        (-{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(couponDiscount)})
+                        (-
+                        {new Intl.NumberFormat("en-NG", {
+                          style: "currency",
+                          currency: "NGN",
+                        }).format(couponDiscount)}
+                        )
                       </span>
                     </div>
                     <Button
@@ -781,9 +905,13 @@ const CheckoutPage: React.FC = () => {
                       <Input
                         placeholder="Enter coupon code"
                         value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          setCouponCode(e.target.value.toUpperCase())
+                        }
                         className="flex-1"
-                        onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleApplyCoupon()
+                        }
                       />
                       <Button
                         variant="outline"
@@ -793,14 +921,14 @@ const CheckoutPage: React.FC = () => {
                         Apply
                       </Button>
                     </div>
-                    
+
                     {couponError && (
                       <div className="flex items-center gap-2 text-sm text-red-600">
                         <AlertCircle className="w-4 h-4" />
                         {couponError}
                       </div>
                     )}
-                    
+
                     <p className="text-xs text-muted-foreground">
                       Try: SAVE1000, DISCOUNT500, WELCOME200
                     </p>
@@ -813,7 +941,9 @@ const CheckoutPage: React.FC = () => {
               <CardContent className="p-6">
                 {/* Payment Methods */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Payment Method</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Payment Method
+                  </h3>
                   <div className="space-y-3">
                     {paymentMethods.map((method) => (
                       <label
@@ -835,9 +965,11 @@ const CheckoutPage: React.FC = () => {
                         />
                         <div className="flex items-center space-x-2">
                           {method.icon}
-                          <span className="text-sm font-medium">{method.name}</span>
+                          <span className="text-sm font-medium">
+                            {method.name}
+                          </span>
                         </div>
-                        {method.id === 'bank-card' && (
+                        {method.id === "bank-card" && (
                           <div className="ml-auto flex space-x-1">
                             <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">
                               VISA
@@ -852,8 +984,6 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
-
-
                 {/* Place Order Button */}
                 <Button
                   onClick={handlePlaceOrder}
@@ -866,7 +996,7 @@ const CheckoutPage: React.FC = () => {
                       <span>Processing...</span>
                     </div>
                   ) : (
-                    'Place Order'
+                    "Place Order"
                   )}
                 </Button>
               </CardContent>

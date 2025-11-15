@@ -19,12 +19,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
   className,
 }) => {
   const { addToCart, isOperating } = useCart();
-  const { addItem: addToWishlist, removeItem: removeFromWishlist, isItemInWishlist } = useWishlistStore();
+  const {
+    addItem: addToWishlist,
+    removeItem: removeFromWishlist,
+    isItemInWishlist,
+  } = useWishlistStore();
   const [imageLoading, setImageLoading] = useState(true);
-  
+  const [addedToCart, setAddedToCart] = useState(false);
+
   const isWishlisted = isItemInWishlist(product.id);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -81,13 +86,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
       tags: "tags" in product ? product.tags : [],
     } as Product;
 
-    addToCart(productForCart, 1);
+    try {
+      await addToCart(productForCart, 1);
+      setAddedToCart(true); // Show feedback
+      setTimeout(() => setAddedToCart(false), 1500); // Hide after 1.5s
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+    }
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Convert ProductSummary to Product for wishlist
     const productForWishlist: Product = {
       ...product,
@@ -258,10 +269,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     variant="ghost"
                     className="w-full text-white bg-black hover:bg-black hover:text-white backdrop-blur-sm font-medium rounded-none"
                     onClick={handleAddToCart}
-                    disabled={isOperating}
+                    disabled={isOperating || addedToCart}
                   >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {isOperating ? "Adding..." : "Add To Cart"}
+                    {addedToCart ? (
+                      <> Added to Cart</>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        {isOperating ? "Adding..." : "Add To Cart"}
+                      </>
+                    )}
                   </Button>
                 </div>
               )}
@@ -276,7 +293,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 {product.storeName}
               </p>
             )}
-            
+
             {/* Brand (fallback if no store name) */}
             {!product.storeName && "brand" in product && product.brand && (
               <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
