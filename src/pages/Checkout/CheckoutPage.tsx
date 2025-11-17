@@ -41,7 +41,6 @@ import {
 import { apiErrorUtils } from "../../utils/api-errors";
 import { cn } from "../../lib/utils";
 import type { UserAddress } from "../../types";
-import { useNotification } from "@/hooks/useNotification";
 
 interface PaymentMethod {
   id: string;
@@ -51,7 +50,6 @@ interface PaymentMethod {
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { notify } = useNotification();
 
   const { items, totalPrice, clearAllItems } = useCart();
   const { isAuthenticated, user } = useAuthStore();
@@ -366,7 +364,7 @@ const CheckoutPage: React.FC = () => {
 
         // FALLBACK redirectUrl
         if (response.redirectUrl) {
-          console.log("➡️ Redirecting:", response.redirectUrl);
+          console.log("Redirecting:", response.redirectUrl);
 
           await clearAllItems();
           window.location.href = response.redirectUrl;

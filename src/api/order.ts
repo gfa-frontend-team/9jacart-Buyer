@@ -1,4 +1,5 @@
-import { apiClient } from './client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { apiClient } from "./client";
 
 // Order API request types
 export interface BillingDetails {
@@ -40,7 +41,14 @@ export interface OrderData {
   createdAt: string;
 }
 
+export interface paymentData {
+  authorizationUrl: string;
+}
+
 export interface CheckoutResponse {
+  orderNo: string;
+  paymentData: paymentData;
+  redirectUrl: string
   status: number;
   error: boolean;
   message: string;
@@ -51,41 +59,50 @@ export interface CheckoutResponse {
 export const orderApi = {
   // Place order (requires Bearer token)
   checkout: async (orderData: CheckoutRequest): Promise<CheckoutResponse> => {
-    return apiClient.post<CheckoutResponse>('/order/checkout', orderData, undefined, true);
+    return apiClient.post<CheckoutResponse>(
+      "/order/checkout",
+      orderData,
+      undefined,
+      true
+    );
   },
 };
 
 // Helper functions for data transformation
 export const transformBillingDetails = (billingForm: any): BillingDetails => ({
-  firstName: billingForm.lastName 
+  firstName: billingForm.lastName
     ? `${billingForm.firstName} ${billingForm.lastName}`.trim()
     : billingForm.firstName,
-  companyName: billingForm.companyName || '',
+  companyName: billingForm.companyName || "",
   streetAddress: billingForm.streetAddress,
-  apartment: billingForm.apartment || '',
+  apartment: billingForm.apartment || "",
   city: billingForm.townCity, // Note: townCity → city mapping
   phoneNumber: billingForm.phoneNumber,
   emailAddress: billingForm.emailAddress,
 });
 
-export const transformCartItemsToOrderItems = (cartItems: any[]): OrderItem[] => {
-  return cartItems.map(item => ({
+export const transformCartItemsToOrderItems = (
+  cartItems: any[]
+): OrderItem[] => {
+  return cartItems.map((item) => ({
     productId: item.product.id,
-    vendor: item.vendor || '', // Use server vendor or empty string
+    vendor: item.vendor || "", // Use server vendor or empty string
     quantity: item.quantity,
-    price: item.price || (typeof item.product.price === 'number' 
-      ? item.product.price 
-      : item.product.price.current),
+    price:
+      item.price ||
+      (typeof item.product.price === "number"
+        ? item.product.price
+        : item.product.price.current),
   }));
 };
 
 export const mapPaymentMethodToApi = (uiPaymentMethod: string): string => {
   const paymentMethodMap: Record<string, string> = {
-    'bank-card': 'card',
-    'cash-on-delivery': 'cod',
-    'buy-now-pay-later': 'bnpl',
-    'emergency-credit': 'credit',
+    "bank-card": "card",
+    "cash-on-delivery": "cod",
+    "buy-now-pay-later": "bnpl",
+    "emergency-credit": "credit",
   };
-  
+
   return paymentMethodMap[uiPaymentMethod] || uiPaymentMethod;
 };
