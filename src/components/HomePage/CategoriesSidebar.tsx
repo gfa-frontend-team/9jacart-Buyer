@@ -13,7 +13,6 @@ interface Category {
 
 interface CategoriesSidebarProps {
   categories: Category[];
-  maxItems?: number;
 }
 
 // Define subcategory service options
@@ -23,10 +22,7 @@ const subcategoryOptions: Record<string, string[]> = {
   // Add more subcategory options as needed
 };
 
-const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
-  categories,
-  maxItems = 12,
-}) => {
+const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories }) => {
   const navigate = useNavigate();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
