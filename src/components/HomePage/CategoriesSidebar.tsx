@@ -13,7 +13,6 @@ interface Category {
 
 interface CategoriesSidebarProps {
   categories: Category[];
-  maxItems?: number;
 }
 
 // Define subcategory service options
@@ -23,10 +22,7 @@ const subcategoryOptions: Record<string, string[]> = {
   // Add more subcategory options as needed
 };
 
-const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
-  categories,
-  maxItems = 12,
-}) => {
+const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories }) => {
   const navigate = useNavigate();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -41,10 +37,10 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
     options: [],
   });
 
-  // Filter main categories (level 1)
-  const mainCategories = categories
-    .filter((cat) => cat.level === 1)
-    .slice(0, maxItems);
+  // Filter main categories (level 1) - show all, but limit visible height to ~9 items
+  const allMainCategories = categories.filter((cat) => cat.level === 1);
+  const mainCategories = allMainCategories;
+  const hasMoreCategories = allMainCategories.length > 9;
 
   // Get subcategories for a given parent
   const getSubcategories = (parentId: string) => {
@@ -148,9 +144,11 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block lg:col-span-1 border-r border-gray-200 pr-4 lg:pr-6">
         <div className="sticky top-4">
-          <ul className="space-y-2 lg:space-y-3">
-            {mainCategories.map((category) => renderCategoryItem(category))}
-          </ul>
+          <div className={`${hasMoreCategories ? 'max-h-[600px] overflow-y-auto scrollbar-hide' : ''}`}>
+            <ul className="space-y-2 lg:space-y-3">
+              {mainCategories.map((category) => renderCategoryItem(category))}
+            </ul>
+          </div>
         </div>
       </aside>
 
