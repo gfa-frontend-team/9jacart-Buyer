@@ -152,7 +152,7 @@ const WishlistItemComponent: React.FC<WishlistItemProps> = ({ item }) => {
                     </Link>
                     {product.storeName && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        Sold by: <span className="font-medium">{product.storeName}</span>
+                        <span className="font-medium">{product.storeName}</span>
                       </p>
                     )}
                     {product.brand && (
