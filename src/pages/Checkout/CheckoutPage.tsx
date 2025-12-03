@@ -51,7 +51,7 @@ interface PaymentMethod {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { items, totalPrice, clearAllItems } = useCart();
+  const { items, totalPrice, clearAllItems, isLoading } = useCart();
   const { isAuthenticated, user } = useAuthStore();
   const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
     useProfile();
@@ -73,6 +73,7 @@ const CheckoutPage: React.FC = () => {
     null
   );
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
+  const [addressSavedSuccess, setAddressSavedSuccess] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -167,11 +168,13 @@ const CheckoutPage: React.FC = () => {
   const handleEditAddress = () => {
     setShowAddressForm(true);
     setShowAddressSelector(false);
+    setAddressSavedSuccess(false);
   };
 
   const handleChangeAddress = () => {
     setShowAddressSelector(true);
     setShowAddressForm(false);
+    setAddressSavedSuccess(false);
   };
 
   const handleSelectAddress = (address: UserAddress) => {
@@ -192,6 +195,7 @@ const CheckoutPage: React.FC = () => {
     setIsAddingNewAddress(true);
     setShowAddressSelector(false);
     setShowAddressForm(true);
+    setAddressSavedSuccess(false);
     // Clear form for new address
     setBillingDetails((prev) => ({
       ...prev,
@@ -216,17 +220,18 @@ const CheckoutPage: React.FC = () => {
       };
 
       await addAddress(newAddress);
-      setIsAddingNewAddress(false);
-      setShowAddressForm(false);
-
-      // Refresh addresses and select the new one
-      const addresses = getAddresses();
-      const newAddressFromList = addresses[addresses.length - 1]; // Assuming it's the last one
-      if (newAddressFromList) {
-        setSelectedAddress(newAddressFromList);
-      }
+      
+      // Show success message and keep form open
+      setAddressSavedSuccess(true);
+      setShowAddressForm(true); // Explicitly keep form open
+      setShowAddressSelector(false); // Don't show address selector
+      // Keep isAddingNewAddress true to show buttons
+      
+      // Refresh addresses
+      getAddresses();
     } catch (error) {
       console.error("Failed to save address:", error);
+      setAddressSavedSuccess(false);
     }
   };
 
@@ -410,7 +415,26 @@ const CheckoutPage: React.FC = () => {
     { label: "CheckOut", isCurrentPage: true },
   ];
 
-  if (items.length === 0) {
+  // Show loading state while cart is being fetched
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Breadcrumb items={breadcrumbItems} className="mb-8" />
+
+          <div className="text-center py-16">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-600">Loading your cart...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Only show empty cart message after loading is complete
+  if (!isLoading && items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -765,38 +789,39 @@ const CheckoutPage: React.FC = () => {
                     {/* Save address options */}
                     {isAuthenticated &&
                       (showAddressForm || isAddingNewAddress) && (
-                        <div className="flex items-center justify-between pt-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              id="save-address"
-                              name="save-address"
-                              type="checkbox"
-                              checked={saveInfo}
-                              onChange={(e) => setSaveInfo(e.target.checked)}
-                              className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
-                            />
-                            <label
-                              htmlFor="save-address"
-                              className="text-sm text-gray-700"
-                            >
-                              {isAddingNewAddress
-                                ? "Save as new address"
-                                : "Update my saved address"}
-                            </label>
-                          </div>
-
-                          {isAddingNewAddress && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={handleSaveNewAddress}
-                              className="flex items-center gap-1"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Save Address
-                            </Button>
+                        <div className="pt-4">
+                          {addressSavedSuccess && (
+                            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                              <p className="text-sm text-green-800">
+                                Your address have being saved, you can access it on your profile
+                              </p>
+                            </div>
                           )}
+                          <div className="flex items-center justify-between">
+                            {isAddingNewAddress && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSaveNewAddress}
+                                className="flex items-center gap-1"
+                              >
+                                <Plus className="w-3 h-3" />
+                                Save Address
+                              </Button>
+                            )}
+
+                            {isAddingNewAddress && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={handleChangeAddress}
+                                className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                Choose existing Address
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
 

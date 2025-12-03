@@ -3,7 +3,7 @@ import { Button, Input, Alert } from '../UI';
 import { useProfile } from '../../hooks/api/useProfile';
 import { profileUpdateSchema, passwordUpdateSchema } from '../../lib/validations';
 import type { ProfileUpdateData, PasswordUpdateData } from '../../types';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Trash2 } from 'lucide-react';
 
 const ProfileSection: React.FC = () => {
   const { profile, isLoading, error, fetchProfile, updateProfile, updatePassword } = useProfile();
@@ -139,6 +139,12 @@ const ProfileSection: React.FC = () => {
     setSuccessMessage('');
   };
 
+  const handleDeleteAddress = (addressId: string) => {
+    // TODO: Implement delete address endpoint when ready
+    console.log('Delete address:', addressId);
+    // This will be implemented when the endpoint is ready
+  };
+
   // Show loading state
   if (isLoading && !profile) {
     return (
@@ -226,11 +232,23 @@ const ProfileSection: React.FC = () => {
             <label className="text-sm font-medium text-foreground">Addresses</label>
             <div className="space-y-2">
               {profile.addresses.map((address) => (
-                <div key={address.id} className="p-3 bg-muted rounded-md text-sm">
-                  <div className="font-medium">{address.streetAddress}</div>
-                  <div className="text-muted-foreground">
-                    {address.city}, {address.state} {address.zipCode}, {address.country}
-                    {address.isDefault && <span className="ml-2 text-primary">(Default)</span>}
+                <div key={address.id} className="p-3 bg-muted rounded-md text-sm relative">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="font-medium">{address.streetAddress}</div>
+                      <div className="text-muted-foreground">
+                        {address.city}, {address.state} {address.zipCode}, {address.country}
+                        {address.isDefault && <span className="ml-2 text-primary">(Default)</span>}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteAddress(address.id)}
+                      className="flex-shrink-0 p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Delete address"
+                      title="Delete address"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}

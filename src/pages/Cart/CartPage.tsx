@@ -55,7 +55,40 @@ const CartPage: React.FC = () => {
     }
   };
 
-  if (items.length === 0) {
+  // Show loading state while cart is being fetched
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          </div>
+
+          {/* Loading State */}
+          <Card className="max-w-md mx-auto text-center">
+            <CardContent className="p-12">
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-600">Loading your cart...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Only show empty cart message after loading is complete
+  if (!isLoading && items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-8">

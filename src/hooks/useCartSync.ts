@@ -16,10 +16,25 @@ export const useCartSync = () => {
     isAuthenticated: false,
     userId: null,
   });
+  
+  // Track if initial load has been done
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     const currentUserId = user?.id || null;
     const prevState = prevAuthState.current;
+    
+    // Initial load: if user is authenticated and cart hasn't been loaded yet
+    if (!hasInitialized.current && isAuthenticated && user) {
+      hasInitialized.current = true;
+      console.log('🔄 Initial load: User is authenticated, loading cart...');
+      loadServerCart().catch(console.error);
+      prevAuthState.current = {
+        isAuthenticated,
+        userId: currentUserId,
+      };
+      return;
+    }
     
     // Only act on actual auth state changes
     if (prevState.isAuthenticated !== isAuthenticated || prevState.userId !== currentUserId) {
