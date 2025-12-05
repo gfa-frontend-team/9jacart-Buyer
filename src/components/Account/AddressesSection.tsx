@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, MapPin, AlertCircle } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Alert, Loading } from '../UI';
+import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Loading } from '../UI';
 import { useProfile } from '../../hooks/api/useProfile';
+import { useNotificationContext } from '../../providers/NotificationProvider';
 import type { UserAddress } from '../../types';
 
 const AddressesSection: React.FC = () => {
@@ -9,11 +10,15 @@ const AddressesSection: React.FC = () => {
     profile, 
     isLoading, 
     error, 
+    successMessage,
     fetchProfile, 
     addAddress, 
-    updateAddress, 
+    updateAddress,
+    deleteAddress,
     getAddresses 
   } = useProfile();
+  
+  const { showNotification } = useNotificationContext();
   
   const addresses = getAddresses();
   
@@ -35,6 +40,20 @@ const AddressesSection: React.FC = () => {
       fetchProfile();
     }
   }, [profile, fetchProfile]);
+
+  // Show success notification when API returns success message
+  useEffect(() => {
+    if (successMessage) {
+      showNotification(successMessage, 'success', 5000);
+    }
+  }, [successMessage, showNotification]);
+
+  // Show error notification when API returns error
+  useEffect(() => {
+    if (error) {
+      showNotification(error, 'error', 5000);
+    }
+  }, [error, showNotification]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -110,10 +129,14 @@ const AddressesSection: React.FC = () => {
     });
   };
 
-  const handleDelete = (_id: string) => {
-    // Note: Delete endpoint not available in API yet
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this address?')) {
-      alert('Delete functionality will be available once the API endpoint is implemented.');
+      try {
+        await deleteAddress(id);
+      } catch (error) {
+        // Error is handled by the hook and displayed in the UI
+        console.error('Failed to delete address:', error);
+      }
     }
   };
 
@@ -232,86 +255,95 @@ const AddressesSection: React.FC = () => {
         )}
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="w-4 h-4" />
-          <div>
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
-          </div>
-        </Alert>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {addresses.length === 0 && !isAddingNew ? (
-          <div className="md:col-span-2">
-            <Card className="border-dashed border-2">
-              <CardContent className="p-8 text-center">
-                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No addresses yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Add your first address to make checkout faster and easier.
-                </p>
-                <Button onClick={handleAddNew} className="flex items-center gap-2 mx-auto">
-                  <Plus className="w-4 h-4" />
-                  Add Your First Address
-                </Button>
-              </CardContent>
-            </Card>
+      {addresses.length === 0 && !isAddingNew ? (
+        <Card className="border-dashed border-2">
+          <CardContent className="p-8 text-center">
+            <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No addresses yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Add your first address to make checkout faster and easier.
+            </p>
+            <Button onClick={handleAddNew} className="flex items-center gap-2 mx-auto">
+              <Plus className="w-4 h-4" />
+              Add Your First Address
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-medium text-foreground">Street Address</th>
+                  <th className="text-left py-3 px-4 font-medium text-foreground">City</th>
+                  <th className="text-left py-3 px-4 font-medium text-foreground">State</th>
+                  <th className="text-left py-3 px-4 font-medium text-foreground">ZIP Code</th>
+                  <th className="text-left py-3 px-4 font-medium text-foreground">Country</th>
+                  <th className="text-center py-3 px-4 font-medium text-foreground">Default</th>
+                  <th className="text-center py-3 px-4 font-medium text-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {addresses.map((address) => (
+                  <tr 
+                    key={address.id} 
+                    className="border-b border-border hover:bg-muted/50 transition-colors"
+                  >
+                    <td className="py-4 px-4 text-foreground">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground mt-1 flex-shrink-0" />
+                        <span className="font-medium">{address.streetAddress}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-muted-foreground">{address.city}</td>
+                    <td className="py-4 px-4 text-muted-foreground">{address.state}</td>
+                    <td className="py-4 px-4 text-muted-foreground">{address.zipCode}</td>
+                    <td className="py-4 px-4 text-muted-foreground">{address.country}</td>
+                    <td className="py-4 px-4 text-center">
+                      {address.isDefault && (
+                        <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                          Default
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(address)}
+                          disabled={editingId === address.id || isSubmitting}
+                          title="Edit address"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(address.id)}
+                          disabled={isSubmitting}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Delete address"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : (
-          addresses.map((address) => (
-          <Card key={address.id} className="relative">
-            <CardContent className="p-6">
-              {address.isDefault && (
-                <div className="absolute top-4 right-4">
-                  <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                    Default
-                  </span>
-                </div>
-              )}
-              
-              <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-muted-foreground mt-1 flex-shrink-0" />
-                <div className="flex-1 space-y-1">
-                  <p className="font-medium text-foreground">
-                    {address.streetAddress}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {address.city}, {address.state} {address.zipCode}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {address.country}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(address)}
-                  disabled={editingId === address.id}
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(address.id)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          ))
-        )}
-        
-        {(isAddingNew || editingId) && renderAddressForm()}
-      </div>
+          
+          {(isAddingNew || editingId) && (
+            <div className="mt-6">
+              {renderAddressForm()}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

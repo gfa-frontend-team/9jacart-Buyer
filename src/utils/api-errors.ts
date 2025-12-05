@@ -6,28 +6,38 @@ export const apiErrorUtils = {
   getErrorMessage: (error: unknown): string => {
     if (error instanceof ApiError) {
       // Handle specific API error responses
-      if (error.data && typeof error.data === 'object' && 'messages' in error.data) {
-        const messages = (error.data as Record<string, unknown>).messages as Record<string, string>;
+      if (error.data && typeof error.data === 'object') {
+        const data = error.data as Record<string, unknown>;
         
-        // Handle field-specific errors
-        if (messages.emailAddress) {
-          return messages.emailAddress;
+        // Check for direct message field in error data
+        if (data.message && typeof data.message === 'string') {
+          return data.message;
         }
-        if (messages.firstName) {
-          return messages.firstName;
-        }
-        if (messages.lastName) {
-          return messages.lastName;
-        }
-        if (messages.currentPassword) {
-          return messages.currentPassword;
-        }
-        if (messages.error) {
-          return messages.error;
+        
+        // Handle messages object with field-specific errors
+        if ('messages' in data && data.messages && typeof data.messages === 'object') {
+          const messages = data.messages as Record<string, string>;
+          
+          // Handle field-specific errors
+          if (messages.emailAddress) {
+            return messages.emailAddress;
+          }
+          if (messages.firstName) {
+            return messages.firstName;
+          }
+          if (messages.lastName) {
+            return messages.lastName;
+          }
+          if (messages.currentPassword) {
+            return messages.currentPassword;
+          }
+          if (messages.error) {
+            return messages.error;
+          }
         }
       }
       
-      // Handle general API errors
+      // Handle general API errors (from ApiError.message)
       if (error.message) {
         return error.message;
       }

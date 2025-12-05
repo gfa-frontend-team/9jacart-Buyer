@@ -10,6 +10,7 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { updateProfile: updateAuthProfile } = useAuthStore();
 
   // Fetch user profile
@@ -118,6 +119,7 @@ export const useProfile = () => {
   const addAddress = useCallback(async (addressData: Omit<UserAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> => {
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const apiData = transformAddressToApi(
@@ -129,7 +131,12 @@ export const useProfile = () => {
         addressData.isDefault
       );
 
-      await addressApi.addAddress(apiData);
+      const response = await addressApi.addAddress(apiData);
+      
+      // Capture success message from API
+      if (response.message) {
+        setSuccessMessage(response.message);
+      }
       
       // Refresh profile data to get updated addresses
       await fetchProfile();
@@ -137,6 +144,7 @@ export const useProfile = () => {
     } catch (err) {
       const errorMessage = apiErrorUtils.getErrorMessage(err);
       setError(errorMessage);
+      setSuccessMessage(null);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -147,6 +155,7 @@ export const useProfile = () => {
   const updateAddress = useCallback(async (id: string, addressData: Omit<UserAddress, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> => {
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const apiData = transformAddressToApi(
@@ -158,7 +167,12 @@ export const useProfile = () => {
         addressData.isDefault
       );
 
-      await addressApi.editAddress(id, apiData);
+      const response = await addressApi.editAddress(id, apiData);
+      
+      // Capture success message from API
+      if (response.message) {
+        setSuccessMessage(response.message);
+      }
       
       // Refresh profile data to get updated addresses
       await fetchProfile();
@@ -166,6 +180,34 @@ export const useProfile = () => {
     } catch (err) {
       const errorMessage = apiErrorUtils.getErrorMessage(err);
       setError(errorMessage);
+      setSuccessMessage(null);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchProfile]);
+
+  // Delete address
+  const deleteAddress = useCallback(async (id: string): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await addressApi.deleteAddress(id);
+      
+      // Capture success message from API
+      if (response.message) {
+        setSuccessMessage(response.message);
+      }
+      
+      // Refresh profile data to get updated addresses
+      await fetchProfile();
+
+    } catch (err) {
+      const errorMessage = apiErrorUtils.getErrorMessage(err);
+      setError(errorMessage);
+      setSuccessMessage(null);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -188,11 +230,13 @@ export const useProfile = () => {
     profile,
     isLoading,
     error,
+    successMessage,
     fetchProfile,
     updateProfile,
     updatePassword,
     addAddress,
     updateAddress,
+    deleteAddress,
     getDefaultAddress,
     getAddresses,
   };

@@ -106,16 +106,16 @@ const CheckoutPage: React.FC = () => {
 
       if (defaultAddress) {
         setSelectedAddress(defaultAddress);
-        // Auto-fill form with default address
+        // Auto-fill form with default address - ensure all required fields are populated
         setBillingDetails((prev) => ({
           ...prev,
-          firstName: user?.firstName || "",
-          lastName: user?.lastName || "",
-          emailAddress: user?.email || "",
-          phoneNumber: user?.phone || "",
-          streetAddress: defaultAddress.streetAddress,
-          townCity: defaultAddress.city,
-          apartment: "",
+          firstName: user?.firstName || profile.firstName || "",
+          lastName: user?.lastName || profile.lastName || "",
+          emailAddress: user?.email || profile.email || "",
+          phoneNumber: user?.phone || profile.phone || "",
+          streetAddress: defaultAddress.streetAddress || "",
+          townCity: defaultAddress.city || "",
+          apartment: prev.apartment || "",
           companyName: "",
         }));
         setShowAddressForm(false); // Hide form since we have default address
@@ -124,10 +124,10 @@ const CheckoutPage: React.FC = () => {
         setShowAddressForm(true);
         setBillingDetails((prev) => ({
           ...prev,
-          firstName: user?.firstName || "",
-          lastName: user?.lastName || "",
-          emailAddress: user?.email || "",
-          phoneNumber: user?.phone || "",
+          firstName: user?.firstName || profile.firstName || "",
+          lastName: user?.lastName || profile.lastName || "",
+          emailAddress: user?.email || profile.email || "",
+          phoneNumber: user?.phone || profile.phone || "",
         }));
       }
     } else if (!isAuthenticated && checkoutAsGuest) {
@@ -179,13 +179,17 @@ const CheckoutPage: React.FC = () => {
 
   const handleSelectAddress = (address: UserAddress) => {
     setSelectedAddress(address);
-    // Update billing details with selected address
+    // Update billing details with selected address - ensure all fields are populated
     setBillingDetails((prev) => ({
       ...prev,
-      streetAddress: address.streetAddress,
-      townCity: address.city,
-      apartment: "",
-      companyName: "",
+      firstName: prev.firstName || user?.firstName || profile?.firstName || "",
+      lastName: prev.lastName || user?.lastName || profile?.lastName || "",
+      emailAddress: prev.emailAddress || user?.email || profile?.email || "",
+      phoneNumber: prev.phoneNumber || user?.phone || profile?.phone || "",
+      streetAddress: address.streetAddress || "",
+      townCity: address.city || "",
+      apartment: prev.apartment || "",
+      companyName: prev.companyName || "",
     }));
     setShowAddressSelector(false);
     setShowAddressForm(false);
@@ -296,34 +300,47 @@ const CheckoutPage: React.FC = () => {
   };
 
   const handlePlaceOrder = async () => {
+    // Check if cart is empty first
+    if (items.length === 0) {
+      alert("Your cart is empty. Please add items to your cart before placing an order.");
+      navigate("/products");
+      return;
+    }
+
+    // Check authentication - API requires Bearer token
+    if (!isAuthenticated) {
+      alert("Please sign in to place an order. Guest checkout is not available.");
+      navigate("/auth/login?redirect=/checkout");
+      return;
+    }
+
+    // Show form if hidden and validation is needed
+    // This ensures user can see and fix any missing fields
+    if (!showAddressForm && (!billingDetails.firstName || !billingDetails.emailAddress || !billingDetails.phoneNumber)) {
+      setShowAddressForm(true);
+    }
+
     // Validate form
     const errors = validateBillingDetails(billingDetails);
 
     if (errors.length > 0) {
-      // errors.forEach((err) => {
-      //   notify({
-      //     type: "error",
-      //     message: err.message,
-      //   });
-      // });
-
       setValidationErrors(errors);
+      
+      // Show form to display errors
+      setShowAddressForm(true);
 
-      // Scroll to first error
-      const firstErrorField = document.querySelector(
-        `[name="${errors[0].field}"]`
-      );
-      firstErrorField?.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-
-    if (items.length === 0) {
-      alert("Your cart is empty");
-      return;
-    }
-
-    if (!isAuthenticated) {
-      alert("Please sign in to place an order");
+      // Scroll to first error after a brief delay to ensure form is rendered
+      setTimeout(() => {
+        const firstErrorField = document.querySelector(
+          `[name="${errors[0].field}"]`
+        );
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Focus the field
+          (firstErrorField as HTMLElement).focus();
+        }
+      }, 100);
+      
       return;
     }
 
@@ -334,6 +351,16 @@ const CheckoutPage: React.FC = () => {
       const billingData = transformBillingDetails(billingDetails);
       const orderItems = transformCartItemsToOrderItems(items);
       const paymentMethod = mapPaymentMethodToApi(selectedPayment);
+
+      // Validate order items
+      if (!orderItems || orderItems.length === 0) {
+        throw new Error("No items in order. Please add items to your cart.");
+      }
+
+      // Validate billing data
+      if (!billingData.firstName || !billingData.emailAddress || !billingData.phoneNumber || !billingData.streetAddress || !billingData.city) {
+        throw new Error("Please complete all required billing information.");
+      }
 
       const checkoutRequest = {
         billing: billingData,
@@ -362,7 +389,7 @@ const CheckoutPage: React.FC = () => {
             response.paymentData.authorizationUrl
           );
 
-          await clearAllItems(); // Optional
+          await clearAllItems();
           window.location.href = response.paymentData.authorizationUrl;
           return;
         }
@@ -388,8 +415,17 @@ const CheckoutPage: React.FC = () => {
       console.error("❌ Checkout failed:", error);
 
       const errorMessage = apiErrorUtils.getErrorMessage(error);
+      
+      // Show more detailed error message
+      const errorDetails = error instanceof Error ? error.message : errorMessage;
+      alert(`Failed to place order: ${errorDetails}\n\nPlease check your information and try again.`);
 
-      alert(`Failed to place order: ${errorMessage}`);
+      // If it's an authentication error, redirect to login
+      if (errorMessage.includes("Authentication") || errorMessage.includes("401") || errorMessage.includes("token")) {
+        setTimeout(() => {
+          navigate("/auth/login?redirect=/checkout");
+        }, 2000);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -870,8 +906,32 @@ const CheckoutPage: React.FC = () => {
                   selectedAddress &&
                   !showAddressForm &&
                   !showAddressSelector && (
-                    <div className="pt-4 text-sm text-muted-foreground">
-                      <p>✓ Using saved address for billing information</p>
+                    <div className="pt-4">
+                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-900 mb-1">
+                              ✓ Using saved address for billing information
+                            </p>
+                            <p className="text-xs text-green-700">
+                              {selectedAddress.streetAddress}, {selectedAddress.city}
+                            </p>
+                            <p className="text-xs text-green-600 mt-1">
+                              {billingDetails.emailAddress && `Email: ${billingDetails.emailAddress}`}
+                              {billingDetails.phoneNumber && ` • Phone: ${billingDetails.phoneNumber}`}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleEditAddress}
+                            className="ml-4 text-green-700 border-green-300 hover:bg-green-100"
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
               </CardContent>

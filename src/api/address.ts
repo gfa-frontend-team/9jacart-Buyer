@@ -50,6 +50,12 @@ export interface EditAddressResponse {
   };
 }
 
+export interface DeleteAddressResponse {
+  status: number;
+  error: boolean;
+  message: string;
+}
+
 // Address API endpoints
 export const addressApi = {
   // Add new address (requires Bearer token)
@@ -57,9 +63,14 @@ export const addressApi = {
     return apiClient.post<AddAddressResponse>('/buyer/address', data, undefined, true);
   },
 
-  // Edit existing address (requires Bearer token)
+  // Edit existing address (requires Bearer token) - Uses POST per API docs
   editAddress: async (id: string, data: EditAddressRequest): Promise<EditAddressResponse> => {
-    return apiClient.put<EditAddressResponse>(`/buyer/address/edit/${id}`, data, undefined, true);
+    return apiClient.post<EditAddressResponse>(`/buyer/address/edit/${id}`, data, undefined, true);
+  },
+
+  // Delete address (requires Bearer token)
+  deleteAddress: async (id: string): Promise<DeleteAddressResponse> => {
+    return apiClient.delete<DeleteAddressResponse>(`/buyer/address/delete/${id}`, undefined, true);
   },
 };
 

@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import type { Product, CartItem } from '../types';
 import { cartApi, type ApiCartItem } from '../api/cart';
+import { productsApi } from '../api/products';
 import { apiErrorUtils } from '../utils/api-errors';
+import { ApiError } from '../api/client';
 
 interface CartStore {
   // Guest cart data (in-memory only)
@@ -278,13 +280,80 @@ export const useCartStore = create<CartStore>()((set, get) => ({
       if (response.data) {
         const { items: apiItems } = response.data;
         
-        // Map API items to cart items
-        const cartItems = apiItems.map(apiItem => get()._mapApiItemToCartItem(apiItem));
+        // Verify each product exists and filter out deleted products
+        const validCartItems: CartItem[] = [];
+        const deletedProductIds: string[] = [];
         
+        // Check each cart item's product
+        for (const apiItem of apiItems) {
+          try {
+            // Try to fetch the product to verify it exists
+            const productResponse = await productsApi.getProduct(apiItem.productId);
+            
+            // Check if product actually exists
+            // Backend returns status 200 with message "No product found." and empty data array when product doesn't exist
+            const responseData = productResponse.data;
+            const isProductDeleted = 
+              // Check for empty array (API returns data: [] when product doesn't exist)
+              (Array.isArray(responseData) && responseData.length === 0) ||
+              // Check for null/undefined data
+              !responseData ||
+              // Check for message indicating product not found
+              productResponse.message?.toLowerCase().includes('no product found') ||
+              productResponse.message?.toLowerCase().includes('not found') ||
+              // Check if data is an object but missing required productId field
+              (typeof responseData === 'object' && !Array.isArray(responseData) && !('productId' in responseData));
+            
+            if (isProductDeleted) {
+              console.log(`Product ${apiItem.productId} no longer exists, removing from cart`);
+              deletedProductIds.push(apiItem.productId);
+              
+              // Remove from server cart
+              try {
+                await cartApi.removeItem({
+                  cartItemId: apiItem.cartItemId
+                });
+              } catch (removeError) {
+                console.error(`Failed to remove deleted product ${apiItem.productId} from cart:`, removeError);
+              }
+            } else {
+              // Product exists, create cart item
+              const cartItem = get()._mapApiItemToCartItem(apiItem);
+              validCartItems.push(cartItem);
+            }
+          } catch (error) {
+            // Product doesn't exist (404) or other error
+            if (error instanceof ApiError && error.status === 404) {
+              console.log(`Product ${apiItem.productId} no longer exists (404), removing from cart`);
+              deletedProductIds.push(apiItem.productId);
+              
+              // Remove from server cart
+              try {
+                await cartApi.removeItem({
+                  cartItemId: apiItem.cartItemId
+                });
+              } catch (removeError) {
+                console.error(`Failed to remove deleted product ${apiItem.productId} from cart:`, removeError);
+              }
+            } else {
+              // For other errors, still include the item but log the error
+              console.warn(`Could not verify product ${apiItem.productId}:`, error);
+              const cartItem = get()._mapApiItemToCartItem(apiItem);
+              validCartItems.push(cartItem);
+            }
+          }
+        }
+        
+        // Update state with only valid items
         set({
-          serverItems: cartItems,
+          serverItems: validCartItems,
           isLoading: false
         });
+        
+        // Log summary
+        if (deletedProductIds.length > 0) {
+          console.log(`Removed ${deletedProductIds.length} deleted product(s) from cart`);
+        }
       }
     } catch (error) {
       console.error('Failed to load server cart:', error);
