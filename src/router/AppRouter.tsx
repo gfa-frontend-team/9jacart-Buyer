@@ -171,6 +171,7 @@ import TrackOrderPage from "../pages/Orders/TrackOrderPage";
 // Account pages
 import AccountPage from "../pages/Account/AccountPage";
 import WishlistPage from "../pages/Account/WishlistPage";
+import ContactAdminPage from "../pages/Account/ContactAdminPage";
 
 // Auth pages
 import { LoginPage, RegisterPage, RegistrationSuccessPage, VerifyEmailPage } from "../pages/Auth";
@@ -291,6 +292,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <WishlistPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "contact-admin",
+        element: (
+          <ProtectedRoute>
+            <ContactAdminPage />
           </ProtectedRoute>
         ),
       },

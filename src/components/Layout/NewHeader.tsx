@@ -201,6 +201,13 @@ const NewHeader: React.FC = () => {
                             Your Wishlist{" "}
                             {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
+                          <Link
+                            to="/contact-admin"
+                            className="block px-3 py-3 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors min-h-[44px] flex items-center"
+                            onClick={(e) => handleMenuItemClick(e)}
+                          >
+                            Contact Admin
+                          </Link>
                           <hr className="my-2 border-gray-200" />
                           <button
                             onClick={(e) =>
@@ -396,6 +403,13 @@ const NewHeader: React.FC = () => {
                           >
                             Your Wishlist{" "}
                             {wishlistItems > 0 && `(${wishlistItems})`}
+                          </Link>
+                          <Link
+                            to="/contact-admin"
+                            className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
+                            onClick={(e) => handleMenuItemClick(e)}
+                          >
+                            Contact Admin
                           </Link>
                           <hr className="my-2 border-gray-200" />
                           <button
