@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Star,
   Heart,
@@ -275,30 +275,64 @@ const ProductDetailPage: React.FC = () => {
                 {product.name}
               </h1>
               <div className="flex items-center gap-2 mb-4">
-                {product.vendorLogo ? (
-                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
-                    <Image
-                      src={product.vendorLogo}
-                      alt={product.storeName || 'Vendor'}
-                      className="w-full h-full object-cover"
-                      onError={() => {
-                        console.warn('Vendor logo failed to load:', product.vendorLogo);
-                      }}
-                    />
-                  </div>
+                {product.vendorId ? (
+                  <Link 
+                    to={`/vendor/${product.vendorId}`}
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  >
+                    {product.vendorLogo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
+                        <Image
+                          src={product.vendorLogo}
+                          alt={product.storeName || 'Vendor'}
+                          className="w-full h-full object-cover"
+                          onError={() => {
+                            console.warn('Vendor logo failed to load:', product.vendorLogo);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">
+                          {product.storeName ? product.storeName.charAt(0).toUpperCase() : '9J'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium text-gray-900 hover:text-primary transition-colors">
+                        {product.storeName || '9jaCart'}
+                      </p>
+                      <p className="text-sm text-gray-500">Nigeria</p>
+                    </div>
+                  </Link>
                 ) : (
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-sm font-bold">
-                      {product.storeName ? product.storeName.charAt(0).toUpperCase() : '9J'}
-                    </span>
-                  </div>
+                  <>
+                    {product.vendorLogo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-gray-200">
+                        <Image
+                          src={product.vendorLogo}
+                          alt={product.storeName || 'Vendor'}
+                          className="w-full h-full object-cover"
+                          onError={() => {
+                            console.warn('Vendor logo failed to load:', product.vendorLogo);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-sm font-bold">
+                          {product.storeName ? product.storeName.charAt(0).toUpperCase() : '9J'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {product.storeName || '9jaCart'}
+                      </p>
+                      <p className="text-sm text-gray-500">Nigeria</p>
+                    </div>
+                  </>
                 )}
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {product.storeName || '9jaCart'}
-                  </p>
-                  <p className="text-sm text-gray-500">Nigeria</p>
-                </div>
                 <Badge variant="success" className="ml-2">
                   Verified
                 </Badge>

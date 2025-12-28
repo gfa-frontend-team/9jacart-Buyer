@@ -218,3 +218,8 @@ Potential improvements for the rating system:
 
 The rating system has been successfully implemented and is ready for use. Users can now rate their orders after purchase, and these ratings are displayed on both order detail pages and product pages. The implementation follows best practices, maintains code quality, and integrates seamlessly with the existing codebase.
 
+
+
+
+
+

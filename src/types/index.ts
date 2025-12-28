@@ -182,6 +182,7 @@ export interface Product extends BaseEntity, Slug {
 
   // Seller reference
   sellerId: string; // Reference to seller
+  vendorId?: string; // Vendor ID from API
   storeName?: string; // Store/vendor name from API
   vendorLogo?: string; // Vendor logo URL (can be URL-encoded JSON string)
   isSubaccountSet?: boolean; // Whether vendor has subaccount set up
@@ -220,7 +221,9 @@ export interface ProductSummary {
   images: Pick<ProductMedia, 'main' | 'alt'>;
   reviews: Pick<ProductReviews, 'average' | 'total'>;
   flags: ProductFlags;
+  vendorId?: string; // Vendor ID from API
   storeName?: string; // Store/vendor name from API
+  vendorLogo?: string; // Vendor logo URL
 }
 
 // Product with populated references (for detailed views)

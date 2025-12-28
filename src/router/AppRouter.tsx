@@ -162,6 +162,7 @@ import Layout from "../components/Layout/Layout";
 import HomePage from "../pages/Home/HomePage";
 import ProductsPage from "../pages/Products/ProductsPage";
 import ProductDetailPage from "../pages/Products/ProductDetailPage";
+import VendorStorefrontPage from "../pages/Vendor/VendorStorefrontPage";
 import CartPage from "../pages/Cart/CartPage";
 import CheckoutPage from "../pages/Checkout/CheckoutPage";
 import OrdersPage from "../pages/Orders/OrdersPage";
@@ -245,6 +246,10 @@ const router = createBrowserRouter([
       {
         path: "products/:id",
         element: <ProductDetailPage />,
+      },
+      {
+        path: "vendor/:vendorId",
+        element: <VendorStorefrontPage />,
       },
       {
         path: "cart",

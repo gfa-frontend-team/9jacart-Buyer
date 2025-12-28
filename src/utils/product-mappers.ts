@@ -169,6 +169,7 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
     images,
     reviews,
     sellerId: apiProduct.storeName || 'api-seller', // Use storeName as sellerId
+    vendorId: apiProduct.vendorId, // Vendor ID from API
     storeName: apiProduct.storeName, // Store/vendor name from API
     vendorLogo: parseVendorLogo(apiProduct.vendorLogo), // Parse and extract vendor logo URL
     isSubaccountSet: apiProduct.isSubaccountSet, // Preserve subaccount status
@@ -266,7 +267,9 @@ export const mapApiProductToProductSummary = (apiProduct: ApiProductData): Produ
     images,
     reviews,
     flags,
+    vendorId: apiProduct.vendorId, // Vendor ID from API
     storeName: apiProduct.storeName, // Store/vendor name from API
+    vendorLogo: parseVendorLogo(apiProduct.vendorLogo), // Parse and extract vendor logo URL
   };
 };
 
