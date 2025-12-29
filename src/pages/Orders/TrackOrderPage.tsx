@@ -232,7 +232,23 @@ const TrackOrderPage: React.FC = () => {
       });
     }
 
-    // Default: Order Placed and Order Confirmed active (current at order-confirmed)
+    // For new orders (pending/processing): Order Placed and Order Confirmed should both be completed
+    // Current step should be awaiting-pickup
+    if (status === "order-confirmed" && (apiStatus === "PENDING" || apiStatus === "PROCESSING" || !apiStatus)) {
+      return orderedStatuses.map((step, index) => {
+        const awaitingPickupIndex = orderedStatuses.indexOf("awaiting-pickup");
+        return {
+          id: step,
+          title: labels[step],
+          description: descriptions[step],
+          date: descriptions[step],
+          completed: index < awaitingPickupIndex, // Both order-placed (0) and order-confirmed (1) are completed
+          current: index === awaitingPickupIndex, // awaiting-pickup (2) is current
+        };
+      });
+    }
+
+    // Default: Use the status to determine current step
     const currentIndex = Math.max(
       orderedStatuses.indexOf(status),
       orderedStatuses.indexOf("order-confirmed") // Default to order-confirmed if status not found
