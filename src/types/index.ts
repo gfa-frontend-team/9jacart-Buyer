@@ -255,6 +255,7 @@ export interface CartSummary {
   subtotal: number;
   tax: number;
   shipping: number;
+  commission?: number;
   total: number;
   isServerSynced: boolean; // Indicates if data is from server
 }

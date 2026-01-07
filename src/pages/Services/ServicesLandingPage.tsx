@@ -187,21 +187,21 @@ const ServicesLandingPage: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 max-w-4xl mx-auto">
             <Button asChild size="lg" className="w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px]">
-              <Link to="/services/mobile-topup?type=buy-airtime">
+              <Link to="/services/mobile-topup?type=buy-airtime" className="flex flex-row items-center justify-center">
                 <Phone className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Buy Airtime
               </Link>
             </Button>
             
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px]">
-              <Link to="/services/mobile-topup?type=buy-mobile-data">
+              <Link to="/services/mobile-topup?type=buy-mobile-data" className="flex flex-row items-center justify-center">
                 <Wifi className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Buy Data
               </Link>
             </Button>
             
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px]">
-              <Link to="/services/bills?type=prepaid">
+              <Link to="/services/bills?type=prepaid" className="flex flex-row items-center justify-center">
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Pay Electricity
               </Link>

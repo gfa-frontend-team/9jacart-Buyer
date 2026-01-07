@@ -34,6 +34,7 @@ export interface ApiCartSummary {
   subtotal: number;
   tax: number;
   shipping: number;
+  platformCommissionPercentage?: number;
   total: number;
 }
 

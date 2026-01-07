@@ -162,12 +162,16 @@ import Layout from "../components/Layout/Layout";
 import HomePage from "../pages/Home/HomePage";
 import ProductsPage from "../pages/Products/ProductsPage";
 import ProductDetailPage from "../pages/Products/ProductDetailPage";
+import DealsPage from "../pages/Products/DealsPage";
+import NewArrivalsPage from "../pages/Products/NewArrivalsPage";
+import BestSellersPage from "../pages/Products/BestSellersPage";
 import VendorStorefrontPage from "../pages/Vendor/VendorStorefrontPage";
 import CartPage from "../pages/Cart/CartPage";
 import CheckoutPage from "../pages/Checkout/CheckoutPage";
 import OrdersPage from "../pages/Orders/OrdersPage";
 import OrderDetailPage from "../pages/Orders/OrderDetailPage";
 import TrackOrderPage from "../pages/Orders/TrackOrderPage";
+import RateOrderPage from "../pages/Orders/RateOrderPage";
 
 // Account pages
 import AccountPage from "../pages/Account/AccountPage";
@@ -248,6 +252,18 @@ const router = createBrowserRouter([
         element: <ProductDetailPage />,
       },
       {
+        path: "deals",
+        element: <DealsPage />,
+      },
+      {
+        path: "new-arrivals",
+        element: <NewArrivalsPage />,
+      },
+      {
+        path: "bestsellers",
+        element: <BestSellersPage />,
+      },
+      {
         path: "vendor/:vendorId",
         element: <VendorStorefrontPage />,
       },
@@ -280,6 +296,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <TrackOrderPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "rate-order/:orderId",
+        element: (
+          <ProtectedRoute>
+            <RateOrderPage />
           </ProtectedRoute>
         ),
       },

@@ -1,35 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Navigate } from "react-router-dom";
-import { Breadcrumb, Loading, Alert } from "../../components/UI";
-import ProductCard from "../../components/Product/ProductCard";
-import { useRealProductsByCategory } from "../../hooks/api/useRealProducts";
-import { normalizeProductImages } from "@/lib/utils";
+import React, { useState } from 'react';
+import { Breadcrumb, Loading, Alert } from '../../components/UI';
+import ProductCard from '../../components/Product/ProductCard';
+import { useRealProductsList } from '../../hooks/api/useRealProducts';
+import { normalizeProductImages } from '@/lib/utils';
 
-const CategoryPage: React.FC = () => {
-  const { categoryId } = useParams<{ categoryId: string }>();
+const BestSellersPage: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
-  // Redirect services category to services page
-  if (categoryId === "services") {
-    return <Navigate to="/services" replace />;
-  }
-
-  const params = React.useMemo(
-    () => ({ page: currentPage, perPage }),
-    [currentPage, perPage]
-  );
-
-  // Fetch products for the category
-  const { products, loading, error, pagination } = useRealProductsByCategory(
-    categoryId || null,
-    params
-  );
-
-  // Reset page when category changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [categoryId]);
+  const { 
+    products, 
+    loading, 
+    error, 
+    pagination,
+    refetch 
+  } = useRealProductsList({ 
+    page: currentPage, 
+    perPage,
+    ...(searchQuery && { search: searchQuery })
+  });
 
   if (loading) {
     return (
@@ -55,33 +45,38 @@ const CategoryPage: React.FC = () => {
     );
   }
 
-  // Get category name from first product if available
-  // const categoryName = products.length > 0 ? products[0].categoryId : categoryId;
-
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: "Products", href: "/products" },
-    { label: `Category`, isCurrentPage: true },
-  ];
-
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb */}
-        <Breadcrumb items={breadcrumbItems} className="mb-6" />
-
+        <Breadcrumb className="mb-6" />
+        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              {products.length > 0 && products[0].categoryId
-                ? `Category Products`
-                : "Category Products"}
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Best Sellers</h1>
             <p className="text-gray-600 mt-1 sm:mt-2">
-              Showing {products.length} of {pagination.totalItems} product
-              {pagination.totalItems !== 1 ? "s" : ""}
+              Showing {products.length} of {pagination.totalItems} best selling product{pagination.totalItems !== 1 ? 's' : ''}
             </p>
+          </div>
+          
+          {/* Search */}
+          <div className="w-full sm:w-auto sm:max-w-md">
+            <input
+              type="text"
+              placeholder="Search best sellers..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  refetch({ page: 1, perPage, search: searchQuery });
+                }
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
         </div>
 
@@ -90,8 +85,8 @@ const CategoryPage: React.FC = () => {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
+                <ProductCard 
+                  key={product.id} 
                   product={normalizeProductImages(product)}
                   showQuickAdd={true}
                   className="w-full"
@@ -113,11 +108,11 @@ const CategoryPage: React.FC = () => {
                 >
                   Previous
                 </button>
-
+                
                 <span className="px-4 py-2 text-sm text-gray-600">
                   Page {pagination.currentPage} of {pagination.totalPages}
                 </span>
-
+                
                 <button
                   onClick={() => {
                     if (currentPage < pagination.totalPages) {
@@ -134,9 +129,12 @@ const CategoryPage: React.FC = () => {
           </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              No products found in this category
-            </p>
+            <p className="text-gray-500 text-lg">No best sellers found</p>
+            {searchQuery && (
+              <p className="text-gray-400 mt-2">
+                Try adjusting your search terms
+              </p>
+            )}
           </div>
         )}
 
@@ -144,8 +142,7 @@ const CategoryPage: React.FC = () => {
         <div className="flex justify-center mt-8">
           <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-            Live API Data • Category: {categoryId?.substring(0, 8)}... •{" "}
-            {products.length} products
+            Live API Data • {products.length} of {pagination.totalItems} products
           </div>
         </div>
       </div>
@@ -153,4 +150,7 @@ const CategoryPage: React.FC = () => {
   );
 };
 
-export default CategoryPage;
+export default BestSellersPage;
+
+
+

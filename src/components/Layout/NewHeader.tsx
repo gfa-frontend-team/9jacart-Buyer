@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
   MapPin,
@@ -17,6 +17,7 @@ import logoImage from "../../assets/logo.png";
 
 const NewHeader: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { totalItems: cartTotalItems } = useCart();
   const { getTotalItems: getWishlistItems } = useWishlistStore();
@@ -110,6 +111,33 @@ const NewHeader: React.FC = () => {
     callback?.();
   };
 
+  const handleMobileLinkClick = (e: React.MouseEvent | React.TouchEvent, path: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowAccountMenu(false);
+    // Small delay to ensure menu closes before navigation
+    setTimeout(() => {
+      navigate(path);
+    }, 50);
+  };
+
+  const handleMobileLogout = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowAccountMenu(false);
+    // Small delay to ensure menu closes before logout
+    setTimeout(() => {
+      handleLogout();
+    }, 50);
+  };
+
+  // Clear search query when navigating to homepage
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setSearchQuery("");
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -169,6 +197,7 @@ const NewHeader: React.FC = () => {
                   <div
                     className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
                     onClick={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                   >
                     {isAuthenticated ? (
                       <div className="p-4">
@@ -210,10 +239,12 @@ const NewHeader: React.FC = () => {
                           </Link>
                           <hr className="my-2 border-gray-200" />
                           <button
-                            onClick={(e) =>
-                              handleMenuItemClick(e, handleLogout)
-                            }
-                            className="w-full text-left px-3 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors min-h-[44px] flex items-center"
+                            onClick={handleMobileLogout}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              handleMobileLogout(e);
+                            }}
+                            className="w-full text-left px-3 py-3 text-red-600 hover:text-red-700 active:text-red-700 hover:bg-red-50 active:bg-red-50 rounded-md transition-colors min-h-[44px] flex items-center"
                           >
                             Sign Out
                           </button>
@@ -222,22 +253,28 @@ const NewHeader: React.FC = () => {
                     ) : (
                       <div className="p-4">
                         <div className="space-y-3">
-                          <Link
-                            to="/auth/login"
-                            className="block w-full text-center bg-[#182F38] text-white py-3 px-4 rounded-md hover:bg-[#1a3441] transition-colors min-h-[44px] flex items-center justify-center font-medium"
-                            onClick={(e) => handleMenuItemClick(e)}
+                          <button
+                            onClick={(e) => handleMobileLinkClick(e, "/auth/login")}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              handleMobileLinkClick(e, "/auth/login");
+                            }}
+                            className="block w-full text-center bg-[#182F38] text-white py-3 px-4 rounded-md hover:bg-[#1a3441] active:bg-[#1a3441] transition-colors min-h-[44px] flex items-center justify-center font-medium"
                           >
                             Sign In
-                          </Link>
+                          </button>
                           <p className="text-sm text-gray-500 text-center">
                             New customer?{" "}
-                            <Link
-                              to="/auth/register"
-                              className="text-[#182F38] hover:text-[#1a3441] hover:underline font-medium"
-                              onClick={(e) => handleMenuItemClick(e)}
+                            <button
+                              onClick={(e) => handleMobileLinkClick(e, "/auth/register")}
+                              onTouchEnd={(e) => {
+                                e.preventDefault();
+                                handleMobileLinkClick(e, "/auth/register");
+                              }}
+                              className="text-[#182F38] hover:text-[#1a3441] active:text-[#1a3441] hover:underline font-medium bg-transparent border-0 cursor-pointer"
                             >
                               Start here
-                            </Link>
+                            </button>
                           </p>
                         </div>
                         <hr className="my-3 border-gray-200" />
@@ -576,7 +613,7 @@ const NewHeader: React.FC = () => {
                 All Products
               </Link>
               <Link
-                to="/categories"
+                to="/products"
                 className="block py-3 hover:text-primary transition-colors min-h-[44px] flex items-center"
                 onClick={() => setShowMobileMenu(false)}
               >

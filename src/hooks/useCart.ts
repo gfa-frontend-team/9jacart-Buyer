@@ -30,6 +30,8 @@ export const useCart = () => {
     getSubtotal,
     getShipping,
     getTax,
+    getCommission,
+    hasCommission,
     getFinalTotal,
     isItemInCart,
     getItemQuantity,
@@ -65,6 +67,8 @@ export const useCart = () => {
   const subtotal = getSubtotal(isAuthenticated);
   const shipping = getShipping(isAuthenticated);
   const tax = getTax(isAuthenticated);
+  const commission = getCommission(isAuthenticated);
+  const showCommission = hasCommission(isAuthenticated);
   const finalTotal = getFinalTotal(isAuthenticated);
 
   const isInCart = (productId: string) => isItemInCart(productId, isAuthenticated);
@@ -100,6 +104,8 @@ export const useCart = () => {
     subtotal,
     shipping,
     tax,
+    commission,
+    showCommission,
     finalTotal,
     
     // State

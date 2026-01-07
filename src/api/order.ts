@@ -284,6 +284,24 @@ export const orderApi = {
     );
   },
 
+  // Rate order items (matches backend API format with orderNo and productId)
+  rateOrderItems: async (orderNo: string, ratings: Array<{
+    productId: string;
+    vendorId: string;
+    rating: number;
+    comment?: string;
+  }>): Promise<RateOrderResponse> => {
+    return apiClient.post<RateOrderResponse>(
+      "/order/rate",
+      {
+        orderNo,
+        ratings,
+      },
+      undefined,
+      true
+    );
+  },
+
   // Get order ratings (requires Bearer token)
   getOrderRatings: async (orderId: string): Promise<GetOrderRatingsResponse> => {
     return apiClient.get<GetOrderRatingsResponse>(
@@ -291,6 +309,45 @@ export const orderApi = {
       undefined,
       true
     );
+  },
+
+  // Get order items (requires Bearer token)
+  getOrderItems: async (orderId: string): Promise<ApiOrderItem[]> => {
+    const response = await apiClient.get<any>(
+      `/order/${orderId}/items`,
+      undefined,
+      true
+    );
+    
+    // Handle the actual API response structure with vendors
+    if (response.data && response.data.vendors && Array.isArray(response.data.vendors)) {
+      // Flatten the vendors/items structure into a single array
+      const items: ApiOrderItem[] = [];
+      response.data.vendors.forEach((vendor: any) => {
+        if (vendor.items && Array.isArray(vendor.items)) {
+          vendor.items.forEach((item: any) => {
+            items.push({
+              ...item,
+              vendor: vendor.vendorId,
+              vendorName: vendor.vendorName,
+              orderNo: response.data.orderNo,
+            });
+          });
+        }
+      });
+      return items;
+    }
+    
+    // Fallback: Handle different response structures
+    if (response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    if (Array.isArray(response)) {
+      return response as ApiOrderItem[];
+    }
+    
+    return [];
   },
 };
 

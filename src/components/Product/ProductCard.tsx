@@ -271,7 +271,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
               {/* Quick Add Button Overlay */}
               {showQuickAdd && product.inventory.inStock && (
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent  transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent transform translate-y-0 sm:translate-y-full sm:group-hover:translate-y-0 transition-transform duration-300">
                   <Button
                     variant="ghost"
                     className="w-full text-white bg-black hover:bg-black hover:text-white backdrop-blur-sm font-medium rounded-none"

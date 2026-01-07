@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Product, CartItem } from '../types';
-import { cartApi, type ApiCartItem } from '../api/cart';
+import { cartApi, type ApiCartItem, type ApiCartSummary } from '../api/cart';
 import { productsApi } from '../api/products';
 import { apiErrorUtils } from '../utils/api-errors';
 import { ApiError } from '../api/client';
@@ -13,6 +13,9 @@ interface CartStore {
   
   // Authenticated cart data (from server)
   serverItems: CartItem[];
+  
+  // Server cart summary (from API response)
+  serverSummary: ApiCartSummary | null;
   
   // UI state
   isOpen: boolean;
@@ -47,6 +50,8 @@ interface CartStore {
   getSubtotal: (isAuthenticated: boolean) => number;
   getShipping: (isAuthenticated: boolean) => number;
   getTax: (isAuthenticated: boolean) => number;
+  getCommission: (isAuthenticated: boolean) => number;
+  hasCommission: (isAuthenticated: boolean) => boolean;
   getFinalTotal: (isAuthenticated: boolean) => number;
   isItemInCart: (productId: string, isAuthenticated: boolean) => boolean;
   getItemQuantity: (productId: string, isAuthenticated: boolean) => number;
@@ -62,6 +67,7 @@ export const useCartStore = create<CartStore>()(
   // Initial state
   guestItems: [],
   serverItems: [],
+  serverSummary: null,
   isOpen: false,
   isLoading: false,
   isInitialLoading: false,
@@ -300,7 +306,7 @@ export const useCartStore = create<CartStore>()(
       try {
         set({ isLoading: true });
         await cartApi.clearCart();
-        set({ serverItems: [] });
+        set({ serverItems: [], serverSummary: null });
       } catch (error) {
         const errorMessage = apiErrorUtils.getErrorMessage(error);
         set({ error: errorMessage });
@@ -326,7 +332,10 @@ export const useCartStore = create<CartStore>()(
       const response = await cartApi.getCart();
       
       if (response.data) {
-        const { items: apiItems } = response.data;
+        const { items: apiItems, summary } = response.data;
+        
+        // Store the summary from API response
+        set({ serverSummary: summary });
         
         // Fast path: skip product verification during migration for better performance
         if (skipVerification) {
@@ -404,9 +413,10 @@ export const useCartStore = create<CartStore>()(
           }
         }
         
-        // Update state with only valid items
+        // Update state with only valid items and summary
         set({
           serverItems: validCartItems,
+          serverSummary: summary,
           isLoading: false,
           isInitialLoading: false
         });
@@ -612,6 +622,7 @@ export const useCartStore = create<CartStore>()(
   handleLogout: () => {
     set({
       serverItems: [],
+      serverSummary: null,
       guestItems: [], // Start fresh as guest
       isLoading: false,
       error: null
@@ -655,24 +666,73 @@ export const useCartStore = create<CartStore>()(
   },
 
   getSubtotal: (isAuthenticated: boolean) => {
+    if (isAuthenticated) {
+      // Use subtotal from server summary if available for accuracy
+      const { serverSummary } = get();
+      if (serverSummary?.subtotal !== undefined) {
+        return serverSummary.subtotal;
+      }
+    }
+    // For guest users or when server summary is not available, calculate from items
     return get().getTotalPrice(isAuthenticated);
   },
 
   getShipping: (isAuthenticated: boolean) => {
+    if (isAuthenticated) {
+      // Use shipping from server summary if available
+      const { serverSummary } = get();
+      if (serverSummary?.shipping !== undefined) {
+        return serverSummary.shipping;
+      }
+    }
+    // For guest users or when server summary is not available, calculate shipping
     const subtotal = get().getSubtotal(isAuthenticated);
-    return subtotal > 50000 ? 0 : 2500; // Free shipping over ₦50,000
+    return subtotal > 50000 ? 0 : 2500; // Free shipping over ₦50,000 fallback
   },
 
   getTax: (isAuthenticated: boolean) => {
+    if (isAuthenticated) {
+      // Use tax from server summary if available
+      const { serverSummary } = get();
+      if (serverSummary?.tax !== undefined) {
+        return serverSummary.tax;
+      }
+    }
+    // For guest users or when server summary is not available, calculate tax
     const subtotal = get().getSubtotal(isAuthenticated);
-    return subtotal * 0.08; // 8% tax
+    return subtotal * 0.08; // 8% tax fallback
+  },
+
+  getCommission: (isAuthenticated: boolean) => {
+    if (isAuthenticated) {
+      // Calculate commission from percentage if available
+      const { serverSummary } = get();
+      if (serverSummary?.platformCommissionPercentage !== undefined) {
+        // Use server's subtotal from summary for accuracy, fallback to calculated subtotal
+        const subtotal = serverSummary.subtotal ?? get().getSubtotal(isAuthenticated);
+        const commissionPercentage = serverSummary.platformCommissionPercentage;
+        // Calculate commission: subtotal * (percentage / 100)
+        return subtotal * (commissionPercentage / 100);
+      }
+    }
+    // For guest users or when server summary is not available, return 0
+    return 0;
+  },
+
+  hasCommission: (isAuthenticated: boolean) => {
+    if (isAuthenticated) {
+      const { serverSummary } = get();
+      return serverSummary?.platformCommissionPercentage !== undefined;
+    }
+    return false;
   },
 
   getFinalTotal: (isAuthenticated: boolean) => {
     const subtotal = get().getSubtotal(isAuthenticated);
     const shipping = get().getShipping(isAuthenticated);
     const tax = get().getTax(isAuthenticated);
-    return subtotal + shipping + tax;
+    const commission = get().getCommission(isAuthenticated);
+    return subtotal + shipping + tax + commission;
   },
 
   isItemInCart: (productId: string, isAuthenticated: boolean) => {

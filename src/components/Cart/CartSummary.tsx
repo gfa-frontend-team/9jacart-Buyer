@@ -15,6 +15,8 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
     subtotal,
     shipping,
     tax,
+    commission,
+    showCommission,
     finalTotal,
     isAuthenticated
   } = useCart();
@@ -89,6 +91,13 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
               <span className="text-gray-600">Tax</span>
               <span className="font-medium">{formatPrice(tax)}</span>
             </div>
+            
+            {showCommission && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Commission</span>
+                <span className="font-medium">{formatPrice(commission)}</span>
+              </div>
+            )}
 
             {promoApplied && (
               <div className="flex justify-between text-sm">

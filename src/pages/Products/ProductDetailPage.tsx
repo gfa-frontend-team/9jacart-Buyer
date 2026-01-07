@@ -422,8 +422,9 @@ const ProductDetailPage: React.FC = () => {
             )}
 
             {/* Quantity and Actions */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
+            <div className="space-y-3">
+              {/* Top Row: Quantity + Add to Cart */}
+              <div className="flex items-center gap-3">
                 <div className="flex items-center border rounded-md">
                   <button
                     onClick={() => handleQuantityChange(-1)}
@@ -441,24 +442,25 @@ const ProductDetailPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex gap-2 flex-1">
-                  <Button
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary"
-                    size="lg"
-                  >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    Add to Cart
-                  </Button>
+                <Button
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary"
+                  size="lg"
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Add to Cart
+                </Button>
+              </div>
 
-                  <Button
-                    onClick={handleCheckout}
-                    className="flex-1 bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary"
-                    size="lg"
-                  >
-                    Checkout
-                  </Button>
-                </div>
+              {/* Bottom Row: Checkout + Like */}
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleCheckout}
+                  className="flex-1 bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary"
+                  size="lg"
+                >
+                  Checkout
+                </Button>
 
                 <Button
                   variant="outline"

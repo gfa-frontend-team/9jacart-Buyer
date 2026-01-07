@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface CarouselSlide {
@@ -20,9 +20,42 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   height = 'h-[240px] sm:h-[300px] md:h-[360px] lg:h-[420px]' 
 }) => {
   const [active, setActive] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  // Minimum swipe distance (in pixels) to trigger slide change
+  const minSwipeDistance = 50;
 
   const goPrev = () => setActive((i) => (i === 0 ? slides.length - 1 : i - 1));
   const goNext = () => setActive((i) => (i === slides.length - 1 ? 0 : i + 1));
+
+  // Touch event handlers for swipe functionality
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      goNext();
+    } else if (isRightSwipe) {
+      goPrev();
+    }
+
+    // Reset touch positions
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   // Auto-advance slides
   React.useEffect(() => {
@@ -35,7 +68,12 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
   return (
     <section className="lg:col-span-3 xl:col-span-4 relative overflow-hidden rounded-lg border border-gray-200 shadow-sm">
       {/* Slides */}
-      <div className={`relative ${height} overflow-hidden`}>
+      <div 
+        className={`relative ${height} overflow-hidden touch-pan-y`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         {slides.map((slide, idx) => (
           <div
             key={slide.id}
