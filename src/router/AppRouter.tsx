@@ -197,6 +197,7 @@ import { ServicesLandingPage, ServicesPage } from "../pages/Services";
 // Layout components
 import AuthLayout from "../components/Layout/AuthLayout";
 import { ProtectedRoute } from "../components/Auth";
+import AboutPage from "@/pages/About/page";
 
 // Scroll to Top Component
 const ScrollToTop: React.FC = () => {
@@ -336,6 +337,10 @@ const router = createBrowserRouter([
       {
         path: "contact",
         element: <ContactPage />,
+      },
+      {
+        path: "about",
+        element: <AboutPage />,
       },
       {
         path: "faq",

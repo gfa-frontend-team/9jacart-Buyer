@@ -31,6 +31,8 @@ const SecondaryNav: React.FC = () => {
     return location.pathname === path;
   };
 
+  if(location.pathname === "/about") return null;
+
   return (
     <nav className="bg-muted text-muted-foreground border-t border-border">
       <div className="max-w-7xl mx-auto px-4">
