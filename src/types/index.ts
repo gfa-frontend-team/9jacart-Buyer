@@ -21,6 +21,7 @@ export interface Category extends BaseEntity, Slug {
   parentId?: string;
   level: number;
   imageUrl?: string;
+  archived?: boolean; // For archiving categories without deleting them
 }
 
 // Price types

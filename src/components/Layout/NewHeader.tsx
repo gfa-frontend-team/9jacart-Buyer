@@ -7,7 +7,7 @@ import {
   User,
   ChevronDown,
   Menu,
-  Globe,
+  HelpCircle,
 } from "lucide-react";
 // Removed unused import
 import { useAuthStore } from "../../store/useAuthStore";
@@ -25,10 +25,12 @@ const NewHeader: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showHelpMenu, setShowHelpMenu] = useState(false);
 
   // Refs for click outside detection
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const helpMenuRef = useRef<HTMLDivElement>(null);
 
   // Mobile-friendly click outside handler
   useEffect(() => {
@@ -47,6 +49,19 @@ const NewHeader: React.FC = () => {
         }
       }
 
+      // Help menu
+      if (
+        helpMenuRef.current &&
+        !helpMenuRef.current.contains(event.target as Node)
+      ) {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+          setTimeout(() => setShowHelpMenu(false), 100);
+        } else {
+          setShowHelpMenu(false);
+        }
+      }
+
       // Mobile menu
       if (
         mobileMenuRef.current &&
@@ -56,7 +71,7 @@ const NewHeader: React.FC = () => {
       }
     };
 
-    if (showAccountMenu || showMobileMenu) {
+    if (showAccountMenu || showMobileMenu || showHelpMenu) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("touchstart", handleClickOutside);
     }
@@ -65,7 +80,7 @@ const NewHeader: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [showAccountMenu, showMobileMenu]);
+  }, [showAccountMenu, showMobileMenu, showHelpMenu]);
 
   const categories = [
     "All",
@@ -103,6 +118,12 @@ const NewHeader: React.FC = () => {
     e.preventDefault();
     e.stopPropagation();
     setShowAccountMenu(!showAccountMenu);
+  };
+
+  const handleHelpMenuClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowHelpMenu(!showHelpMenu);
   };
 
   const handleMenuItemClick = (e: React.MouseEvent, callback?: () => void) => {
@@ -277,23 +298,6 @@ const NewHeader: React.FC = () => {
                             </button>
                           </p>
                         </div>
-                        <hr className="my-3 border-gray-200" />
-                        <div className="space-y-1 text-sm">
-                          <Link
-                            to="/orders"
-                            className="block px-3 py-3 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors min-h-[44px] flex items-center"
-                            onClick={(e) => handleMenuItemClick(e)}
-                          >
-                            Your Orders
-                          </Link>
-                          <Link
-                            to="/contact"
-                            className="block px-3 py-3 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors min-h-[44px] flex items-center"
-                            onClick={(e) => handleMenuItemClick(e)}
-                          >
-                            Customer Service
-                          </Link>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -371,12 +375,45 @@ const NewHeader: React.FC = () => {
 
             {/* Right Side Items */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Language Selector */}
-              <button className="flex text-white items-center text-sm hover:bg-white/10 px-3 py-2 rounded-md cursor-pointer transition-colors">
+              {/* ARCHIVED: Language Selector - commented out until language switching is supported */}
+              {/* <button className="flex text-white items-center text-sm hover:bg-white/10 px-3 py-2 rounded-md cursor-pointer transition-colors">
                 <Globe className="w-4 h-4 mr-2" />
                 <span>EN</span>
                 <ChevronDown className="w-3 h-3 ml-1" />
-              </button>
+              </button> */}
+
+              {/* Help Dropdown */}
+              <div className="relative" ref={helpMenuRef}>
+                <button
+                  className="flex text-white items-center text-sm hover:bg-white/10 px-3 py-2 rounded-md cursor-pointer transition-colors"
+                  onClick={handleHelpMenuClick}
+                >
+                  <HelpCircle className="w-4 h-4 mr-2" />
+                  <span>Help</span>
+                  <ChevronDown className="w-3 h-3 ml-1" />
+                </button>
+
+                {/* Help Dropdown Menu */}
+                {showHelpMenu && (
+                  <div
+                    className="absolute right-0 top-full mt-1 w-56 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-2">
+                      <Link
+                        to="/contact-admin"
+                        className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowHelpMenu(false);
+                        }}
+                      >
+                        Contact Support
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Account Section */}
               <div className="relative" ref={accountMenuRef}>
@@ -480,23 +517,6 @@ const NewHeader: React.FC = () => {
                             </Link>
                           </p>
                         </div>
-                        <hr className="my-3 border-gray-200" />
-                        <div className="space-y-1 text-sm">
-                          <Link
-                            to="/orders"
-                            className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
-                            onClick={(e) => handleMenuItemClick(e)}
-                          >
-                            Your Orders
-                          </Link>
-                          <Link
-                            to="/contact"
-                            className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
-                            onClick={(e) => handleMenuItemClick(e)}
-                          >
-                            Customer Service
-                          </Link>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -590,14 +610,15 @@ const NewHeader: React.FC = () => {
               <span>Deliver to Nigeria</span>
             </div>
 
-            {/* Mobile Language */}
-            <div className="flex items-center text-sm">
+            {/* ARCHIVED: Mobile Language - commented out until language switching is supported */}
+            {/* <div className="flex items-center text-sm">
               <Globe className="w-4 h-4 mr-2" />
               <span>English</span>
-            </div>
+            </div> */}
 
             {/* Mobile Navigation Links */}
             <div className="border-t border-gray-600 pt-3 space-y-2">
+              {/* ARCHIVED: Services link - commented out
               <Link
                 to="/services"
                 className="block py-3 hover:text-primary transition-colors min-h-[44px] flex items-center"
@@ -605,6 +626,7 @@ const NewHeader: React.FC = () => {
               >
                 Services
               </Link>
+              */}
               <Link
                 to="/products"
                 className="block py-3 hover:text-primary transition-colors min-h-[44px] flex items-center"

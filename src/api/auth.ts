@@ -24,6 +24,11 @@ export interface ResendOtpRequest {
   type: 'BUYER_EMAIL_OTP';
 }
 
+export interface GoogleLoginRequest {
+  idToken: string; // ID Token (JWT) from Google
+  accessToken: string; // Access Token from Google
+}
+
 // Auth API response types
 export interface LoginSuccessResponse {
   status: number;
@@ -100,6 +105,11 @@ export const authApi = {
   // Resend OTP endpoint
   resendOtp: async (resendData: ResendOtpRequest): Promise<ResendOtpResponse> => {
     return apiClient.post<ResendOtpResponse>('/buyer/resend-otp', resendData);
+  },
+
+  // Google login endpoint
+  googleLogin: async (googleData: GoogleLoginRequest): Promise<LoginSuccessResponse> => {
+    return apiClient.post<LoginSuccessResponse>('/buyer/google-login', googleData);
   },
 
   // Logout (if needed for server-side logout)

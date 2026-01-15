@@ -53,6 +53,7 @@ const ProductDetailPage: React.FC = () => {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
+  const [activeDetailTab, setActiveDetailTab] = useState<string>("description");
   
   const isWishlisted = product ? isItemInWishlist(product.id) : false;
 
@@ -234,7 +235,42 @@ const ProductDetailPage: React.FC = () => {
           {/* Product Images */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="aspect-square bg-white rounded-lg border overflow-hidden">
+            <div className="aspect-square bg-white rounded-lg border overflow-hidden relative">
+              {/* Discount Badge Overlay */}
+              {discount && (
+                <div className="absolute top-4 right-4 z-10">
+                  <div 
+                    className="relative"
+                    style={{
+                      transform: 'rotate(-5deg)',
+                      transformOrigin: 'center',
+                    }}
+                  >
+                    {/* Bottle Cap Shape */}
+                    <div 
+                      className="relative w-20 h-20 flex items-center justify-center text-white font-bold text-xs shadow-lg"
+                      style={{
+                        background: 'linear-gradient(135deg, #8DEB6E 0%, #7DD85D 50%, #6BC54C 100%)',
+                        borderRadius: '50%',
+                        border: '3px solid rgba(255, 255, 255, 0.3)',
+                      }}
+                    >
+                      {/* Inner rim effect */}
+                      <div 
+                        className="absolute inset-2 rounded-full"
+                        style={{
+                          border: '2px solid rgba(255, 255, 255, 0.2)',
+                        }}
+                      />
+                      {/* Text */}
+                      <div className="relative z-10 text-center leading-tight">
+                        <div className="font-bold">{discount.percentage}%</div>
+                        <div className="text-[10px] font-semibold">OFF</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <Image
                 src={
                   product.images.gallery[selectedImage] || product.images.main
@@ -333,9 +369,6 @@ const ProductDetailPage: React.FC = () => {
                     </div>
                   </>
                 )}
-                <Badge variant="success" className="ml-2">
-                  Verified
-                </Badge>
               </div>
             </div>
 
@@ -348,9 +381,6 @@ const ProductDetailPage: React.FC = () => {
                 <span className="text-sm text-gray-600">
                   ({displayReviews.total} Reviews)
                 </span>
-                <Badge variant={product.inventory.inStock ? "success" : "destructive"} className="ml-2">
-                  {product.inventory.inStock ? "In Stock" : "Out of Stock"}
-                </Badge>
               </div>
             )}
 
@@ -364,9 +394,6 @@ const ProductDetailPage: React.FC = () => {
                   <span className="text-lg text-gray-500 line-through">
                     {formatPrice(originalPrice)}
                   </span>
-                )}
-                {discount && (
-                  <Badge variant="destructive">-{discount.percentage}%</Badge>
                 )}
               </div>
               <p className="text-sm text-gray-600">
@@ -517,10 +544,190 @@ const ProductDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Customer Reviews Section */}
+        {/* Product Details Section */}
+        <Card className="mt-8">
+          <CardContent className="p-0">
+            <div className="border-b border-gray-200">
+              <div className="flex overflow-x-auto">
+                {[
+                  { id: "description", label: "Description" },
+                  { id: "features", label: "Features" },
+                  { id: "shipping", label: "Shipping & Returns" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveDetailTab(tab.id)}
+                    className={cn(
+                      "px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
+                      activeDetailTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Description Tab */}
+              {activeDetailTab === "description" && (
+                <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Product Details</h3>
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+                      {product.description}
+                    </p>
+                  </div>
+                  {(product.brand || product.model || product.categoryName) && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <h3 className="font-semibold text-gray-900 mb-3">Product Information</h3>
+                      <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {product.brand && (
+                          <>
+                            <dt className="font-medium text-gray-700">Brand:</dt>
+                            <dd className="text-gray-600">{product.brand}</dd>
+                          </>
+                        )}
+                        {product.model && (
+                          <>
+                            <dt className="font-medium text-gray-700">Model:</dt>
+                            <dd className="text-gray-600">{product.model}</dd>
+                          </>
+                        )}
+                        {product.categoryName && (
+                          <div className="col-span-2 md:col-span-1">
+                            <span className="font-medium text-gray-700">Category:</span>
+                            <span className="text-gray-600 ml-2">{product.categoryName}</span>
+                          </div>
+                        )}
+                      </dl>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Features Tab */}
+              {activeDetailTab === "features" && (
+                <div className="space-y-4">
+                  {product.features && product.features.length > 0 ? (
+                    <ul className="space-y-3">
+                      {product.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                          <span className="text-gray-700">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-600">No features listed for this product.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Shipping & Returns Tab */}
+              {activeDetailTab === "shipping" && (
+                <div className="space-y-6">
+                  {/* Shipping Information */}
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-primary" />
+                      Shipping Information
+                    </h3>
+                    <div className="space-y-3 text-gray-700">
+                      {product.shipping.freeShipping && (
+                        <p className="flex items-center gap-2">
+                          <Badge variant="success">Free Shipping</Badge>
+                        </p>
+                      )}
+                      {product.shipping.weight && (
+                        <p>
+                          <span className="font-medium">Weight:</span> {product.shipping.weight} {product.shipping.dimensions?.unit || 'kg'}
+                        </p>
+                      )}
+                      {product.shipping.dimensions && (
+                        <p>
+                          <span className="font-medium">Dimensions:</span> {product.shipping.dimensions.length} × {product.shipping.dimensions.width} × {product.shipping.dimensions.height} {product.shipping.dimensions.unit}
+                        </p>
+                      )}
+                      {product.shipping.shippingClass && (
+                        <p>
+                          <span className="font-medium">Shipping Class:</span> {product.shipping.shippingClass}
+                        </p>
+                      )}
+                      {product.shipping.restrictions && product.shipping.restrictions.length > 0 && (
+                        <div>
+                          <span className="font-medium">Restrictions:</span>
+                          <ul className="list-disc list-inside mt-1 space-y-1">
+                            {product.shipping.restrictions.map((restriction, idx) => (
+                              <li key={idx}>{restriction}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <p>
+                        <span className="font-medium">Delivery:</span> Delivery fees will be paid upon product arrival.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Returns Information */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <RotateCcw className="w-5 h-5 text-primary" />
+                      Returns & Warranty
+                    </h3>
+                    <div className="space-y-3 text-gray-700">
+                      {product.returns.returnable ? (
+                        <>
+                          <p>
+                            <span className="font-medium">Returnable:</span> Yes
+                          </p>
+                          <p>
+                            <span className="font-medium">Return Period:</span> {product.returns.period} {product.returns.unit}
+                          </p>
+                          {product.returns.free && (
+                            <p>
+                              <Badge variant="success">Free Returns</Badge>
+                            </p>
+                          )}
+                          {product.returns.conditions && product.returns.conditions.length > 0 && (
+                            <div>
+                              <span className="font-medium">Return Conditions:</span>
+                              <ul className="list-disc list-inside mt-1 space-y-1">
+                                {product.returns.conditions.map((condition, idx) => (
+                                  <li key={idx}>{condition}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p>This product is not returnable.</p>
+                      )}
+                      <p className="pt-2 border-t border-gray-100">
+                        A dispute for a dissatisfied item must be opened within 3 days of delivery.
+                      </p>
+                      {product.warranty && (
+                        <div className="pt-2 border-t border-gray-100">
+                          <p>
+                            <span className="font-medium">Warranty:</span> {product.warranty.period} {product.warranty.unit} ({product.warranty.type})
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Rating Section */}
         <Card className="mt-8">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Rating</h2>
             
             {displayReviews && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -537,7 +744,7 @@ const ProductDetailPage: React.FC = () => {
                   </div>
                   <div className="mt-4 text-center">
                     <p className="text-xs text-gray-500">
-                      Ratings from verified purchases
+                      Ratings from purchases
                     </p>
                   </div>
                 </div>
@@ -572,6 +779,25 @@ const ProductDetailPage: React.FC = () => {
                   </>
                 )}
                 </div>
+              </div>
+            )}
+            
+            {!displayReviews && (
+              <div className="text-center py-8">
+                <div className="flex justify-center mb-4">
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star
+                        key={i}
+                        className="w-6 h-6 text-gray-300"
+                      />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-4">No ratings yet</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Be the first to rate this product after purchase.
+                </p>
               </div>
             )}
             

@@ -86,8 +86,9 @@ export const mockCategories: Category[] = [
     imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
+    archived: true, // Archived - not displayed but not deleted
   },
-  // Services subcategories
+  // Services subcategories (ARCHIVED)
   {
     id: "mobile-topup",
     name: "Mobile Top Up",
@@ -97,6 +98,7 @@ export const mockCategories: Category[] = [
     imageUrl: "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=300&h=200&fit=crop",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
+    archived: true, // Archived - not displayed but not deleted
   },
   {
     id: "bills",
@@ -107,6 +109,7 @@ export const mockCategories: Category[] = [
     imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=200&fit=crop",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
+    archived: true, // Archived - not displayed but not deleted
   },
 ];
 

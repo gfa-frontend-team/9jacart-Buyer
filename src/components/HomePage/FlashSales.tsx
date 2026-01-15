@@ -107,14 +107,6 @@ export default function FlashSales() {
                 </Button>
               </Link>
             </div>
-
-            {/* API Status Badge */}
-            <div className="flex justify-center mt-6">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                Live API Data • {flashSaleProducts.length} flash sale items
-              </div>
-            </div>
           </>
         ) : (
           <div className="text-center py-12">

@@ -60,11 +60,12 @@ export const mapApiCategoriesToCategories = (apiCategories: ApiCategoryData[]): 
 };
 
 // Create services category and subcategories (static data to preserve existing functionality)
+// NOTE: Services category is currently archived - set archived: false to restore it
 export const createServicesCategories = (): Category[] => {
   const now = new Date();
   
   return [
-    // Main services category
+    // Main services category (ARCHIVED)
     {
       id: "services",
       name: "Services",
@@ -73,8 +74,9 @@ export const createServicesCategories = (): Category[] => {
       imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop",
       createdAt: now,
       updatedAt: now,
+      archived: true, // Archived - not displayed but not deleted
     },
-    // Services subcategories
+    // Services subcategories (ARCHIVED)
     {
       id: "mobile-topup",
       name: "Mobile Top Up",
@@ -84,6 +86,7 @@ export const createServicesCategories = (): Category[] => {
       imageUrl: "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=300&h=200&fit=crop",
       createdAt: now,
       updatedAt: now,
+      archived: true, // Archived - not displayed but not deleted
     },
     {
       id: "bills",
@@ -94,6 +97,7 @@ export const createServicesCategories = (): Category[] => {
       imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=200&fit=crop",
       createdAt: now,
       updatedAt: now,
+      archived: true, // Archived - not displayed but not deleted
     },
   ];
 };

@@ -75,7 +75,7 @@ const getCategoryIcon = (categoryName: string, categoryId?: string) => {
 // Transform categories to include icons and featured status
 const transformCategories = (categories: Category[]) => {
   return categories
-    .filter(cat => cat.level === 1) // Only show top-level categories
+    .filter(cat => cat.level === 1 && !cat.archived) // Only show top-level categories that are not archived
     .map((category, index) => ({
       ...category,
       icon: getCategoryIcon(category.name, category.id),
@@ -316,14 +316,6 @@ const CategoryShowcase: React.FC = () => {
               />
             )
           )}
-        </div>
-
-        {/* API Status Badge */}
-        <div className="flex justify-center mt-8">
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-            Live API Data • {categories.length} categories
-          </div>
         </div>
       </div>
     </section>

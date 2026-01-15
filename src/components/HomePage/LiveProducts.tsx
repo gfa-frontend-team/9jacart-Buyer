@@ -103,15 +103,6 @@ const LiveProducts: React.FC = () => {
           ))}
         </div>
 
-        {/* Show total count */}
-        {products.length > 0 && (
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground">
-              Showing all {products.length} products from our live inventory
-            </p>
-          </div>
-        )}
-
         {/* Mobile View All Button */}
         <div className="flex justify-center mt-6 sm:hidden">
           <Link to="/products">
@@ -120,14 +111,6 @@ const LiveProducts: React.FC = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </Link>
-        </div>
-
-        {/* API Badge with Stats */}
-        <div className="flex justify-center mt-8">
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-            Live API Data • {products.length} of {pagination.totalItems} products
-          </div>
         </div>
       </div>
     </section>

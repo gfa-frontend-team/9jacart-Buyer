@@ -293,7 +293,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {/* Product Info */}
-          <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+          <div 
+            className="p-3 sm:p-4 space-y-2 sm:space-y-3"
+            style={{
+              background: 'linear-gradient(to bottom, #ffffff 0%, #ffffff 40%, #8deb6e1a 100%)'
+            }}
+          >
             {/* Store Name */}
             {product.storeName && (
               <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">

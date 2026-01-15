@@ -39,7 +39,8 @@ const ServicesPage: React.FC = () => {
 
   // Generate breadcrumb items
   const breadcrumbItems = [
-    { label: "Services", href: "/services" },
+    // ARCHIVED: Services breadcrumb - commented out
+    // { label: "Services", href: "/services" },
 
     {
       label:

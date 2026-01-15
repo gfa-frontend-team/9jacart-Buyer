@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button, Alert } from '../../components/UI';
+import { GoogleSignInButton } from '../../components/Auth';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register, isLoading } = useAuthStore();
+  const { register, googleLogin, isLoading } = useAuthStore();
   
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -85,6 +86,22 @@ const RegisterPage: React.FC = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleGoogleSuccess = async (idToken: string, accessToken: string) => {
+    setError('');
+    try {
+      await googleLogin(idToken, accessToken);
+      
+      // Redirect to home page after successful Google sign-up
+      navigate('/');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Google sign-in failed. Please try again.');
+    }
+  };
+
+  const handleGoogleError = (error: Error) => {
+    setError(error.message);
   };
 
   return (
@@ -246,6 +263,26 @@ const RegisterPage: React.FC = () => {
           {isLoading ? 'Creating account...' : 'Create account'}
         </Button>
       </form>
+
+      <div className="mt-6">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <GoogleSignInButton
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            disabled={isLoading}
+            text="Sign up with Google"
+          />
+        </div>
+      </div>
     </div>
   );
 };

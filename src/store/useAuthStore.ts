@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "../types";
-import { authApi, type LoginRequest, type RegisterRequest, type OtpVerificationRequest, type ResendOtpRequest } from "../api/auth";
+import { authApi, type LoginRequest, type RegisterRequest, type OtpVerificationRequest, type ResendOtpRequest, type GoogleLoginRequest } from "../api/auth";
 import { apiErrorUtils } from "../utils/api-errors";
 
 interface AuthStore {
@@ -15,6 +15,7 @@ interface AuthStore {
     verificationId: string;
   } | null;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string, accessToken: string) => Promise<void>;
   register: (
     userData: Omit<User, "id" | "token"> & { password: string }
   ) => Promise<{ verificationId: string; identifier: string }>;
@@ -61,6 +62,43 @@ export const useAuthStore = create<AuthStore>()(
             token: response.data.token,
             isAuthenticated: true,
             isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          // Re-throw with user-friendly message
+          const errorMessage = apiErrorUtils.getErrorMessage(error);
+          throw new Error(errorMessage);
+        }
+      },
+
+      googleLogin: async (idToken, accessToken) => {
+        set({ isLoading: true });
+
+        try {
+          const googleData: GoogleLoginRequest = {
+            idToken, // Send the ID Token (JWT) from Google
+            accessToken, // Send the Access Token from Google
+          };
+
+          const response = await authApi.googleLogin(googleData);
+
+          // Map API response to User interface
+          const user: User = {
+            id: response.data.buyerId,
+            email: response.data.emailAddress,
+            firstName: response.data.firstName,
+            lastName: response.data.lastName,
+            phone: response.data.phoneNumber || undefined,
+            token: response.data.token,
+            isEmailVerified: true, // Google accounts are pre-verified
+          };
+
+          set({
+            user,
+            token: response.data.token,
+            isAuthenticated: true,
+            isLoading: false,
+            pendingVerification: null, // Clear any pending verification
           });
         } catch (error) {
           set({ isLoading: false });

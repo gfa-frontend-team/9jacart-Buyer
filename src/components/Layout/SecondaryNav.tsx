@@ -7,9 +7,9 @@ const SecondaryNav: React.FC = () => {
   const location = useLocation();
   const { loading, getMainCategories } = useAllRealCategories();
   
-  // Show all main categories
+  // Show all main categories (excluding archived)
   const mainCategories = getMainCategories();
-  const displayCategories = mainCategories;
+  const displayCategories = mainCategories.filter(cat => !cat.archived);
 
   // Count total items: 1 (All) + categories + 3 (special links)
   const totalItems = 1 + displayCategories.length + 3;

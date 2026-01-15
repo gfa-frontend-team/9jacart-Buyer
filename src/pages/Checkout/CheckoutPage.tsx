@@ -493,7 +493,7 @@ const CheckoutPage: React.FC = () => {
     { label: "My Account", href: "/account" },
     { label: "Product", href: "/products" },
     { label: "View Cart", href: "/cart" },
-    { label: "CheckOut", isCurrentPage: true },
+    { label: "Checkout", isCurrentPage: true },
   ];
 
   // Show loading state while cart is being fetched or redirecting to payment

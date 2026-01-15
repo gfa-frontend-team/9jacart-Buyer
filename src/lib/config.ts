@@ -14,6 +14,10 @@ export const config = {
   auth: {
     tokenKey: 'auth-token',
     storageKey: 'auth-storage',
+    google: {
+      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+      accessToken: import.meta.env.VITE_GOOGLE_ACCESS_TOKEN || '', // Static access token from backend
+    },
   },
   features: {
     // Feature flags for development

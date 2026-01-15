@@ -9,6 +9,7 @@ interface Category {
   parentId?: string;
   level: number;
   imageUrl?: string;
+  archived?: boolean;
 }
 
 interface CategoriesSidebarProps {
@@ -37,13 +38,13 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories }) => 
     options: [],
   });
 
-  // Filter main categories (level 1)
-  const allMainCategories = categories.filter((cat) => cat.level === 1);
+  // Filter main categories (level 1, excluding archived)
+  const allMainCategories = categories.filter((cat) => cat.level === 1 && !cat.archived);
   const mainCategories = allMainCategories;
 
-  // Get subcategories for a given parent
+  // Get subcategories for a given parent (excluding archived)
   const getSubcategories = (parentId: string) => {
-    return categories.filter((cat) => cat.parentId === parentId);
+    return categories.filter((cat) => cat.parentId === parentId && !cat.archived);
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -111,22 +112,43 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories }) => 
     return (
       <li key={category.id}>
         <div
-          className={`text-sm text-gray-700 hover:text-primary hover:bg-gray-50 cursor-pointer flex items-center justify-between p-2 rounded-md transition-colors ${
-            isSubcategory ? "ml-4 pl-4 border-gray-100" : ""
-          } ${hasModalOptions ? "hover:bg-blue-50" : ""}`}
+          className={`
+            group relative text-sm cursor-pointer flex items-center justify-between p-2.5 rounded-md
+            transition-all duration-300 ease-in-out
+            ${isSubcategory ? "ml-4 pl-4" : ""}
+            text-gray-700 bg-transparent
+            hover:text-primary hover:bg-[#8DEB6E]/10 hover:pl-3
+            ${isSubcategory ? "hover:ml-4" : ""}
+            ${isExpanded ? "text-primary bg-[#8DEB6E]/10" : ""}
+          `}
           onClick={() => handleCategoryClick(category)}
         >
-          <span className="font-medium">{category.name}</span>
+          {/* Left accent bar - appears on hover with lemon color */}
+          <div 
+            className="absolute left-0 top-0 bottom-0 w-1 bg-[#8DEB6E] rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
+            aria-hidden="true"
+          />
+          
+          <span className="font-medium relative z-10 transition-all duration-300 group-hover:translate-x-1">
+            {category.name}
+          </span>
+          
           {hasSubcategories && (
             <span
-              className={`text-gray-400 transition-transform duration-200 ${
-                isExpanded ? "rotate-90" : ""
-              }`}
+              className={`
+                relative z-10 transition-all duration-300
+                text-gray-400 group-hover:text-primary
+                ${isExpanded ? "rotate-90 text-primary" : ""}
+              `}
             >
               ›
             </span>
           )}
-          {hasModalOptions && <span className="text-blue-500 text-xs">⚡</span>}
+          {hasModalOptions && (
+            <span className="relative z-10 text-blue-500 group-hover:text-primary text-xs transition-colors duration-300">
+              ⚡
+            </span>
+          )}
         </div>
 
         {hasSubcategories && isExpanded && (
