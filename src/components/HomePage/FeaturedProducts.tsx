@@ -19,13 +19,18 @@ const FeaturedProducts: React.FC = () => {
     return (
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Featured Products
-            </h2>
-            <p className="text-muted-foreground">
-              Loading our handpicked selection of premium items
-            </p>
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">
+                Featured Products
+              </h2>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground">
+                Loading our handpicked selection of premium items
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center justify-center py-12">
@@ -43,13 +48,18 @@ const FeaturedProducts: React.FC = () => {
     return (
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Featured Products
-            </h2>
-            <p className="text-muted-foreground">
-              Error loading our featured products
-            </p>
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">
+                Featured Products
+              </h2>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground">
+                Error loading our featured products
+              </p>
+            </div>
           </div>
 
           <Alert variant="destructive" className="max-w-md mx-auto">
@@ -71,9 +81,12 @@ const FeaturedProducts: React.FC = () => {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Featured Products
-            </h2>
+            <div className="flex items-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">
+                Featured Products
+              </h2>
+            </div>
             <p className="text-muted-foreground">
               Discover our handpicked selection of premium items
             </p>

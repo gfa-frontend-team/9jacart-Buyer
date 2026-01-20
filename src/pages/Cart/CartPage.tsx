@@ -78,7 +78,7 @@ const CartPage: React.FC = () => {
           <Card className="max-w-md mx-auto text-center">
             <CardContent className="p-12">
               <div className="flex flex-col items-center justify-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <div className="w-8 h-8 border-4 border-[#182F38] border-t-transparent rounded-full animate-spin mb-4"></div>
                 <p className="text-gray-600">Loading your cart...</p>
               </div>
             </CardContent>

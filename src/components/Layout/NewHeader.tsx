@@ -25,12 +25,10 @@ const NewHeader: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showHelpMenu, setShowHelpMenu] = useState(false);
 
   // Refs for click outside detection
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const helpMenuRef = useRef<HTMLDivElement>(null);
 
   // Mobile-friendly click outside handler
   useEffect(() => {
@@ -49,19 +47,6 @@ const NewHeader: React.FC = () => {
         }
       }
 
-      // Help menu
-      if (
-        helpMenuRef.current &&
-        !helpMenuRef.current.contains(event.target as Node)
-      ) {
-        const isMobile = window.innerWidth < 768;
-        if (isMobile) {
-          setTimeout(() => setShowHelpMenu(false), 100);
-        } else {
-          setShowHelpMenu(false);
-        }
-      }
-
       // Mobile menu
       if (
         mobileMenuRef.current &&
@@ -71,7 +56,7 @@ const NewHeader: React.FC = () => {
       }
     };
 
-    if (showAccountMenu || showMobileMenu || showHelpMenu) {
+    if (showAccountMenu || showMobileMenu) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("touchstart", handleClickOutside);
     }
@@ -80,7 +65,7 @@ const NewHeader: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [showAccountMenu, showMobileMenu, showHelpMenu]);
+  }, [showAccountMenu, showMobileMenu]);
 
   const categories = [
     "All",
@@ -120,26 +105,10 @@ const NewHeader: React.FC = () => {
     setShowAccountMenu(!showAccountMenu);
   };
 
-  const handleHelpMenuClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowHelpMenu(!showHelpMenu);
-  };
-
   const handleMenuItemClick = (e: React.MouseEvent, callback?: () => void) => {
     e.stopPropagation();
     setShowAccountMenu(false);
     callback?.();
-  };
-
-  const handleMobileLinkClick = (e: React.MouseEvent | React.TouchEvent, path: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowAccountMenu(false);
-    // Small delay to ensure menu closes before navigation
-    setTimeout(() => {
-      navigate(path);
-    }, 50);
   };
 
   const handleMobileLogout = (e: React.MouseEvent | React.TouchEvent) => {
@@ -205,22 +174,22 @@ const NewHeader: React.FC = () => {
             {/* Mobile Right Actions */}
             <div className="flex items-center gap-1">
               {/* Account Section - Mobile */}
-              <div className="relative" ref={accountMenuRef}>
-                <button
-                  className="p-2 text-white hover:bg-white/10 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                  onClick={handleAccountMenuClick}
-                >
-                  <User className="w-5 h-5" />
-                </button>
-
-                {/* Account Dropdown */}
-                {showAccountMenu && (
-                  <div
-                    className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
-                    onClick={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
+              {isAuthenticated ? (
+                <div className="relative" ref={accountMenuRef}>
+                  <button
+                    className="p-2 text-white hover:bg-white/10 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    onClick={handleAccountMenuClick}
                   >
-                    {isAuthenticated ? (
+                    <User className="w-5 h-5" />
+                  </button>
+
+                  {/* Account Dropdown */}
+                  {showAccountMenu && (
+                    <div
+                      className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
+                      onClick={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
                       <div className="p-4">
                         <div className="border-b border-gray-200 pb-3 mb-3">
                           <p className="font-medium text-gray-900">
@@ -271,38 +240,17 @@ const NewHeader: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-4">
-                        <div className="space-y-3">
-                          <button
-                            onClick={(e) => handleMobileLinkClick(e, "/auth/login")}
-                            onTouchEnd={(e) => {
-                              e.preventDefault();
-                              handleMobileLinkClick(e, "/auth/login");
-                            }}
-                            className="block w-full text-center bg-[#182F38] text-white py-3 px-4 rounded-md hover:bg-[#1a3441] active:bg-[#1a3441] transition-colors min-h-[44px] flex items-center justify-center font-medium"
-                          >
-                            Sign In
-                          </button>
-                          <p className="text-sm text-gray-500 text-center">
-                            New customer?{" "}
-                            <button
-                              onClick={(e) => handleMobileLinkClick(e, "/auth/register")}
-                              onTouchEnd={(e) => {
-                                e.preventDefault();
-                                handleMobileLinkClick(e, "/auth/register");
-                              }}
-                              className="text-[#182F38] hover:text-[#1a3441] active:text-[#1a3441] hover:underline font-medium bg-transparent border-0 cursor-pointer"
-                            >
-                              Start here
-                            </button>
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/auth/login"
+                  className="p-2 text-white hover:bg-white/10 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
+                  <User className="w-5 h-5" />
+                </Link>
+              )}
 
               {/* Cart - Mobile */}
               <Link
@@ -343,7 +291,7 @@ const NewHeader: React.FC = () => {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-primary text-primary-foreground px-3 py-2 appearance-none pr-8 min-w-[100px] w-auto max-w-[140px] font-medium h-full border-0 outline-none"
+                    className="bg-primary text-primary-foreground px-3 py-2 appearance-none pr-8 min-w-[100px] w-auto max-w-[140px] font-normal h-full border-0 outline-none"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -382,46 +330,22 @@ const NewHeader: React.FC = () => {
                 <ChevronDown className="w-3 h-3 ml-1" />
               </button> */}
 
-              {/* Help Dropdown */}
-              <div className="relative" ref={helpMenuRef}>
-                <button
-                  className="flex text-white items-center text-sm hover:bg-white/10 px-3 py-2 rounded-md cursor-pointer transition-colors"
-                  onClick={handleHelpMenuClick}
-                >
-                  <HelpCircle className="w-4 h-4 mr-2" />
-                  <span>Help</span>
-                  <ChevronDown className="w-3 h-3 ml-1" />
-                </button>
-
-                {/* Help Dropdown Menu */}
-                {showHelpMenu && (
-                  <div
-                    className="absolute right-0 top-full mt-1 w-56 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="p-2">
-                      <Link
-                        to="/contact-admin"
-                        className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowHelpMenu(false);
-                        }}
-                      >
-                        Contact Support
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Help - Direct Link */}
+              <Link
+                to="/contact-admin"
+                className="flex text-white items-center text-sm hover:bg-white/10 px-3 py-2 rounded-md cursor-pointer transition-colors"
+              >
+                <HelpCircle className="w-4 h-4 mr-2" />
+                <span>Help</span>
+              </Link>
 
               {/* Account Section */}
-              <div className="relative" ref={accountMenuRef}>
-                <button
-                  className="flex items-center text-sm text-white hover:text-white/80 hover:bg-white/5 px-3 py-2 rounded-md transition-colors"
-                  onClick={handleAccountMenuClick}
-                >
-                  {isAuthenticated ? (
+              {isAuthenticated ? (
+                <div className="relative" ref={accountMenuRef}>
+                  <button
+                    className="flex items-center text-sm text-white hover:text-white/80 hover:bg-white/5 px-3 py-2 rounded-md transition-colors"
+                    onClick={handleAccountMenuClick}
+                  >
                     <div className="flex items-center">
                       <User className="w-5 h-5 mr-2" />
                       <div className="text-left">
@@ -429,25 +353,15 @@ const NewHeader: React.FC = () => {
                         <div className="font-medium">Account & Lists</div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <User className="w-5 h-5 mr-2" />
-                      <div className="text-left">
-                        <div className="text-xs">Hello, Sign in</div>
-                        <div className="font-medium">Account & Lists</div>
-                      </div>
-                    </div>
-                  )}
-                  <ChevronDown className="w-3 h-3 ml-1" />
-                </button>
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </button>
 
-                {/* Desktop Account Dropdown */}
-                {showAccountMenu && (
-                  <div
-                    className="absolute right-0 top-full mt-1 w-80 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {isAuthenticated ? (
+                  {/* Desktop Account Dropdown */}
+                  {showAccountMenu && (
+                    <div
+                      className="absolute right-0 top-full mt-1 w-80 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="p-4">
                         <div className="border-b border-gray-200 pb-3 mb-3">
                           <p className="font-medium text-gray-900">
@@ -496,32 +410,18 @@ const NewHeader: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-4">
-                        <div className="space-y-3">
-                          <Link
-                            to="/auth/login"
-                            className="block w-full text-center bg-[#182F38] text-white py-2 px-4 rounded-md hover:bg-[#1a3441] transition-colors font-medium"
-                            onClick={(e) => handleMenuItemClick(e)}
-                          >
-                            Sign In
-                          </Link>
-                          <p className="text-sm text-gray-500 text-center">
-                            New customer?{" "}
-                            <Link
-                              to="/auth/register"
-                              className="text-[#182F38] hover:text-[#1a3441] hover:underline font-medium"
-                              onClick={(e) => handleMenuItemClick(e)}
-                            >
-                              Start here
-                            </Link>
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to="/auth/login"
+                  className="flex items-center text-sm text-white hover:text-white/80 hover:bg-white/5 px-3 py-2 rounded-md transition-colors"
+                >
+                  <User className="w-5 h-5 mr-2" />
+                  <span>Hello, Sign in</span>
+                </Link>
+              )}
 
               {/* Orders */}
               {isAuthenticated && (
@@ -561,7 +461,7 @@ const NewHeader: React.FC = () => {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-primary text-primary-foreground px-2 sm:px-3 py-2 text-xs sm:text-sm appearance-none pr-6 sm:pr-8 min-w-[80px] w-auto font-medium h-full border-0 outline-none"
+                    className="bg-primary text-primary-foreground px-2 sm:px-3 py-2 text-xs sm:text-sm appearance-none pr-6 sm:pr-8 min-w-[80px] w-auto font-normal h-full border-0 outline-none"
                   >
                     {categories.slice(0, 6).map((category) => (
                       <option key={category} value={category}>

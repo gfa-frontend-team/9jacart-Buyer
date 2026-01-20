@@ -16,7 +16,7 @@ const Loading: React.FC<LoadingProps> = ({ size = 'md', className }) => {
   return (
     <div
       className={cn(
-        'animate-spin rounded-full border-2 border-gray-300 border-t-blue-600',
+        'animate-spin rounded-full border-2 border-gray-300 border-t-[#182F38]',
         sizeClasses[size],
         className
       )}

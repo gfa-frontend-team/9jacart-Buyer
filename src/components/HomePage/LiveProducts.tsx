@@ -20,9 +20,14 @@ const LiveProducts: React.FC = () => {
     return (
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">All Live Products</h2>
-            <p className="text-muted-foreground">Loading complete inventory from our live API</p>
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">All Live Products</h2>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground">Loading complete inventory from our live API</p>
+            </div>
           </div>
           
           <div className="flex items-center justify-center py-12">
@@ -38,9 +43,14 @@ const LiveProducts: React.FC = () => {
     return (
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">All Live Products</h2>
-            <p className="text-muted-foreground">Error loading products from our live API</p>
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">All Live Products</h2>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground">Error loading products from our live API</p>
+            </div>
           </div>
           
           <Alert variant="destructive" className="max-w-md mx-auto">
@@ -60,9 +70,14 @@ const LiveProducts: React.FC = () => {
     return (
       <section className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">All Live Products</h2>
-            <p className="text-muted-foreground">Complete inventory from our live API</p>
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">All Live Products</h2>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground">Complete inventory from our live API</p>
+            </div>
           </div>
           
           <div className="text-center py-12">
@@ -79,7 +94,10 @@ const LiveProducts: React.FC = () => {
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">All Live Products</h2>
+            <div className="flex items-center mb-4">
+              <div className="w-4 h-10 rounded bg-primary mr-2"></div>
+              <h2 className="text-3xl font-bold text-foreground">All Live Products</h2>
+            </div>
             <p className="text-muted-foreground">Complete inventory from our live API - All available products</p>
           </div>
           
