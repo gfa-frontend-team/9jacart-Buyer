@@ -44,10 +44,10 @@ const LoginPage: React.FC = () => {
     }));
   };
 
-  const handleGoogleSuccess = async (idToken: string, accessToken: string) => {
+  const handleGoogleSuccess = async (idToken: string) => {
     setError('');
     try {
-      await googleLogin(idToken, accessToken);
+      await googleLogin(idToken);
       
       // Redirect to the intended page or home
       const redirectTo = searchParams.get('redirect') || '/';

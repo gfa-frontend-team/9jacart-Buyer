@@ -296,7 +296,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <div 
             className="p-3 sm:p-4 space-y-2 sm:space-y-3"
             style={{
-              background: 'linear-gradient(to bottom, #ffffff 0%, #ffffff 40%, #8deb6e1a 100%)'
+              background: 'linear-gradient(to bottom, rgba(141, 235, 110, 0.08) 0%, rgba(141, 235, 110, 0.1) 100%)'
             }}
           >
             {/* Store Name */}
@@ -313,8 +313,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </p>
             )}
 
-            {/* Product Name */}
-            <h3 className="font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
+            {/* Product Name - Fixed height to prevent white space on single-line names */}
+            <h3 className="font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug min-h-[2.5rem] sm:min-h-[3rem]">
               {product.name}
             </h3>
 

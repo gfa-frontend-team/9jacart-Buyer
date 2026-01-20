@@ -26,7 +26,7 @@ export interface ResendOtpRequest {
 
 export interface GoogleLoginRequest {
   idToken: string; // ID Token (JWT) from Google
-  accessToken: string; // Access Token from Google
+  accessToken: string; // Access Token (same as idToken for Google OAuth)
 }
 
 // Auth API response types

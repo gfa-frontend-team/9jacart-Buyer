@@ -15,7 +15,7 @@ interface AuthStore {
     verificationId: string;
   } | null;
   login: (email: string, password: string) => Promise<void>;
-  googleLogin: (idToken: string, accessToken: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   register: (
     userData: Omit<User, "id" | "token"> & { password: string }
   ) => Promise<{ verificationId: string; identifier: string }>;
@@ -71,13 +71,13 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      googleLogin: async (idToken, accessToken) => {
+      googleLogin: async (idToken) => {
         set({ isLoading: true });
 
         try {
           const googleData: GoogleLoginRequest = {
-            idToken, // Send the ID Token (JWT) from Google
-            accessToken, // Send the Access Token from Google
+            idToken, // ID Token (JWT) from Google
+            accessToken: idToken, // Access Token (same as idToken - backend requires both fields)
           };
 
           const response = await authApi.googleLogin(googleData);

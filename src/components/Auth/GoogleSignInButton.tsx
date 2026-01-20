@@ -1,9 +1,8 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
-import { config } from '../../lib/config';
 
 interface GoogleSignInButtonProps {
-  onSuccess: (idToken: string, accessToken: string) => void;
+  onSuccess: (idToken: string) => void;
   onError?: (error: Error) => void;
   disabled?: boolean;
   text?: string;
@@ -17,18 +16,8 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
 }) => {
   const handleSuccess = (credentialResponse: any) => {
     if (credentialResponse.credential) {
-      // Get the access token from config (set in .env file)
-      const accessToken = config.auth.google.accessToken;
-      
-      if (!accessToken) {
-        if (onError) {
-          onError(new Error('Google access token is not configured. Please add VITE_GOOGLE_ACCESS_TOKEN to your .env file.'));
-        }
-        return;
-      }
-      
-      // Pass both the ID Token (JWT from Google) and Access Token to parent component
-      onSuccess(credentialResponse.credential, accessToken);
+      // Pass only the ID Token (JWT from Google) to parent component
+      onSuccess(credentialResponse.credential);
     } else {
       if (onError) {
         onError(new Error('No credential received from Google'));

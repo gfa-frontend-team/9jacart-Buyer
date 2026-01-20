@@ -88,10 +88,10 @@ const RegisterPage: React.FC = () => {
     }));
   };
 
-  const handleGoogleSuccess = async (idToken: string, accessToken: string) => {
+  const handleGoogleSuccess = async (idToken: string) => {
     setError('');
     try {
-      await googleLogin(idToken, accessToken);
+      await googleLogin(idToken);
       
       // Redirect to home page after successful Google sign-up
       navigate('/');
