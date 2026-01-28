@@ -35,7 +35,16 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-6 text-white">Make Money With Us</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/sell" className="text-gray-300 hover:text-white transition-colors">Sell Products on 9Jacart</Link></li>
+              <li>
+                <a
+                  href="https://9ja-cart-selle.vercel.app/sell-product"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Sell Products on 9Jacart
+                </a>
+              </li>
               {/* <li><Link to="/advertise" className="text-gray-300 hover:text-white transition-colors">Advertise Your Product</Link></li>
               <li><Link to="/affiliate" className="text-gray-300 hover:text-white transition-colors">Become an Affiliate</Link></li> */}
             </ul>

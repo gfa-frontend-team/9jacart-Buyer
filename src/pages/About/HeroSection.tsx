@@ -45,14 +45,15 @@ const HeroSection = () => {
             variants={fadeInUp}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <motion.button
+            <motion.a
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              href="https://9ja-cart-selle.vercel.app/sell-product"
               className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
             >
               Join Our Marketplace
               <ArrowRight className="w-4 h-4" />
-            </motion.button>
+            </motion.a>
             <motion.a
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

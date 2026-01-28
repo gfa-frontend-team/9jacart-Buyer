@@ -5,7 +5,7 @@ const CTASection = () => {
 
 
   return (
-    <section className="py-20 px-4 bg-primary text-primary-foreground">
+    <section className="py-20 px-4 bg-primary/5">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -29,14 +29,14 @@ const CTASection = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-white text-primary rounded-lg font-medium hover:bg-white/90 transition-colors"
+              className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               Start Selling Today
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 border-2 border-white text-white rounded-lg font-medium hover:bg-white/10 transition-colors"
+              className="px-8 py-3 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors"
             >
               Contact Our Team
             </motion.button>
