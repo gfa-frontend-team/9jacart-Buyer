@@ -402,7 +402,21 @@ const VendorStorefrontPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Best Sellers Grid (Top) - Only show when no filters are applied */}
+        {/* 3. All Products (active) - Only show when no filters are applied */}
+        {vendorProducts.length > 0 && !selectedCategory && !searchQuery.trim() && (
+          <div className="mb-10">
+            <h3 className="text-lg font-bold text-[#182F38] mb-4">
+              All Products
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+              {(sortBy === "default" ? vendorProducts : sortProducts([...vendorProducts], sortBy)).map((product) => (
+                <ProductCard key={product.id} product={normalizeProductImages(product)} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 4. Best Sellers Grid - Only show when no filters are applied */}
         {bestSellers.length > 0 && !selectedCategory && !searchQuery.trim() && (
           <div className="mb-10">
             <h3 className="text-lg font-bold text-[#182F38] mb-4 flex items-center gap-2">
@@ -417,40 +431,42 @@ const VendorStorefrontPage: React.FC = () => {
           </div>
         )}
 
-        {/* 4. Promo Banner */}
-        <PromoBanner />
+        {/* 5. Promo Banner - commented out so it doesn't show on the frontend */}
+        {/* <PromoBanner /> */}
 
-        {/* 5. Main Product Grid */}
-        <div className="mb-14">
-          {filteredProducts.length === 0 && !loading ? (
-            <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                <Search className="w-8 h-8" />
+        {/* 6. Main Product Grid - only when filters are applied (category or search) */}
+        {(selectedCategory || searchQuery.trim()) && (
+          <div className="mb-14">
+            {filteredProducts.length === 0 && !loading ? (
+              <div className="text-center py-20 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                  <Search className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  No products found
+                </h3>
+                <p className="text-gray-500 mt-1">
+                  Try adjusting your search or filters.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("");
+                  }}
+                  className="mt-4 text-[#1E4700] font-medium hover:underline"
+                >
+                  Clear all filters
+                </button>
               </div>
-              <h3 className="text-lg font-medium text-gray-900">
-                No products found
-              </h3>
-              <p className="text-gray-500 mt-1">
-                Try adjusting your search or filters.
-              </p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory("");
-                }}
-                className="mt-4 text-[#1E4700] font-medium hover:underline"
-              >
-                Clear all filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={normalizeProductImages(product)} />
-              ))}
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={normalizeProductImages(product)} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
