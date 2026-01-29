@@ -314,6 +314,10 @@ export type RecentlyViewedApiItem = Record<string, unknown> & {
   storeName?: string;
   vendorLogo?: string;
   createdAt?: string;
+  /** Optional: average rating 0–5 */
+  averageRating?: number;
+  /** Optional: total number of ratings */
+  totalRatings?: number;
 };
 
 function mapStockStatus(status?: string): 'in_stock' | 'limited_stock' | 'out_of_stock' {
@@ -364,7 +368,10 @@ function mapRecentlyViewedItemToProductSummary(item: RecentlyViewedApiItem): Pro
     },
     inventory: { inStock, status },
     images: { main: mainImg, alt: name },
-    reviews: { average: 4, total: 0 },
+    reviews: {
+      average: typeof item.averageRating === 'number' ? item.averageRating : 4,
+      total: typeof item.totalRatings === 'number' ? item.totalRatings : 1,
+    },
     flags: { featured: false, newArrival: false, bestseller: false },
     vendorId,
     storeName,

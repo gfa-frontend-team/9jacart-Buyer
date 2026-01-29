@@ -253,19 +253,26 @@
     @apply gap-3 sm:gap-4 lg:gap-6;
   }
 
-  /* Google Sign-In button full width fix */
+  /* Google Sign-In button full width fix (login + sign up) */
   .google-signin-wrapper {
     width: 100% !important;
+    min-width: 100% !important;
+    display: block !important;
+    overflow: visible !important;
   }
   
   .google-signin-wrapper > div {
     width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
   }
   
+  .google-signin-wrapper iframe,
   div[id*="google-signin"],
   div[id*="google-signin"] > div,
   iframe[id*="google-signin"] {
     width: 100% !important;
+    min-width: 100% !important;
     max-width: 100% !important;
   }
 

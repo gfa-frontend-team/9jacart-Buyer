@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, Navigate } from "react-router-dom";
+import { Search } from "lucide-react";
 import { Breadcrumb, Loading, Alert } from "../../components/UI";
 import ProductCard from "../../components/Product/ProductCard";
 import CategoriesSidebar from "../../components/HomePage/CategoriesSidebar";
@@ -11,8 +12,18 @@ import { normalizeProductImages } from "@/lib/utils";
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
+
+  // Typing search (Storefront-style): apply automatically as user types.
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery.trim());
+    }, 300);
+    return () => window.clearTimeout(handle);
+  }, [searchQuery]);
 
   // Redirect services category to services page
   if (categoryId === "services") {
@@ -22,8 +33,12 @@ const CategoryPage: React.FC = () => {
   const { categories, loading: categoriesLoading, error: categoriesError } = useAllRealCategories();
 
   const params = React.useMemo(
-    () => ({ page: currentPage, perPage }),
-    [currentPage, perPage]
+    () => ({
+      page: currentPage,
+      perPage,
+      ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
+    }),
+    [currentPage, perPage, debouncedSearchQuery]
   );
 
   // Single fetch for category products; derive main list + Related Items from allProducts
@@ -34,10 +49,10 @@ const CategoryPage: React.FC = () => {
 
   const { products: featuredPool } = useFeaturedProducts(16);
 
-  // Reset page when category changes
+  // Reset page when category or search changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [categoryId]);
+  }, [categoryId, debouncedSearchQuery]);
 
   const isInitialLoad = loading && products.length === 0;
 
@@ -112,6 +127,32 @@ const CategoryPage: React.FC = () => {
               Showing {products.length} of {pagination.totalItems} active product
               {pagination.totalItems !== 1 ? "s" : ""}
             </p>
+          </div>
+
+          {/* Search */}
+          <div className="w-full sm:w-auto sm:max-w-md">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2ac12a] focus:border-[#2ac12a]"
+              />
+              <button
+                onClick={() => {
+                  setDebouncedSearchQuery(searchQuery.trim());
+                  setCurrentPage(1);
+                }}
+                className="bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary p-2.5 rounded-lg border border-[#2ac12a] transition-colors cursor-pointer flex items-center justify-center"
+                aria-label="Search"
+              >
+                {loading ? <Loading size="sm" /> : <Search className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -192,6 +233,11 @@ const CategoryPage: React.FC = () => {
                   <p className="text-gray-500 text-lg">
                     No products found in this category
                   </p>
+                  {searchQuery.trim() && (
+                    <p className="text-gray-400 mt-2">
+                      Try adjusting your search terms
+                    </p>
+                  )}
                 </div>
               </div>
             )}

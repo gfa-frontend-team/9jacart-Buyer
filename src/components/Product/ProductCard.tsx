@@ -237,7 +237,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {discount && discount.percentage > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute top-2 left-2 z-20 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md"
+                className="absolute top-2 left-2 z-20 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md hover:text-white"
               >
                 -{discount.percentage}%
               </Badge>

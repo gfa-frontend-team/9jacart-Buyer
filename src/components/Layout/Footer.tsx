@@ -114,7 +114,7 @@ const Footer: React.FC = () => {
             <h4 className="text-white font-semibold mb-4">Quick Link</h4>
             <ul className="space-y-2 text-sm mb-4">
               <li><Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms Of Use</Link></li>
+              <li><Link to="/terms-of-use" className="text-gray-300 hover:text-white transition-colors">Terms Of Use</Link></li>
               {/* <li><Link to="/faq" className="text-gray-300 hover:text-white transition-colors">FAQ</Link></li> */}
             </ul>
             

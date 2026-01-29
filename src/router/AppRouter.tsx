@@ -185,6 +185,8 @@ import { LoginPage, RegisterPage, RegistrationSuccessPage, VerifyEmailPage } fro
 import ContactPage from "../pages/Support/ContactPage";
 import FAQPage from "../pages/Support/FAQPage";
 import TermsPage from "../pages/Support/TermsPage";
+import PrivacyPolicyPage from "../pages/Support/PrivacyPolicyPage";
+import TermsOfUsePage from "../pages/Support/TermsOfUsePage";
 
 // Additional pages
 import CategoryPage from "../pages/Categories/CategoryPage";
@@ -342,6 +344,14 @@ const router = createBrowserRouter([
       {
         path: "terms",
         element: <TermsPage />,
+      },
+      {
+        path: "privacy",
+        element: <PrivacyPolicyPage />,
+      },
+      {
+        path: "terms-of-use",
+        element: <TermsOfUsePage />,
       },
       {
         path: "about",

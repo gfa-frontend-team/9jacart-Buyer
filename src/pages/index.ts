@@ -25,6 +25,8 @@ export { default as RegisterPage } from './Auth/RegisterPage';
 export { default as ContactPage } from './Support/ContactPage';
 export { default as FAQPage } from './Support/FAQPage';
 export { default as TermsPage } from './Support/TermsPage';
+export { default as PrivacyPolicyPage } from './Support/PrivacyPolicyPage';
+export { default as TermsOfUsePage } from './Support/TermsOfUsePage';
 
 // Categories & Search
 export { default as CategoryPage } from './Categories/CategoryPage';

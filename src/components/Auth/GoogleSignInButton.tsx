@@ -40,12 +40,16 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
       style = document.createElement('style');
       style.id = styleId;
       style.textContent = `
+        .google-signin-wrapper,
+        .google-signin-wrapper > div,
+        .google-signin-wrapper iframe,
         div[id*="google-signin"],
         div[id*="google-signin"] > div,
         iframe[id*="google-signin"],
         div[data-testid*="google-signin"],
         div[data-testid*="google-signin"] > div {
           width: 100% !important;
+          min-width: 100% !important;
           max-width: 100% !important;
         }
       `;
@@ -54,10 +58,12 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
 
     // Also use MutationObserver to catch dynamically added elements
     const observer = new MutationObserver(() => {
-      const googleElements = document.querySelectorAll('div[id*="google-signin"], iframe[id*="google-signin"]');
+      const googleElements = document.querySelectorAll('.google-signin-wrapper div[id*="google-signin"], .google-signin-wrapper iframe[id*="google-signin"], .google-signin-wrapper iframe');
       googleElements.forEach((el: Element) => {
-        (el as HTMLElement).style.width = '100%';
-        (el as HTMLElement).style.maxWidth = '100%';
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.width = '100%';
+        htmlEl.style.minWidth = '100%';
+        htmlEl.style.maxWidth = '100%';
       });
     });
 
@@ -73,8 +79,8 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
   }, []);
 
   return (
-    <div className={`w-full google-signin-wrapper ${disabled ? 'pointer-events-none opacity-50' : ''}`} style={{ width: '100%' }}>
-      <div style={{ width: '100%', minWidth: '100%' }}>
+    <div className={`w-full min-w-full google-signin-wrapper ${disabled ? 'pointer-events-none opacity-50' : ''}`} style={{ width: '100%', minWidth: '100%' }}>
+      <div className="w-full min-w-full" style={{ width: '100%', minWidth: '100%' }}>
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
