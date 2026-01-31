@@ -18,7 +18,7 @@ const FeaturedProducts: React.FC = () => {
   if (loading) {
     return (
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="flex items-center justify-center mb-4">
               <div className="w-4 h-10 rounded bg-primary mr-2"></div>
@@ -47,7 +47,7 @@ const FeaturedProducts: React.FC = () => {
   if (error) {
     return (
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="flex items-center justify-center mb-4">
               <div className="w-4 h-10 rounded bg-primary mr-2"></div>
@@ -77,7 +77,7 @@ const FeaturedProducts: React.FC = () => {
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <div>

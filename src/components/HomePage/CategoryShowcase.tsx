@@ -134,7 +134,7 @@ const CategoryShowcase: React.FC = () => {
                 <div className="w-4 h-10 rounded bg-primary mr-2 flex-shrink-0"></div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Category</h2>
               </div>
-              <p className="text-muted-foreground mt-2 ml-6">Find best-selling products fast</p>
+              <p className="text-muted-foreground mt-2">Find best-selling products fast</p>
             </div>
           </div>
           
@@ -161,7 +161,7 @@ const CategoryShowcase: React.FC = () => {
               <div className="w-4 h-10 rounded bg-primary mr-2 flex-shrink-0"></div>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Category</h2>
             </div>
-            <p className="text-muted-foreground mt-2 ml-6">Find best-selling products fast</p>
+            <p className="text-muted-foreground mt-2">Find best-selling products fast</p>
           </div>
         </div>
         
@@ -183,7 +183,7 @@ const CategoryShowcase: React.FC = () => {
               <div className="w-4 h-10 rounded bg-primary mr-2 flex-shrink-0"></div>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Shop by Category</h2>
             </div>
-            <p className="text-muted-foreground mt-2 ml-6">Find best-selling products fast</p>
+            <p className="text-muted-foreground mt-2 ">Find best-selling products fast</p>
           </div>
 
           {/* Navigation Arrows */}
