@@ -19,7 +19,7 @@ const LiveProducts: React.FC = () => {
   if (loading) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="flex items-center justify-center mb-4">
               <div className="w-4 h-10 rounded bg-primary mr-2"></div>
@@ -42,7 +42,7 @@ const LiveProducts: React.FC = () => {
   if (error) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="flex items-center justify-center mb-4">
               <div className="w-4 h-10 rounded bg-primary mr-2"></div>
@@ -69,7 +69,7 @@ const LiveProducts: React.FC = () => {
   if (!products || products.length === 0) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="flex items-center justify-center mb-4">
               <div className="w-4 h-10 rounded bg-primary mr-2"></div>
@@ -90,7 +90,7 @@ const LiveProducts: React.FC = () => {
 
   return (
     <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <div>

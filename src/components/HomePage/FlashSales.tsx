@@ -24,7 +24,7 @@ export default function FlashSales() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Fast Selling" />
-            <p className="text-muted-foreground mt-2 ml-6">Popular items selling out quickly</p>
+            <p className="text-muted-foreground mt-2">Popular items selling out quickly</p>
           </div>
 
           <div className="flex items-center justify-center py-12">
@@ -42,7 +42,7 @@ export default function FlashSales() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Fast Selling" />
-            <p className="text-muted-foreground mt-2 ml-6">Popular items selling out quickly</p>
+            <p className="text-muted-foreground mt-2">Popular items selling out quickly</p>
           </div>
 
           <Alert variant="destructive" className="max-w-md mx-auto">
@@ -64,7 +64,7 @@ export default function FlashSales() {
         {/* Header Section */}
         <div className="mb-8">
           <SectionHeader text="Fast Selling" />
-          <p className="text-muted-foreground mt-2 ml-6">Popular items selling out quickly</p>
+          <p className="text-muted-foreground mt-2">Popular items selling out quickly</p>
         </div>
 
         {/* Product Grid - Improved responsive layout */}
