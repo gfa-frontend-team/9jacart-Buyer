@@ -115,10 +115,10 @@ const VerifyEmailPage: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="border border-[#C8E6C8] rounded-lg p-8 bg-[#F8FEF8] shadow-sm">
       <div className="text-center mb-8">
-        <div className="mx-auto flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-          <Mail className="w-8 h-8 text-blue-600" />
+        <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+          <Mail className="w-8 h-8 text-green-600" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h1>
         <p className="text-gray-600">
@@ -164,7 +164,7 @@ const VerifyEmailPage: React.FC = () => {
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="w-12 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-12 h-12 text-center text-lg font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   autoComplete="off"
                 />
               ))}
@@ -189,7 +189,7 @@ const VerifyEmailPage: React.FC = () => {
               type="button"
               onClick={handleResendOtp}
               disabled={resendCooldown > 0 || isLoading}
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 disabled:text-gray-400 disabled:cursor-not-allowed"
+              className="text-sm font-medium text-green-800 hover:text-green-900 disabled:text-gray-400 disabled:cursor-not-allowed"
             >
               {resendCooldown > 0 
                 ? `Resend in ${resendCooldown}s` 

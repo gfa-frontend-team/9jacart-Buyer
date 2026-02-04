@@ -21,7 +21,7 @@ const RegistrationSuccessPage: React.FC = () => {
 
   return (
     <div className="text-center">
-      <div className="border border-gray-300 rounded-lg p-8">
+      <div className="border border-[#C8E6C8] rounded-lg p-8 bg-[#F8FEF8] shadow-sm">
         <div className="mb-8">
           <div className="mx-auto flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -32,7 +32,7 @@ const RegistrationSuccessPage: React.FC = () => {
           </p>
         </div>
 
-        <Alert variant="default" className="mb-6 border-blue-200 bg-blue-50 text-blue-800" showIcon={false}>
+        <Alert variant="default" className="mb-6 border-green-200 bg-green-50 text-green-800" showIcon={false}>
           <div className="text-center">
             <p className="font-medium flex items-center justify-center gap-2 mb-1">
               <Mail className="w-4 h-4" />
@@ -57,7 +57,7 @@ const RegistrationSuccessPage: React.FC = () => {
             Didn't receive the email?{' '}
             <Link 
               to="/auth/verify-email" 
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-green-800 hover:text-green-900"
             >
               Resend verification code
             </Link>
