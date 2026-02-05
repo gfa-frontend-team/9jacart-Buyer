@@ -1,4 +1,5 @@
 import React from "react";
+import PolicySidebar from "../../components/Layout/PolicySidebar";
 
 const ShippingReturnPolicyPage: React.FC = () => {
   return (
@@ -12,8 +13,11 @@ const ShippingReturnPolicyPage: React.FC = () => {
       </section>
 
       <section className="py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <PolicySidebar />
+            <div className="flex-1 min-w-0">
+              <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
             <p>
               At 9jacart.ng, we are committed to providing a seamless, reliable, and customer-centric
               shipping and return experience that aligns with global best practices, including those outlined
@@ -139,6 +143,8 @@ const ShippingReturnPolicyPage: React.FC = () => {
               aiming for a 99% on-time delivery rate and resolution satisfaction. Violations of this policy
               (e.g., fraudulent returns) may result in account suspension.
             </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

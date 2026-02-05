@@ -1,4 +1,5 @@
 import React from "react";
+import PolicySidebar from "../../components/Layout/PolicySidebar";
 
 const DisputePolicyPage: React.FC = () => {
   return (
@@ -12,8 +13,11 @@ const DisputePolicyPage: React.FC = () => {
       </section>
 
       <section className="py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <PolicySidebar />
+            <div className="flex-1 min-w-0">
+              <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
             <p>
               Our Dispute Resolution Policy at 9jacart.ng adheres to global standards such as the
               UNCITRAL Model Law on International Commercial Conciliation and Nigeria's Arbitration
@@ -107,6 +111,8 @@ const DisputePolicyPage: React.FC = () => {
             <p>
               This policy ensures equitable outcomes, with a 95%+ resolution rate in internal tiers.
             </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

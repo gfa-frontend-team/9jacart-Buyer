@@ -1,4 +1,5 @@
 import React from "react";
+import PolicySidebar from "../../components/Layout/PolicySidebar";
 
 const RefundPolicyPage: React.FC = () => {
   return (
@@ -12,8 +13,11 @@ const RefundPolicyPage: React.FC = () => {
       </section>
 
       <section className="py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <PolicySidebar />
+            <div className="flex-1 min-w-0">
+              <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
             <p>
               9jacart.ng's Cancellation and Refund Policy is crafted to embody global best practices,
               drawing from frameworks like the EU Consumer Rights Directive and Nigeria's FCCPC
@@ -123,6 +127,8 @@ const RefundPolicyPage: React.FC = () => {
               We track refund satisfaction and aim for 100% resolution within stipulated timelines. Abuse
               of this policy may lead to restrictions.
             </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

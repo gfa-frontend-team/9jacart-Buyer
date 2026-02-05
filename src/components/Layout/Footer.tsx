@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href="https://9ja-cart-selle.vercel.app/sell-product"
+                  href="http://vendors.9jacart.ng"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-white transition-colors"

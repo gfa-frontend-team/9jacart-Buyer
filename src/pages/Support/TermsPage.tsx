@@ -1,4 +1,5 @@
 import React from "react";
+import PolicySidebar from "../../components/Layout/PolicySidebar";
 
 const TermsPage: React.FC = () => {
   return (
@@ -12,8 +13,11 @@ const TermsPage: React.FC = () => {
       </section>
 
       <section className="py-16 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
+        <div className="container mx-auto max-w-6xl">
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <PolicySidebar />
+            <div className="flex-1 min-w-0">
+              <div className="bg-card border border-gray-300 rounded-xl p-6 md:p-8 shadow-sm space-y-8 text-muted-foreground">
             <p>
               These Terms and Conditions (&quot;Terms&quot;) govern your use of 9jacart.ng, operated by 9jacart.ng
               Limited in Lagos, Nigeria. By accessing or using our platform, you agree to these Terms, which
@@ -86,6 +90,8 @@ const TermsPage: React.FC = () => {
             <p className="text-sm text-muted-foreground/80">
               Last updated: January 29, 2026.
             </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
