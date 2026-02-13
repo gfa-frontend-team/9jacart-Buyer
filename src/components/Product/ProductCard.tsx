@@ -236,7 +236,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <Card
       className={cn(
-        "group relative bg-white border-none border-0 rounded-none overflow-hidden cursor-pointer w-full h-full",
+        "group relative bg-white border-none border-0 rounded-md overflow-hidden cursor-pointer w-full h-full",
         className
       )}
     >

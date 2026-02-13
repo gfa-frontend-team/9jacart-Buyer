@@ -19,7 +19,7 @@ const FeaturedProducts: React.FC = () => {
   if (loading) {
     return (
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader text="Featured Picks" subtitle="Handpicked products you don't want to miss" />
           </div>
@@ -38,7 +38,7 @@ const FeaturedProducts: React.FC = () => {
   if (error) {
     return (
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader text="Featured Picks" subtitle="Error loading our featured picks" />
           </div>
@@ -58,7 +58,7 @@ const FeaturedProducts: React.FC = () => {
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <SectionHeader text="Featured Picks" subtitle="Handpicked products you don't want to miss" />

@@ -10,6 +10,10 @@ const config: Config = {
       screens: {
         'xs': '475px',
         '3xl': '1600px',
+        '2xl-wide': '1600px',
+      },
+      maxWidth: {
+        '8xl': '1400px', // Custom max-width for the layout
       },
       spacing: {
         '18': '4.5rem',

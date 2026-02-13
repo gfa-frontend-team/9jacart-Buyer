@@ -15,12 +15,12 @@ const Footer: React.FC = () => {
   // };
 
   return (
-    <footer className="bg-[#182F38] text-white">
+    <footer className="bg-[#182F38] text-white ">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className=" mx-auto max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 sm:mb-12">
           {/* Know Us More */}
-          <div>
+          <div className='lg:mx-auto'>
             <h3 className="text-lg font-semibold mb-6 text-white">Know Us More</h3>
             <ul className="space-y-3 text-sm">
               {/* <li><Link to="/careers" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li> */}
@@ -32,7 +32,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Make Money With Us */}
-          <div>
+          <div className='lg:mx-auto'>
             <h3 className="text-lg font-semibold mb-6 text-white">Make Money With Us</h3>
             <ul className="space-y-3 text-sm">
               <li>
@@ -57,7 +57,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* 9Jacart Payment Options */}
-          <div>
+          <div className='lg:mx-auto'>
             <h3 className="text-lg font-semibold mb-6 text-white">9Jacart Payment Options</h3>
             <ul className="space-y-3 text-sm">
               <li><span className="text-gray-300">Bank Payments (Visa, MasterCard)</span></li>
@@ -72,7 +72,7 @@ const Footer: React.FC = () => {
         {/* Bottom Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 border-t border-gray-600 pt-6 lg:pt-8">
           {/* Logo, Contact Info & Social Media */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 lg:mx-auto">
             <div className="flex items-center mb-4">
               <img src={logoImage} alt="9ja-cart" className="h-8 w-auto" />
             </div>
@@ -113,7 +113,7 @@ const Footer: React.FC = () => {
 
 
           {/* Account */}
-          <div>
+          <div className='lg:mx-auto'>
             <h4 className="text-white font-semibold mb-4">Account</h4>
             <ul className="space-y-2 text-sm">
               <li><Link to="/account" className="text-gray-300 hover:text-white transition-colors">My Account</Link></li>
@@ -125,7 +125,7 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className='lg:mx-auto'>
             <h4 className="text-white font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               {/* <li><Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li> */}

@@ -102,6 +102,8 @@ const ProductDetailPage: React.FC = () => {
         3000
       );
     } catch (error) {
+
+      console.error(error)
       showNotification(
         'Failed to add product to cart. Please try again.',
         'error',
@@ -109,7 +111,7 @@ const ProductDetailPage: React.FC = () => {
       );
     }
   };
-
+  
   const handleCheckout = async () => {
     if (!product) return;
     try {
@@ -121,6 +123,7 @@ const ProductDetailPage: React.FC = () => {
       );
       navigate("/checkout");
     } catch (error) {
+      console.error(error)
       showNotification(
         'Failed to add product to cart. Please try again.',
         'error',
@@ -205,7 +208,7 @@ const ProductDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <div className="flex items-center justify-center py-12">
             <Loading size="lg" />
           </div>
@@ -217,7 +220,7 @@ const ProductDetailPage: React.FC = () => {
   if (error || !product) {
     return (
       <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error || "Product not found"}
           </Alert>
@@ -241,8 +244,8 @@ const ProductDetailPage: React.FC = () => {
     typeof product.price === "object" ? product.price.discount : undefined;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <div className=" mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
 

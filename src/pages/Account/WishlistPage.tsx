@@ -15,6 +15,7 @@ import WishlistItem from "../../components/Wishlist/WishlistItem";
 import EmptyWishlist from "../../components/Wishlist/EmptyWishlist";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
+import Container from "@/components/Layout/Container";
 
 type SortOption = "newest" | "oldest" | "price-low" | "price-high" | "name";
 type ViewMode = "grid" | "list";
@@ -95,8 +96,8 @@ const WishlistPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <Container className="min-h-screen bg-background">
+        <div className=" mx-auto px-4 py-6">
           {/* Breadcrumb */}
           <div className="mb-6">
             <div className="flex items-center text-sm text-muted-foreground space-x-2">
@@ -112,13 +113,13 @@ const WishlistPage: React.FC = () => {
             <EmptyWishlist />
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <Container className="min-h-screen bg-background">
+      <div className=" mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <div className="mb-6">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
@@ -310,7 +311,7 @@ const WishlistPage: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 

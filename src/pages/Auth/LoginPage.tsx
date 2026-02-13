@@ -261,6 +261,7 @@ const LoginPage: React.FC = () => {
                   Forgot your password?
                 </button>
               </div>
+              
             </div>
 
             <Button

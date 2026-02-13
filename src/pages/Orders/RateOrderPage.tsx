@@ -5,6 +5,7 @@ import { Loading, Alert, Button, Card } from '../../components/UI';
 import { orderApi } from '../../api/order';
 import type { ApiOrderItem } from '../../api/order';
 import { cn } from '../../lib/utils';
+import Container from '@/components/Layout/Container';
 
 interface ItemRating {
   productId: string;
@@ -171,19 +172,19 @@ const RateOrderPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Container className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loading size="lg" />
           <p className="mt-4 text-gray-600">Loading order items...</p>
         </div>
-      </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <Card className="max-w-md w-full">
+      <Container className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <Card className=" w-full">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Error</h2>
@@ -193,14 +194,14 @@ const RateOrderPage: React.FC = () => {
             </Button>
           </div>
         </Card>
-      </div>
+      </Container>
     );
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <Card className="max-w-md w-full">
+      <Container className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <Card className=" w-full">
           <div className="text-center py-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -216,12 +217,12 @@ const RateOrderPage: React.FC = () => {
             </p>
           </div>
         </Card>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <Container className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Rate Your Order</h1>
@@ -356,7 +357,7 @@ const RateOrderPage: React.FC = () => {
           </div>
         </form>
       </div>
-    </div>
+    </Container>
   );
 };
 

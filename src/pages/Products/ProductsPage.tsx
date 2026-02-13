@@ -7,6 +7,7 @@ import RecentlyViewedProductsSection from '../../components/HomePage/RecentlyVie
 import { useBuyerActiveProductsList } from '../../hooks/api/useRealProducts';
 import { useAllRealCategories } from '../../hooks/api/useRealCategories';
 import { normalizeProductImages } from '@/lib/utils';
+import Container from '@/components/Layout/Container';
 
 const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,19 +42,19 @@ const ProductsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-6 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <div className=" mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6" />
         

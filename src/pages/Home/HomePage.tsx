@@ -8,12 +8,18 @@ import RecentlyViewedProductsSection from "@/components/HomePage/RecentlyViewedP
 import { useAuthStore } from "@/store/useAuthStore";
 // import Newsletter from "@/components/HomePage/Newsletter";
 import React from "react";
+import { Helmet } from "react-helmet-async";
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <Helmet>
+        <title>9ja-cart - Buy and Sell Online in Nigeria</title>
+        <meta name="description" content="Welcome to 9ja-cart. Shop the best headsets, keyboards, and electronics with fast delivery." />
+        <link rel="icon" type="image/svg+xml" href="/9Jacart Icon SVG.svg" />
+      </Helmet>
       {/* Hero Section */}
       <HeroSection />
 

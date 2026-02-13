@@ -21,6 +21,7 @@ import {
 } from "../../components/UI";
 import { orderApi, type OrderDetailResponse } from "../../api/order";
 import { cn } from "../../lib/utils";
+import Container from "@/components/Layout/Container";
 
 type OrderStatus =
   | "order-placed"
@@ -273,25 +274,25 @@ const TrackOrderPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <div className="flex items-center justify-center py-12">
             <Loading size="lg" />
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 
   if (error || !orderDetails) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error || "Order not found"}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -304,8 +305,8 @@ const TrackOrderPage: React.FC = () => {
   const trackingSteps = getTrackingSteps(orderDetails.status, orderDetails.apiStatus);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <Container className="p-0 bg-gray-50">
+      <div className=" mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
@@ -691,7 +692,7 @@ const TrackOrderPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

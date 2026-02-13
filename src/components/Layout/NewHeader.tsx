@@ -146,10 +146,10 @@ const NewHeader: React.FC = () => {
 
   return (
     // <header className="fixed top-0 left-0 w-full z-50 bg-[#182F38]/95 backdrop-blur-md text-white shadow-lg border-b border-gray-700">
-    <header className="sticky top-0 z-50 bg-[#182F38]/95 backdrop-blur-md text-white shadow-lg border-b border-gray-700">
+    <header className=" sticky top-0 z-50 bg-[#182F38]/95 backdrop-blur-md text-white shadow-lg border-b border-gray-700">
       {/* Main Header */}
-      <div className="px-2 sm:px-4 py-2 sm:py-3">
-        <div className="max-w-7xl mx-auto">
+      <div className=" px-2 sm:px-4 py-2 sm:py-3">
+        <div className="max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
           {/* Top row for mobile - Logo and essential actions */}
           <div className="flex items-center justify-between gap-2 sm:gap-4 lg:hidden mb-2">
             {/* Mobile Menu Button */}

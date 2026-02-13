@@ -1,8 +1,9 @@
+import Container from '@/components/Layout/Container';
 import React from 'react';
 
 const FAQPage: React.FC = () => {
   return (
-    <div className="min-h-screen p-6">
+    <Container className="min-h-screen p-6">
       <h1 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h1>
       <div className="max-w-4xl mx-auto">
         <div className="space-y-6">
@@ -17,7 +18,7 @@ const FAQPage: React.FC = () => {
           <div className="text-gray-500">More FAQ items will be added here</div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

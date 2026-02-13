@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { MessageSquare, Send } from 'lucide-react';
 import { ticketApi } from '../../api/ticket';
 import { ApiError } from '../../api/client';
+import Container from '@/components/Layout/Container';
 
 const ContactAdminPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -88,8 +89,8 @@ const ContactAdminPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-6">
+    <Container className="min-h-screen bg-background">
+      <div className=" mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <div className="mb-6">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
@@ -236,7 +237,7 @@ const ContactAdminPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </Container>
   );
 };
 

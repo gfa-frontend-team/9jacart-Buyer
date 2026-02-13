@@ -12,6 +12,7 @@ interface OrderSummaryProps {
   showTitle?: boolean;
   compact?: boolean;
   appliedCoupon?: string | null;
+  commission:number
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -23,7 +24,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   total,
   showTitle = true,
   compact = false,
-  appliedCoupon = null
+  appliedCoupon = null,
+  commission
 }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -88,6 +90,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <span className="text-gray-600">Shipping:</span>
             <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
               {shipping === 0 ? 'Free' : formatPrice(shipping)}
+            </span>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Commision:</span>
+            <span className={`font-medium `}>
+              {!commission ? "₦0" : formatPrice(commission)}
             </span>
           </div>
           

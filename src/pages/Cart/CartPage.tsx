@@ -59,8 +59,8 @@ const CartPage: React.FC = () => {
   // Show loading state only for initial cart loading, not for operations
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gray-50 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Button
@@ -91,8 +91,8 @@ const CartPage: React.FC = () => {
   // Only show empty cart message after initial loading is complete
   if (!isInitialLoading && items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="max-w-7xl mx-auto px-4 py-8 w-full">
+      <div className="min-h-screen bg-gray-50 flex flex-col max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto px-4 py-8 w-full">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Button
@@ -109,7 +109,7 @@ const CartPage: React.FC = () => {
 
         {/* Empty Cart - Centered */}
         <div className="flex-1 flex items-center justify-center pb-8">
-          <div className="max-w-7xl mx-auto px-4 w-full">
+          <div className=" mx-auto px-4 w-full">
             <Card className="max-w-md mx-auto text-center">
               <CardContent className="p-12">
                 <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -133,8 +133,8 @@ const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <div className=" mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-4">
