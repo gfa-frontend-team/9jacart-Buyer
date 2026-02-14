@@ -32,7 +32,7 @@ const CTASection = () => {
               whileTap={{ scale: 0.95 }}
               href="https://vendors.9jacart.ng/sell-product"
               target="_blank"
-              className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors inline-flex items-center justify-center"
+              className="px-8 py-3 bg-[#8DEB6E] text-primary rounded-lg font-medium hover:bg-primary/90 hover:text-white transition-colors inline-flex items-center justify-center"
             >
               Start Selling Today
             </motion.a>
@@ -40,7 +40,7 @@ const CTASection = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors w-full"
+                className="px-8 py-3 border-2 border-[#2ac12a] text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors w-full"
               >
                 Contact Our Team
               </motion.button>

@@ -50,7 +50,7 @@ const HeroSection = () => {
               whileTap={{ scale: 0.95 }}
               href="https://vendors.9jacart.ng/sell-product"
               target="_blank"
-              className="px-8 py-3 bg-[#8DEB6E] text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+              className="px-8 py-3 bg-[#8DEB6E] text-primary rounded-lg hover:text-white font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
             >
               Join Our Marketplace
               <ArrowRight className="w-4 h-4" />
