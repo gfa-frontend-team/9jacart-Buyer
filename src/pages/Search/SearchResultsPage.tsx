@@ -7,6 +7,7 @@ import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyVie
 import { useRealProductsList } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "@/lib/utils";
+import Container from "@/components/Layout/Container";
 
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -41,13 +42,13 @@ const SearchResultsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container className="min-h-screen p-6">
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -57,8 +58,8 @@ const SearchResultsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <Container className="min-h-screen p-6">
+      <div className=" mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
@@ -176,7 +177,7 @@ const SearchResultsPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

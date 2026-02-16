@@ -51,7 +51,8 @@ interface PaymentMethod {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { items, availableItems, subtotal, shipping: cartShipping, finalTotal, clearAllItems, isLoading } = useCart();
+  const { items, availableItems, subtotal, shipping: cartShipping, finalTotal, clearAllItems, isLoading,commission } = useCart();
+
   const { isAuthenticated, user } = useAuthStore();
   const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
     useProfile();
@@ -498,8 +499,8 @@ const CheckoutPage: React.FC = () => {
   // Show loading state while cart is being fetched or redirecting to payment
   if (isLoading || isRedirectingToPayment) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} className="mb-8" />
 
           <div className="text-center py-16">
@@ -521,8 +522,8 @@ const CheckoutPage: React.FC = () => {
   // Don't show empty cart page if we're redirecting to payment (prevents flash before Paystack redirect)
   if (!isLoading && items.length === 0 && !isRedirectingToPayment) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} className="mb-8" />
 
           <div className="text-center py-16">
@@ -544,8 +545,8 @@ const CheckoutPage: React.FC = () => {
   // Show authentication options if not authenticated and not choosing guest checkout
   if (!isAuthenticated && !checkoutAsGuest) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb items={breadcrumbItems} className="mb-8" />
 
           <div className="max-w-2xl mx-auto">
@@ -601,8 +602,8 @@ const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-8" />
 
@@ -948,6 +949,7 @@ const CheckoutPage: React.FC = () => {
               total={total}
               appliedCoupon={appliedCoupon}
               showTitle={false}
+              commission={commission}
             />
 
             {/* Coupon Code Section */}

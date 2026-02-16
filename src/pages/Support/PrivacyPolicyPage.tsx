@@ -1,8 +1,9 @@
+import Container from "@/components/Layout/Container";
 import React from "react";
 
 const PrivacyPolicyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <Container className="min-h-screen bg-background">
       {/* Header section styled like "What Sets Us Apart" */}
       <section className="py-20 px-4 bg-[#182F38]">
         <div className="container mx-auto max-w-6xl">
@@ -52,7 +53,7 @@ const PrivacyPolicyPage: React.FC = () => {
           </div>
         </div>
       </section>
-    </div>
+    </Container>
   );
 };
 

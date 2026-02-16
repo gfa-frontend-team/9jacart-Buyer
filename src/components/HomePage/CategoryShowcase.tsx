@@ -104,7 +104,7 @@ const CategoryShowcase: React.FC = () => {
   if (loading) {
     return (
       <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <SectionHeader text="Shop by Category" subtitle="Find products by their categories" />
           </div>
@@ -121,7 +121,7 @@ const CategoryShowcase: React.FC = () => {
   if (error) {
     return (
       <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <SectionHeader text="Shop by Category" subtitle="Find products by their categories" />
           </div>
@@ -142,7 +142,7 @@ const CategoryShowcase: React.FC = () => {
   if (categories.length === 0) {
     return (
       <section className="py-8 sm:py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <SectionHeader text="Shop by Category" subtitle="Find products by their categories" />
           </div>
@@ -157,7 +157,7 @@ const CategoryShowcase: React.FC = () => {
 
   return (
     <section className="py-8 sm:py-12 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-8">
           <SectionHeader text="Shop by Category" subtitle="Find products by their categories" />

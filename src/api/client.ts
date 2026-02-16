@@ -40,10 +40,10 @@ class ApiClient {
   private getBasicAuthHeader(): string {
     // Basic Auth credentials for API access
     const { username, password } = config.api.basicAuth;
-    console.log('🔐 Basic Auth credentials:', { username, password: '***' });
+    // console.log('🔐 Basic Auth credentials:', { username, password: '***' });
     const credentials = btoa(`${username}:${password}`);
     const authHeader = `Basic ${credentials}`;
-    console.log('🔐 Generated Basic Auth header:', authHeader);
+    // console.log('🔐 Generated Basic Auth header:', authHeader);
     return authHeader;
   }
 
@@ -88,21 +88,21 @@ class ApiClient {
     }
 
     try {
-      console.log('API Request:', { 
-        url, 
-        method: config.method, 
-        headers: config.headers,
-        body: config.body 
-      });
+      // console.log('API Request:', { 
+      //   url, 
+      //   method: config.method, 
+      //   headers: config.headers,
+      //   body: config.body 
+      // });
       
       const response = await fetch(url, config);
       clearTimeout(timeoutId); // Clear timeout on response
       
-      console.log('API Response:', { 
-        status: response.status, 
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
+      // console.log('API Response:', { 
+      //   status: response.status, 
+      //   statusText: response.statusText,
+      //   headers: Object.fromEntries(response.headers.entries())
+      // });
       
       // Parse response
       const data = await response.json();
@@ -117,7 +117,7 @@ class ApiClient {
         );
       }
       
-      console.log('API Success Response:', data);
+      // console.log('API Success Response:', data);
       return data;
     } catch (error) {
       clearTimeout(timeoutId); // Clear timeout on error
@@ -276,13 +276,13 @@ export const apiClient = new ApiClient(API_BASE_URL);
 
 // Debug function to test API connectivity
 export const testApiConnection = async () => {
-  console.log('🧪 Testing API connection...');
-  console.log('🌐 API Base URL:', API_BASE_URL);
-  console.log('🔐 Basic Auth Config:', config.api.basicAuth);
+  // console.log('🧪 Testing API connection...');
+  // console.log('🌐 API Base URL:', API_BASE_URL);
+  // console.log('🔐 Basic Auth Config:', config.api.basicAuth);
   
   try {
     const response = await apiClient.get('/product/items?page=1&perPage=2', undefined, false);
-    console.log('✅ API connection test successful:', response);
+    // console.log('✅ API connection test successful:', response);
     return response;
   } catch (error) {
     console.error('❌ API connection test failed:', error);
@@ -292,15 +292,15 @@ export const testApiConnection = async () => {
 
 // Debug function to test cart API
 export const testCartApi = async () => {
-  console.log('🧪 Testing Cart API...');
+  // console.log('🧪 Testing Cart API...');
   
   try {
     const { cartApi } = await import('./cart');
     
     // Test getting cart (should work if user is authenticated)
-    console.log('📦 Testing get cart...');
     const cartResponse = await cartApi.getCart();
-    console.log('✅ Get cart successful:', cartResponse);
+    // console.log('📦 Testing get cart...');
+    // console.log('✅ Get cart successful:', cartResponse);
     
     return cartResponse;
   } catch (error) {

@@ -20,7 +20,7 @@ const LiveProducts: React.FC = () => {
   if (loading) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader text="All Products" subtitle="Explore everything available — updated in real time" />
           </div>
@@ -37,7 +37,7 @@ const LiveProducts: React.FC = () => {
   if (error) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader text="All Products" subtitle="Error loading products" />
           </div>
@@ -58,7 +58,7 @@ const LiveProducts: React.FC = () => {
   if (!products || products.length === 0) {
     return (
       <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <SectionHeader text="All Products" subtitle="Explore everything available — updated in real time" />
           </div>
@@ -73,7 +73,7 @@ const LiveProducts: React.FC = () => {
 
   return (
     <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-12">
           <SectionHeader text="All Products" subtitle="Explore everything available — updated in real time" />

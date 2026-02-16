@@ -8,6 +8,7 @@ import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyVie
 import { useRealProductsByCategory, useFeaturedProducts } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "@/lib/utils";
+import Container from "@/components/Layout/Container";
 
 const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -25,10 +26,6 @@ const CategoryPage: React.FC = () => {
     return () => window.clearTimeout(handle);
   }, [searchQuery]);
 
-  // Redirect services category to services page
-  if (categoryId === "services") {
-    return <Navigate to="/services" replace />;
-  }
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useAllRealCategories();
 
@@ -77,15 +74,21 @@ const CategoryPage: React.FC = () => {
     return fallbackRelatedProducts;
   }, [filteredRelatedProducts, fallbackRelatedProducts]);
 
+    // Redirect services category to services page
+  if (categoryId === "services") {
+    return <Navigate to="/services" replace />;
+  }
+
+
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container className="min-h-screen p-6">
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
@@ -112,8 +115,8 @@ const CategoryPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <Container className="min-h-screen p-6">
+      <div className=" mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
@@ -267,7 +270,7 @@ const CategoryPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

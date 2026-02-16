@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Badge } from '../../components/UI/Badge';
+import Container from '@/components/Layout/Container';
 
 const ServicesLandingPage: React.FC = () => {
   const serviceCategories = [
@@ -64,7 +65,7 @@ const ServicesLandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <Container className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
@@ -209,7 +210,7 @@ const ServicesLandingPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

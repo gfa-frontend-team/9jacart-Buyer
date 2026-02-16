@@ -3,6 +3,7 @@ import { Breadcrumb, Loading, Alert } from '../../components/UI';
 import ProductCard from '../../components/Product/ProductCard';
 import { useRealProductsList } from '../../hooks/api/useRealProducts';
 import { normalizeProductImages } from '@/lib/utils';
+import Container from '@/components/Layout/Container';
 
 const BestSellersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,31 +24,31 @@ const BestSellersPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <div className="flex items-center justify-center py-12">
             <Loading size="lg" />
           </div>
         </div>
-      </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <Container >
+      <div className=" mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6" />
         
@@ -139,7 +140,7 @@ const BestSellersPage: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 

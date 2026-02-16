@@ -11,7 +11,7 @@ const Layout: React.FC = () => {
       <div className="relative z-[40]">
         <SecondaryNav />
       </div>
-      <main className="flex-1">
+      <main className="flex-1  ">
         <Outlet />
       </main>
       <Footer />

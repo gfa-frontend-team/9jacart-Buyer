@@ -155,7 +155,7 @@ const VendorStorefrontPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <div className="flex items-center justify-center py-12">
             <Loading size="lg" />
           </div>
@@ -167,7 +167,7 @@ const VendorStorefrontPage: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-white p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
@@ -192,7 +192,7 @@ const VendorStorefrontPage: React.FC = () => {
   if (vendorProducts.length === 0) {
     return (
       <div className="min-h-screen bg-white pb-20 font-sans relative">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-8">
+        <div className=" mx-auto px-4 md:px-6 pt-8">
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No products found for this vendor</p>
           </div>
@@ -202,9 +202,9 @@ const VendorStorefrontPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-20 font-sans relative">
+    <div className="min-h-screen bg-white pb-20 font-sans relative max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
       {/* --- Container --- */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-8">
+      <div className=" mx-auto px-4 md:px-6 pt-8">
         {/* 1. Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-8 mb-8 gap-4">
           <div className="flex items-center gap-4">

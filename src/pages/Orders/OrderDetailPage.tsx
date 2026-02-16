@@ -127,8 +127,8 @@ const OrderDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-50 p-6 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto">
           <Loading />
         </div>
       </div>
@@ -137,8 +137,8 @@ const OrderDetailPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-50 p-6 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto">
           <Button
             variant="outline"
             onClick={() => navigate(-1)}
@@ -155,8 +155,8 @@ const OrderDetailPage: React.FC = () => {
 
   if (!orderDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-50 p-6 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">Order not found</Alert>
         </div>
       </div>
@@ -172,8 +172,8 @@ const OrderDetailPage: React.FC = () => {
   const total = orderDetails.total || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-6max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
+      <div className=" mx-auto">
         {/* Header */}
         <div className="mb-6">
           <Button

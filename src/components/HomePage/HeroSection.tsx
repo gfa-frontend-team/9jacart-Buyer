@@ -40,7 +40,7 @@ const HeroSection: React.FC = () => {
   const { categories, loading, error } = useAllRealCategories();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+    <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
       <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 items-start">
         {loading ? (
           <div className="hidden lg:block lg:col-span-1 border-r border-gray-200 pr-4 lg:pr-6">

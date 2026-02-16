@@ -5,6 +5,7 @@ import BuyAirtimePage from "./MobileTopup/BuyAirtimePage";
 import PostpaidPage from "./Bills/PostpaidPage";
 import BuyDataPage from "./MobileTopup/BuyDataPage";
 import PrepaidPage from "./Bills/PrepaidPage";
+import Container from "@/components/Layout/Container";
 
 const ServicesPage: React.FC = () => {
   const { subcategory } = useParams<{ subcategory: string }>();
@@ -53,8 +54,8 @@ const ServicesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <Container className="min-h-screen bg-background">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Breadcrumb Navigation */}
         <div className="mb-4 sm:mb-6 lg:mb-8">
           <Breadcrumb items={breadcrumbItems} />
@@ -63,7 +64,7 @@ const ServicesPage: React.FC = () => {
         {/* Service Component */}
         <ServiceComponent />
       </div>
-    </div>
+    </Container>
   );
 };
 

@@ -1,9 +1,10 @@
 import React from "react";
 import PolicySidebar from "../../components/Layout/PolicySidebar";
+import Container from "@/components/Layout/Container";
 
 const RefundPolicyPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <Container className="min-h-screen bg-background">
       <section className="py-20 px-4 bg-[#182F38]">
         <div className="container mx-auto max-w-6xl">
           <h1 className="text-3xl md:text-4xl font-bold text-center text-white">
@@ -132,7 +133,7 @@ const RefundPolicyPage: React.FC = () => {
           </div>
         </div>
       </section>
-    </div>
+    </Container>
   );
 };
 

@@ -7,6 +7,7 @@ import ProfileSection from '../../components/Account/ProfileSection';
 import AddressesSection from '../../components/Account/AddressesSection';
 import OrdersSection from '../../components/Account/OrdersSection';
 import ContactAdminPage from './ContactAdminPage';
+import Container from '@/components/Layout/Container';
 
 const AccountPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -47,8 +48,8 @@ const AccountPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <Container className="min-h-screen bg-background">
+      <div className=" mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <div className="mb-6">
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
@@ -86,7 +87,7 @@ const AccountPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

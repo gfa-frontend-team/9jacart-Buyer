@@ -18,7 +18,7 @@ export default function FastSelling() {
   if (loading) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
           </div>
@@ -34,7 +34,7 @@ export default function FastSelling() {
   if (error) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
           </div>
@@ -57,7 +57,7 @@ export default function FastSelling() {
 
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
         </div>

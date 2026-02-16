@@ -5,6 +5,7 @@ import CategoriesSidebar from '../../components/HomePage/CategoriesSidebar';
 import { useRealProductsList } from '../../hooks/api/useRealProducts';
 import { useAllRealCategories } from '../../hooks/api/useRealCategories';
 import { normalizeProductImages } from '@/lib/utils';
+import Container from '@/components/Layout/Container';
 
 const DealsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,19 +42,19 @@ const DealsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
+      <Container>
+        <div className=" mx-auto">
           <Alert variant="destructive" title="Error">
             {error}
           </Alert>
         </div>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <Container>
+      <div className=" mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6" />
         
@@ -175,7 +176,7 @@ const DealsPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 
