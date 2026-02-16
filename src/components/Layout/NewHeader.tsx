@@ -184,10 +184,10 @@ const NewHeader: React.FC = () => {
                     <User className="w-5 h-5" />
                   </button>
 
-                  {/* Account Dropdown */}
+                  {/* Account Dropdown - opaque so not transparent over header row */}
                   {showAccountMenu && (
                     <div
-                      className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
+                      className="absolute right-0 top-full mt-1 w-72 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[100] bg-opacity-100 [background:#fff]"
                       onClick={(e) => e.stopPropagation()}
                       onTouchStart={(e) => e.stopPropagation()}
                     >
@@ -357,10 +357,10 @@ const NewHeader: React.FC = () => {
                     <ChevronDown className="w-3 h-3 ml-1" />
                   </button>
 
-                  {/* Desktop Account Dropdown */}
+                  {/* Desktop Account Dropdown - opaque so not transparent over header row */}
                   {showAccountMenu && (
                     <div
-                      className="absolute right-0 top-full mt-1 w-80 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[60]"
+                      className="absolute right-0 top-full mt-1 w-80 bg-white text-gray-900 rounded-md shadow-xl border border-gray-200 z-[100] bg-opacity-100 [background:#fff]"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="p-4">

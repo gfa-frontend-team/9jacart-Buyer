@@ -6,6 +6,7 @@ import { useRealProductsList } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "../../lib/utils";
 import { useNotificationContext } from "../../providers/NotificationProvider";
+import { config } from "../../lib/config";
 import { 
   Star, 
   Search, 
@@ -138,9 +139,11 @@ const VendorStorefrontPage: React.FC = () => {
     setIsCategoryDropdownOpen(false);
   };
 
-  // Copy store link to clipboard
+  // Copy store link to clipboard (use canonical app URL so shared links use 9jacart, not 9ja.ng or localhost)
   const handleCopyLink = () => {
-    const url = window.location.href;
+    const baseUrl = (config.app.url || window.location.origin).replace(/\/$/, "");
+    const path = window.location.pathname + window.location.search;
+    const url = baseUrl + path;
     navigator.clipboard.writeText(url).then(() => {
       showNotification("Store link copied to clipboard!", "success", 3000);
     }).catch(() => {
@@ -261,8 +264,8 @@ const VendorStorefrontPage: React.FC = () => {
           </button>
         </header>
 
-        {/* 2. Filter Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 relative z-50">
+        {/* 2. Filter Bar - z-30 so it scrolls under the navbar (navbar is z-50) */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 relative z-30">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-medium text-[#182F38]">
               Products{" "}
@@ -296,7 +299,7 @@ const VendorStorefrontPage: React.FC = () => {
               </button>
 
               {isCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-100 rounded-lg shadow-xl z-50 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-100 rounded-lg shadow-xl z-[100] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100">
                   <button
                     onClick={() => handleCategorySelect("")}
                     className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
