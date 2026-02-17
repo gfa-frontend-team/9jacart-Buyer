@@ -17,6 +17,7 @@ import { RatingModal } from '../../components/Rating';
 import { orderApi, type OrderDetailResponse } from '../../api/order';
 import { useProductRatingsStore } from '../../store/useProductRatingsStore';
 import { cn } from '../../lib/utils';
+import { formatPrice } from '../../lib/productUtils';
 
 const OrderDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,13 +72,6 @@ const OrderDetailPage: React.FC = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state, loading, orderDetails]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-    }).format(price);
-  };
 
   const formatDate = (dateString: string) => {
     try {

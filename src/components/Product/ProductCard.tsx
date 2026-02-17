@@ -8,6 +8,7 @@ import { useProductRatingsStore } from "../../store/useProductRatingsStore";
 import { useProductRatings } from "../../hooks/api/useProductRatings";
 import type { Product, ProductSummary } from "../../types";
 import { cn } from "../../lib/utils";
+import { formatPrice } from "../../lib/productUtils";
 
 interface ProductCardProps {
   product: ProductSummary | Product;
@@ -198,13 +199,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </span>
       </div>
     );
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
   };
 
   // Helper function to truncate description to a certain word count

@@ -4,6 +4,7 @@ import { Input, Button, Alert } from '../../components/UI';
 import { GoogleSignInButton } from '../../components/Auth';
 import { useAuthStore } from '../../store/useAuthStore';
 import { authApi } from '../../api/auth';
+import { config } from '../../lib/config';
 import { Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -15,6 +16,10 @@ const LoginPage: React.FC = () => {
   const resetSuccess = (location.state as { resetSuccess?: boolean } | null)?.resetSuccess ?? false;
 
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem(config.auth.rememberMeKey) !== 'false';
+  });
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -36,7 +41,7 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      await login(formData.email, formData.password);
+      await login(formData.email, formData.password, rememberMe);
       
       // Redirect to the intended page or home
       const redirectTo = searchParams.get('redirect') || '/';
@@ -56,7 +61,7 @@ const LoginPage: React.FC = () => {
   const handleGoogleSuccess = async (idToken: string) => {
     setError('');
     try {
-      await googleLogin(idToken);
+      await googleLogin(idToken, rememberMe);
       
       // Redirect to the intended page or home
       const redirectTo = searchParams.get('redirect') || '/';
@@ -240,6 +245,8 @@ const LoginPage: React.FC = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">

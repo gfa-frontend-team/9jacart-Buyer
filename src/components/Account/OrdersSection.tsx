@@ -4,6 +4,7 @@ import { Package, Truck, CheckCircle, Clock, Star, ChevronLeft, ChevronRight } f
 import { Button, Card, CardContent, Badge, Loading, Alert } from '../UI';
 import { orderApi, transformApiOrderToOrder } from '../../api/order';
 import type { Order } from '../../types';
+import { formatPrice } from '../../lib/productUtils';
 import { Link } from 'react-router-dom';
 
 const ORDERS_PER_PAGE = 8;
@@ -35,13 +36,6 @@ const OrdersSection: React.FC = () => {
 
     fetchOrders();
   }, []);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {

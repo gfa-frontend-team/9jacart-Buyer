@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "../../lib/utils";
 import logoImage from "../../assets/logo.png";
+import { getCachedImageUrl } from "../../lib/imageCache";
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -8,6 +9,7 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallback?: string;
   placeholder?: string;
   lazy?: boolean;
+  cache?: boolean;
   aspectRatio?: "square" | "16/9" | "4/3" | "3/2" | "auto";
   objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
   blur?: boolean;
@@ -21,6 +23,7 @@ const Image: React.FC<ImageProps> = ({
   fallback = "/placeholder-image.jpg",
   placeholder,
   lazy = true,
+  cache = true,
   aspectRatio = "auto",
   objectFit = "cover",
   blur = true,
@@ -56,23 +59,39 @@ const Image: React.FC<ImageProps> = ({
     return () => observer.disconnect();
   }, [lazy, isInView]);
 
-  // Update src when in view
-  // useEffect(() => {
-  //   if (isInView && !hasError) {
-  //     // If src is empty or whitespace, use fallback
-  //     setCurrentSrc(src && src.trim() ? src : fallback);
-  //   }
-  // }, [isInView, src, hasError, fallback]);
+  const objectUrlRef = useRef<string | null>(null);
 
+  // Load and optionally cache image when in view
   useEffect(() => {
     if (!isInView || hasError) return;
 
-    // ensure src is a valid string
     const validSrc =
       typeof src === "string" && src.trim().length > 0 ? src : fallback;
 
-    setCurrentSrc(validSrc);
-  }, [isInView, src, hasError, fallback]);
+    if (!cache || !validSrc.startsWith("http")) {
+      setCurrentSrc(validSrc);
+      return;
+    }
+
+    let cancelled = false;
+
+    getCachedImageUrl(validSrc).then(({ url, revoke }) => {
+      if (cancelled) {
+        if (revoke && url) URL.revokeObjectURL(url);
+        return;
+      }
+      if (revoke && url) objectUrlRef.current = url;
+      setCurrentSrc(url || validSrc);
+    });
+
+    return () => {
+      cancelled = true;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, [isInView, src, hasError, fallback, cache]);
 
   const handleLoad = () => {
     setIsLoading(false);

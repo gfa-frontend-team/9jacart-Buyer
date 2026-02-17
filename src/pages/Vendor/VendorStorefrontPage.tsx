@@ -264,8 +264,8 @@ const VendorStorefrontPage: React.FC = () => {
           </button>
         </header>
 
-        {/* 2. Filter Bar - z-30 so it scrolls under the navbar (navbar is z-50) */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10 relative z-30">
+        {/* 2. Filter Bar - no z-index so it scrolls under the sticky navbar (navbar is z-50) */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-medium text-[#182F38]">
               Products{" "}

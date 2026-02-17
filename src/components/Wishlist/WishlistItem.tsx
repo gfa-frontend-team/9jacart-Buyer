@@ -5,6 +5,7 @@ import { Button } from '../UI/Button';
 import { Card, CardContent } from '../UI/Card';
 import { Badge } from '../UI/Badge';
 import { cn } from '../../lib/utils';
+import { formatPrice } from '../../lib/productUtils';
 import { useWishlistStore, type WishlistItem } from '../../store/useWishlistStore';
 import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -31,13 +32,6 @@ const WishlistItemComponent: React.FC<WishlistItemProps> = ({ item }) => {
 
   const handleAddToCart = async () => {
     await addToCart(product, 1, isAuthenticated);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
   };
 
   const formatDate = (date: Date) => {

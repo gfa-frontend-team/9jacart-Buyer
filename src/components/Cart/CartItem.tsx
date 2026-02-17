@@ -6,6 +6,7 @@ import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
 import type { CartItem as CartItemType } from "../../types";
 import { cn } from "../../lib/utils";
+import { formatPrice } from "../../lib/productUtils";
 
 interface CartItemProps {
   item: CartItemType;
@@ -83,13 +84,6 @@ const CartItem: React.FC<CartItemProps> = ({
 
   const handleQuantityInputFocus = () => {
     setIsEditing(true);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
   };
 
   const renderStars = (rating: number) => {

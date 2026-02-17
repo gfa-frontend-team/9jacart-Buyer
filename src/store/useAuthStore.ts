@@ -1,8 +1,9 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { User } from "../types";
 import { authApi, type LoginRequest, type RegisterRequest, type OtpVerificationRequest, type ResendOtpRequest, type GoogleLoginRequest } from "../api/auth";
 import { apiErrorUtils } from "../utils/api-errors";
+import { createAuthStorage, setRememberMe } from "../lib/authStorage";
 
 interface AuthStore {
   user: User | null;
@@ -14,8 +15,8 @@ interface AuthStore {
     identifier: string;
     verificationId: string;
   } | null;
-  login: (email: string, password: string) => Promise<void>;
-  googleLogin: (idToken: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  googleLogin: (idToken: string, rememberMe?: boolean) => Promise<void>;
   register: (
     userData: Omit<User, "id" | "token"> & { password: string }
   ) => Promise<{ verificationId: string; identifier: string }>;
@@ -36,8 +37,9 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: false,
       pendingVerification: null,
 
-      login: async (email, password) => {
+      login: async (email, password, rememberMe = true) => {
         set({ isLoading: true });
+        setRememberMe(rememberMe);
 
         try {
           const loginData: LoginRequest = {
@@ -71,8 +73,9 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      googleLogin: async (idToken) => {
+      googleLogin: async (idToken, rememberMe = true) => {
         set({ isLoading: true });
+        setRememberMe(rememberMe);
 
         try {
           const googleData: GoogleLoginRequest = {
@@ -263,6 +266,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "auth-storage",
+      storage: createJSONStorage(() => createAuthStorage()),
       // Only persist user data and token
       partialize: (state) => ({
         user: state.user,

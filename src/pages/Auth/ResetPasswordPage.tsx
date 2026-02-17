@@ -15,8 +15,6 @@ const ResetPasswordPage: React.FC = () => {
   const location = useLocation();
   const state = (location.state ?? {}) as ResetPasswordLocationState;
 
-  console.log('ResetPasswordPage state:', state);
-
   const [otp, setOtp] = useState(['', '', '', '', '']);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

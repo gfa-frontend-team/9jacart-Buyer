@@ -1,5 +1,6 @@
 // HTTP client with interceptors for API communication
 import { config } from '../lib/config';
+import { getAuthFromStorage } from '../lib/authStorage';
 
 const API_BASE_URL = config.api.baseUrl;
 
@@ -24,9 +25,8 @@ class ApiClient {
   }
 
   private getAuthToken(): string | null {
-    // Get token from localStorage (Zustand persist storage)
     try {
-      const authStorage = localStorage.getItem('auth-storage');
+      const authStorage = getAuthFromStorage();
       if (authStorage) {
         const parsed = JSON.parse(authStorage);
         return parsed.state?.token || null;

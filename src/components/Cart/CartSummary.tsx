@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Truck, Shield, RotateCcw } from 'lucide-react';
 import { Button, Card, CardContent, Alert } from '../UI';
 import { useCart } from '../../hooks/useCart';
+import { formatPrice } from '../../lib/productUtils';
 
 interface CartSummaryProps {
   className?: string;
@@ -10,15 +11,13 @@ interface CartSummaryProps {
 
 const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
   const navigate = useNavigate();
-  const { 
+  const {
     totalItems,
     subtotal,
     shipping,
-    commission,
-    showCommission,
     finalTotal,
     isAuthenticated,
-    availableItems
+    availableItems,
   } = useCart();
 
   const [promoCode, setPromoCode] = useState('');
@@ -52,13 +51,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
-
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Summary Card */}
@@ -86,13 +78,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
                 )}
               </span>
             </div>
-            
-            {showCommission && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Commission</span>
-                <span className="font-medium">{formatPrice(commission)}</span>
-              </div>
-            )}
 
             {promoApplied && (
               <div className="flex justify-between text-sm">

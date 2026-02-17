@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '../UI';
 import type { CartItem } from '../../types';
+import { formatPrice } from '../../lib/productUtils';
 
 interface OrderSummaryProps {
   items: CartItem[];
@@ -12,7 +13,6 @@ interface OrderSummaryProps {
   showTitle?: boolean;
   compact?: boolean;
   appliedCoupon?: string | null;
-  commission:number
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -25,15 +25,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   showTitle = true,
   compact = false,
   appliedCoupon = null,
-  commission
 }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
-
   return (
     <Card>
       <CardContent className={compact ? "p-4" : "p-6"}>
@@ -93,13 +85,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </span>
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Commision:</span>
-            <span className={`font-medium `}>
-              {!commission ? "₦0" : formatPrice(commission)}
-            </span>
-          </div>
-          
           {tax > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Tax:</span>

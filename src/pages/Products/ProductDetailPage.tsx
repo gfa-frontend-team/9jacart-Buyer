@@ -28,6 +28,7 @@ import { useProductRatings } from "../../hooks/api/useProductRatings";
 import { productsApi } from "../../api/products";
 // import type { Product } from "../../types";
 import { cn, normalizeProductImages } from "../../lib/utils";
+import { formatPrice } from "../../lib/productUtils";
 import { ProductCard } from "@/components/Product";
 import RecentlyViewedProductsSection from "@/components/HomePage/RecentlyViewedProductsSection";
 import { useNotificationContext } from "../../providers/NotificationProvider";
@@ -196,13 +197,6 @@ const ProductDetailPage: React.FC = () => {
         )}
       />
     ));
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
   };
 
   if (loading) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle, Package, ArrowRight } from 'lucide-react';
 import { Button, Card, CardContent } from '../UI';
 import { Link } from 'react-router-dom';
+import { formatPrice } from '../../lib/productUtils';
 
 interface CheckoutSuccessProps {
   orderNumber: string;
@@ -18,13 +19,6 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   estimatedDelivery = '3-5 business days',
   onClose
 }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
-
   const getPaymentMethodDisplay = (method: string) => {
     switch (method) {
       case 'cash-on-delivery':

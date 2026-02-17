@@ -8,14 +8,7 @@ import { useRealProductsList } from '../../hooks/api/useRealProducts';
 import { normalizeProductImages } from '@/lib/utils';
 
 const LiveProducts: React.FC = () => {
-  const { products, loading, error, refetch, pagination } = useRealProductsList({ page: 1, perPage: 100 }); // Fetch all products
-  
-  // Debug logging (can be removed in production)
-  console.log('🎨 LiveProducts:', { 
-    loading, 
-    productsCount: products?.length,
-    totalItems: pagination?.totalItems
-  });
+  const { products, loading, error, refetch } = useRealProductsList({ page: 1, perPage: 100 });
 
   if (loading) {
     return (

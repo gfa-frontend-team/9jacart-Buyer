@@ -39,6 +39,7 @@ import {
 } from "../../api/order";
 import { apiErrorUtils } from "../../utils/api-errors";
 import { cn } from "../../lib/utils";
+import { formatPrice } from "../../lib/productUtils";
 import type { UserAddress } from "../../types";
 
 interface PaymentMethod {
@@ -51,7 +52,7 @@ interface PaymentMethod {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { items, availableItems, subtotal, shipping: cartShipping, finalTotal, clearAllItems, isLoading,commission } = useCart();
+  const { items, availableItems, subtotal, shipping: cartShipping, finalTotal, clearAllItems, isLoading } = useCart();
 
   const { isAuthenticated, user } = useAuthStore();
   const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
@@ -949,7 +950,6 @@ const CheckoutPage: React.FC = () => {
               total={total}
               appliedCoupon={appliedCoupon}
               showTitle={false}
-              commission={commission}
             />
 
             {/* Coupon Code Section */}
@@ -967,12 +967,7 @@ const CheckoutPage: React.FC = () => {
                         Coupon "{appliedCoupon}" applied
                       </span>
                       <span className="text-sm text-green-600">
-                        (-
-                        {new Intl.NumberFormat("en-NG", {
-                          style: "currency",
-                          currency: "NGN",
-                        }).format(couponDiscount)}
-                        )
+                        (-{formatPrice(couponDiscount)})
                       </span>
                     </div>
                     <Button
