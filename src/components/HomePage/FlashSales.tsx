@@ -21,7 +21,7 @@ export default function FlashSales() {
   if (loading) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Flash sales" subtitle="Explore products with remarkable discounts" />
           </div>
@@ -38,7 +38,7 @@ export default function FlashSales() {
   if (error) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <SectionHeader text="Flash sales" subtitle="Explore products with remarkable discounts" />
           </div>
@@ -63,7 +63,7 @@ export default function FlashSales() {
 
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="mb-8">
           <SectionHeader text="Flash sales" subtitle="Explore products with remarkable discounts" />
@@ -83,7 +83,10 @@ export default function FlashSales() {
         {/* View All Button */}
         <div className="flex justify-center mt-8 sm:mt-12">
           <Link to="/products">
-            <Button className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+            <Button
+              variant="outline"
+              className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
             </Button>
           </Link>

@@ -72,7 +72,10 @@ export default function FastSelling() {
         </div>
         <div className="flex justify-center mt-8 sm:mt-12">
           <Link to="/products">
-            <Button className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+            <Button
+              variant="outline"
+              className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
             </Button>
           </Link>

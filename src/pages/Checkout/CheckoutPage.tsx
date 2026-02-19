@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import visaLogo from "@/assets/payment-logos/visa-logo.png";
+import mastercardLogo from "@/assets/payment-logos/mastercard-logo.png";
 import {
   CreditCard,
   Truck,
@@ -52,7 +54,7 @@ interface PaymentMethod {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { items, availableItems, subtotal, shipping: cartShipping, finalTotal, clearAllItems, isLoading } = useCart();
+  const { items, availableItems, subtotal, shipping: cartShipping, flatRate, finalTotal, clearAllItems, isLoading } = useCart();
 
   const { isAuthenticated, user } = useAuthStore();
   const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
@@ -945,6 +947,7 @@ const CheckoutPage: React.FC = () => {
               items={availableItems}
               subtotal={cartSubtotal}
               shipping={shipping}
+              flatRate={flatRate}
               tax={0}
               discount={discount}
               total={total}
@@ -1074,13 +1077,17 @@ const CheckoutPage: React.FC = () => {
                               </span>
                             </div>
                             {method.id === "bank-card" && (
-                              <div className="ml-auto flex space-x-1">
-                                <div className="w-8 h-5 bg-blue-600 rounded text-white text-xs flex items-center justify-center font-bold">
-                                  VISA
-                                </div>
-                                <div className="w-8 h-5 bg-red-600 rounded text-white text-xs flex items-center justify-center font-bold">
-                                  MC
-                                </div>
+                              <div className="ml-auto flex items-center gap-1.5">
+                                <img
+                                  src={visaLogo}
+                                  alt="Visa"
+                                  className="h-5 w-auto object-contain"
+                                />
+                                <img
+                                  src={mastercardLogo}
+                                  alt="Mastercard"
+                                  className="h-7 w-auto object-contain"
+                                />
                               </div>
                             )}
                           </label>

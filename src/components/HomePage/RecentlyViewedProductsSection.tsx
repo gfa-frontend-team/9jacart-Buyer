@@ -59,7 +59,7 @@ const RecentlyViewedProductsSection: React.FC<
     <Link to="/products">
       <Button
         variant="outline"
-        className="flex items-center gap-2 hover:border-[#2ac12a]"
+        className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
       >
         View All Products
         <ChevronRight className="h-4 w-4" />
@@ -123,7 +123,7 @@ const RecentlyViewedProductsSection: React.FC<
         className={cn("py-16 bg-white", className)}
         data-section="recently-viewed-products"
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <div>
               {sectionHeaderBlock}

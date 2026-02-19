@@ -72,7 +72,10 @@ const LiveProducts: React.FC = () => {
           <SectionHeader text="All Products" subtitle="Explore everything available — updated in real time" />
           
           <Link to="/products">
-            <Button variant="outline" className="hidden sm:flex items-center gap-2 hover:border-[#2ac12a]">
+            <Button
+              variant="outline"
+              className="hidden sm:flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -94,7 +97,10 @@ const LiveProducts: React.FC = () => {
         {/* Mobile View All Button */}
         <div className="flex justify-center mt-6 sm:hidden">
           <Link to="/products">
-            <Button variant="outline" className="flex items-center gap-2 hover:border-[#2ac12a]">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
               <ChevronRight className="h-4 w-4" />
             </Button>

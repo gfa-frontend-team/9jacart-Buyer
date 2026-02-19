@@ -7,6 +7,9 @@ import { apiErrorUtils } from '../utils/api-errors';
 import { ApiError } from '../api/client';
 import { mapApiProductToProduct } from '../utils/product-mappers';
 
+/** Flat rate fee in naira applied to every order (e.g. handling/delivery) */
+export const FLAT_RATE_NGN = 750;
+
 interface CartStore {
   // Guest cart data (persisted to localStorage)
   guestItems: CartItem[];
@@ -52,6 +55,7 @@ interface CartStore {
   getTax: (isAuthenticated: boolean) => number;
   getCommission: (isAuthenticated: boolean) => number;
   hasCommission: (isAuthenticated: boolean) => boolean;
+  getFlatRate: () => number;
   getFinalTotal: (isAuthenticated: boolean) => number;
   isItemInCart: (productId: string, isAuthenticated: boolean) => boolean;
   getItemQuantity: (productId: string, isAuthenticated: boolean) => number;
@@ -727,11 +731,14 @@ export const useCartStore = create<CartStore>()(
     return false;
   },
 
+  getFlatRate: () => FLAT_RATE_NGN,
+
   getFinalTotal: (isAuthenticated: boolean) => {
     const subtotal = get().getSubtotal(isAuthenticated);
     const shipping = get().getShipping(isAuthenticated);
     const commission = get().getCommission(isAuthenticated);
-    return subtotal + shipping + commission;
+    const flatRate = get().getFlatRate();
+    return subtotal + shipping + commission + flatRate;
   },
 
   isItemInCart: (productId: string, isAuthenticated: boolean) => {

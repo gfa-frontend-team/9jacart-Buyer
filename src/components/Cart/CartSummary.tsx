@@ -15,6 +15,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
     totalItems,
     subtotal,
     shipping,
+    flatRate,
     finalTotal,
     isAuthenticated,
     availableItems,
@@ -77,6 +78,11 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
                   formatPrice(shipping)
                 )}
               </span>
+            </div>
+
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Flat Rate</span>
+              <span className="font-medium">{formatPrice(flatRate)}</span>
             </div>
 
             {promoApplied && (
