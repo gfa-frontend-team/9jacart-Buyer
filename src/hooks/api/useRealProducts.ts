@@ -480,7 +480,6 @@ export const useRealProductsByCategory = (
     const requestId = ++requestIdRef.current;
     setError(null);
 
-    const shouldFetch = !isCacheFresh;
     const useSilent = !!cachedEntry;
 
     if (!useSilent) {

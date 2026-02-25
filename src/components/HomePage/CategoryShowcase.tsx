@@ -20,7 +20,7 @@ import {
   Monitor,
 } from "lucide-react";
 
-import { Button, Loading, Alert } from "../UI";
+import { Button, Alert } from "../UI";
 import SectionHeader from "../UI/SectionHeader";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import type { Category } from "../../types";
