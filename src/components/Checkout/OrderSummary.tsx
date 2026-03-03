@@ -82,8 +82,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Shipping:</span>
-            <span className={`font-medium ${shipping === 0 ? 'text-green-600' : ''}`}>
-              {shipping === 0 ? 'Free' : formatPrice(shipping)}
+            <span className={`font-medium ${shipping === 0 ? 'text-yellow-600' : ''}`}>
+              {shipping === 0 ? 'Incoming' : formatPrice(shipping)}
             </span>
           </div>
 

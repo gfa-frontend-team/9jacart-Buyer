@@ -729,9 +729,8 @@ export const useCartStore = create<CartStore>()(
   getFinalTotal: (isAuthenticated: boolean) => {
     const subtotal = get().getSubtotal(isAuthenticated);
     const shipping = get().getShipping(isAuthenticated);
-    const commission = get().getCommission(isAuthenticated);
     const flatRate = get().getFlatRate();
-    return subtotal + shipping + commission + flatRate;
+    return subtotal + shipping + flatRate;
   },
 
   isItemInCart: (productId: string, isAuthenticated: boolean) => {

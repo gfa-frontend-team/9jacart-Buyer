@@ -73,7 +73,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
               <span className="text-gray-600">Shipping</span>
               <span className="font-medium">
                 {shipping === 0 ? (
-                  <span className="text-green-600">Free</span>
+                  <span className="text-yellow-600">Incoming</span>
                 ) : (
                   formatPrice(shipping)
                 )}
