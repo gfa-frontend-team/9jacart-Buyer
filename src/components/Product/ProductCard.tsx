@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, Eye, ShoppingCart, Star } from "lucide-react";
+import { Heart, Eye, ShoppingCart } from "lucide-react";
 import { Button, Badge, Card, CardContent, Image } from "../UI";
 import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
-import { useProductRatingsStore } from "../../store/useProductRatingsStore";
-import { useProductRatings } from "../../hooks/api/useProductRatings";
+// Ratings imports temporarily disabled while rating display is commented out
+// import { useProductRatingsStore } from "../../store/useProductRatingsStore";
+// import { useProductRatings } from "../../hooks/api/useProductRatings";
 import type { Product, ProductSummary } from "../../types";
 import { cn } from "../../lib/utils";
 import { formatPrice } from "../../lib/productUtils";
@@ -40,15 +41,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // On homepage (eagerImages), skip live ratings API call — product already has review data
   // from the products list response. This prevents 20-80 concurrent requests on homepage load.
-  const { reviews: apiReviews } = useProductRatings(product.id, !eagerImages);
-
-  // Priority order: API ratings > order-based ratings > product.reviews
-  const productRatingFromStore = useProductRatingsStore((s) => s.getRating(product.id));
-  const displayReviews = apiReviews != null
-    ? apiReviews
-    : productRatingFromStore != null
-    ? { average: productRatingFromStore.average, total: productRatingFromStore.total }
-    : product.reviews;
+  // Ratings hooks currently unused while rating display is disabled
+  // const { reviews: apiReviews } = useProductRatings(product.id, !eagerImages);
+  // const productRatingFromStore = useProductRatingsStore((s) => s.getRating(product.id));
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -183,33 +178,33 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
-  const renderStars = (rating: number, total: number) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    return (
-      <div className="flex items-center gap-1">
-        <div className="flex">
-          {Array.from({ length: 5 }, (_, i) => (
-            <Star
-              key={i}
-              className={cn(
-                "w-3 h-3 sm:w-4 sm:h-4",
-                i < fullStars
-                  ? "fill-yellow-400 text-yellow-400"
-                  : i === fullStars && hasHalfStar
-                  ? "fill-yellow-400/50 text-yellow-400"
-                  : "fill-gray-200 text-gray-200"
-              )}
-            />
-          ))}
-        </div>
-        <span className="text-xs sm:text-sm text-gray-600 font-medium">
-          ({total})
-        </span>
-      </div>
-    );
-  };
+  // const renderStars = (rating: number, total: number) => {
+  //   const fullStars = Math.floor(rating);
+  //   const hasHalfStar = rating % 1 !== 0;
+  //
+  //   return (
+  //     <div className="flex items-center gap-1">
+  //       <div className="flex">
+  //         {Array.from({ length: 5 }, (_, i) => (
+  //           <Star
+  //             key={i}
+  //             className={cn(
+  //               "w-3 h-3 sm:w-4 sm:h-4",
+  //               i < fullStars
+  //                 ? "fill-yellow-400 text-yellow-400"
+  //                 : i === fullStars && hasHalfStar
+  //                 ? "fill-yellow-400/50 text-yellow-400"
+  //                 : "fill-gray-200 text-gray-200"
+  //             )}
+  //           />
+  //         ))}
+  //       </div>
+  //       <span className="text-xs sm:text-sm text-gray-600 font-medium">
+  //         ({total})
+  //       </span>
+  //     </div>
+  //   );
+  // };
 
   // Helper function to truncate description to a certain word count
   const truncateDescription = (text: string, wordCount: number = 12): string => {
@@ -352,12 +347,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
               )}
             </div>
 
-            {/* Reviews */}
+            {/* Reviews (temporarily disabled non-dynamic display) */}
+            {/*
             {displayReviews && displayReviews.total > 0 && (
               <div className="flex items-center -mt-0.5">
                 {renderStars(displayReviews.average, displayReviews.total)}
               </div>
             )}
+            */}
 
             {/* Price */}
             <div className="flex items-center gap-2 flex-wrap">

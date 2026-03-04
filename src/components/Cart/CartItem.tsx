@@ -167,7 +167,7 @@ const CartItem: React.FC<CartItemProps> = ({
 
         {/* Price and Quantity */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2 justify-center sm:justify-start">
+          <div className="flex items-center gap-2 justify-start">
             <span className="font-bold text-lg text-gray-900">
               {formatPrice(currentPrice)}
             </span>
@@ -184,7 +184,7 @@ const CartItem: React.FC<CartItemProps> = ({
           </div>
 
           {/* Quantity Controls */}
-          <div className="flex items-center justify-center sm:justify-end gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <div className="flex items-center border rounded-lg">
               <Button
                 variant="ghost"

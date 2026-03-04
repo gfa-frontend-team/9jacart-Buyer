@@ -372,7 +372,7 @@ const VendorStorefrontPage: React.FC = () => {
                 Popular items selling out quickly
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
               {sortedBestSellers.slice(0, 4).map((product) => (
                 <ProductCard key={product.id} product={normalizeProductImages(product)} />
               ))}
@@ -394,7 +394,7 @@ const VendorStorefrontPage: React.FC = () => {
                 Explore everything from {vendorInfo?.name ?? "this"} Store
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
               {(sortBy === "default" ? vendorProducts : sortProducts([...vendorProducts], sortBy)).map((product) => (
                 <ProductCard key={product.id} product={normalizeProductImages(product)} />
               ))}
@@ -427,7 +427,7 @@ const VendorStorefrontPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={normalizeProductImages(product)} />
                 ))}
