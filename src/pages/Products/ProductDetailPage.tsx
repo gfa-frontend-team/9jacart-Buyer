@@ -28,7 +28,7 @@ import { useProductRatings } from "../../hooks/api/useProductRatings";
 import { productsApi } from "../../api/products";
 // import type { Product } from "../../types";
 import { cn, normalizeProductImages } from "../../lib/utils";
-import { formatPrice } from "../../lib/productUtils";
+import { formatPrice, formatDiscountPercentage } from "../../lib/productUtils";
 import { ProductCard } from "@/components/Product";
 import RecentlyViewedProductsSection from "@/components/HomePage/RecentlyViewedProductsSection";
 import { useNotificationContext } from "../../providers/NotificationProvider";
@@ -288,7 +288,7 @@ const ProductDetailPage: React.FC = () => {
                       />
                       {/* Text */}
                       <div className="relative z-10 text-center leading-tight">
-                        <div className="font-bold">{discount.percentage}%</div>
+                        <div className="font-bold">{formatDiscountPercentage(discount.percentage)}%</div>
                         <div className="text-[10px] font-semibold">OFF</div>
                       </div>
                     </div>

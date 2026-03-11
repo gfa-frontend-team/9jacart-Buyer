@@ -4,6 +4,7 @@ import { ShoppingBag, X, Plus, Minus } from 'lucide-react';
 import { Button, Image, Badge } from '../UI';
 import { useCart } from '../../hooks/useCart';
 import { cn } from '../../lib/utils';
+import { formatDiscountPercentage } from '../../lib/productUtils';
 
 interface MiniCartProps {
   isOpen: boolean;
@@ -122,7 +123,7 @@ const MiniCart: React.FC<MiniCartProps> = ({ isOpen, onClose, className }) => {
                           )}
                           {discount && (
                             <Badge variant="destructive" className="text-xs">
-                              -{discount.percentage}%
+                              -{formatDiscountPercentage(discount.percentage)}%
                             </Badge>
                           )}
                         </div>

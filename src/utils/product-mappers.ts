@@ -2,9 +2,11 @@ import type { Product, ProductSummary, PriceWithDiscount, ProductMedia, Inventor
 import type { ApiProductData } from '../api/products';
 
 // Helper function to calculate discount percentage
+// Preserves up to 2 decimal places for sub-1% discounts instead of rounding to zero
 const calculateDiscountPercentage = (unitPrice: number, discountPrice: number): number => {
   if (unitPrice <= 0 || discountPrice >= unitPrice) return 0;
-  return Math.round(((unitPrice - discountPrice) / unitPrice) * 100);
+  const pct = ((unitPrice - discountPrice) / unitPrice) * 100;
+  return pct < 1 ? Math.round(pct * 100) / 100 : Math.round(pct);
 };
 
 // Helper function to generate slug from product name
@@ -111,10 +113,11 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
     original: hasDiscount ? unitPrice : undefined,
     currency: 'NGN',
     discount: hasDiscount ? {
-      percentage: calculateDiscountPercentage(unitPrice, discountPrice),
+      // Prefer the API-provided discountValue (exact %) over recalculation to avoid rounding away sub-1% discounts
+      percentage: discountValue > 0 ? discountValue : calculateDiscountPercentage(unitPrice, discountPrice),
       amount: unitPrice - discountPrice,
-      validUntil: undefined, // API doesn't provide this
-      code: undefined, // API doesn't provide this
+      validUntil: undefined,
+      code: undefined,
     } : undefined,
   };
 
@@ -231,7 +234,7 @@ export const mapApiProductToProductSummary = (apiProduct: ApiProductData): Produ
     original: hasDiscount ? unitPrice : undefined,
     currency: 'NGN',
     discount: hasDiscount ? {
-      percentage: calculateDiscountPercentage(unitPrice, discountPrice),
+      percentage: discountValue > 0 ? discountValue : calculateDiscountPercentage(unitPrice, discountPrice),
       amount: unitPrice - discountPrice,
       validUntil: undefined,
       code: undefined,
@@ -318,14 +321,16 @@ export type RecentlyViewedApiItem = Record<string, unknown> & {
   description?: string;
   categoryId?: string;
   categoryName?: string;
-  currentPrice?: number;
-  originalPrice?: number;
-  discountPrice?: number;
-  discountPercentage?: number;
+  totalPrice?: number | string;
+  currentPrice?: number | string;
+  unitPrice?: number | string;
+  originalPrice?: number | string;
+  discountPrice?: number | string;
+  discountPercentage?: number | string;
   hasDiscount?: boolean;
   productImages?: string[];
-  stock?: number;
-  minStock?: number;
+  stock?: number | string;
+  minStock?: number | string;
   stockStatus?: string;
   isAvailable?: boolean;
   vendor?: { vendorId?: string; storeName?: string };
@@ -347,14 +352,25 @@ function mapStockStatus(status?: string): 'in_stock' | 'limited_stock' | 'out_of
   return 'in_stock';
 }
 
-function mapRecentlyViewedItemToProductSummary(item: RecentlyViewedApiItem): ProductSummary {
+const parseNumericField = (val: unknown): number =>
+  typeof val === 'number' ? val : (parseFloat(String(val ?? '0')) || 0);
+
+const parseOptionalNumericField = (val: unknown): number | undefined => {
+  const n = parseNumericField(val);
+  return n > 0 ? n : undefined;
+};
+
+export function mapRecentlyViewedItemToProductSummary(item: RecentlyViewedApiItem): ProductSummary {
   const id = String(item.productId ?? item.id ?? '');
   const name = String(item.name ?? item.productName ?? 'Product');
   const desc = String(item.description ?? item.productDescription ?? '');
-  const currentPrice = typeof item.currentPrice === 'number' ? item.currentPrice : (parseFloat(String(item.currentPrice ?? '0')) || 0);
-  const originalPrice = typeof item.originalPrice === 'number' ? item.originalPrice : (parseFloat(String(item.originalPrice ?? '0')) || 0);
-  const discountPrice = typeof item.discountPrice === 'number' ? item.discountPrice : (parseFloat(String(item.discountPrice ?? '0')) || 0);
-  const discountPct = typeof item.discountPercentage === 'number' ? item.discountPercentage : (parseFloat(String(item.discountPercentage ?? '0')) || 0);
+  // totalPrice may come back as a string from this endpoint — parse both
+  const apiTotalPrice = parseOptionalNumericField(item.totalPrice);
+  const unitPrice = parseNumericField(item.unitPrice);
+  const currentPrice = parseNumericField(item.currentPrice) || unitPrice;
+  const originalPrice = parseNumericField(item.originalPrice);
+  const discountPrice = parseNumericField(item.discountPrice);
+  const discountPct = parseNumericField(item.discountPercentage);
   const hasDiscount = Boolean(item.hasDiscount) && (discountPrice > 0 || discountPct > 0);
   const imgs = Array.isArray(item.productImages) ? item.productImages : (Array.isArray((item as any).images) ? (item as any).images : []);
   const mainImg = imgs[0] || '/placeholder-product.jpg';
@@ -363,6 +379,11 @@ function mapRecentlyViewedItemToProductSummary(item: RecentlyViewedApiItem): Pro
   const vendor = item.vendor && typeof item.vendor === 'object' ? item.vendor as { vendorId?: string; storeName?: string } : null;
   const vendorId = vendor?.vendorId ?? (item.vendorId != null ? String(item.vendorId) : undefined);
   const storeName = vendor?.storeName ?? (item.storeName != null ? String(item.storeName) : undefined);
+
+  // Mirror the logic in mapApiProductToProduct: totalPrice is the authoritative displayed price
+  const effectiveCurrentPrice = apiTotalPrice ?? (hasDiscount && discountPrice > 0 ? discountPrice : currentPrice);
+  // The "original" (strikethrough) price is the unit price when a discount exists
+  const effectiveOriginalPrice = hasDiscount && unitPrice > 0 ? unitPrice : (hasDiscount && originalPrice > 0 ? originalPrice : undefined);
 
   return {
     id,
@@ -376,8 +397,8 @@ function mapRecentlyViewedItemToProductSummary(item: RecentlyViewedApiItem): Pro
     description: desc || undefined,
     shortDescription: desc ? desc.slice(0, 150) + (desc.length > 150 ? '...' : '') : undefined,
     price: {
-      current: hasDiscount && discountPrice > 0 ? discountPrice : currentPrice,
-      original: hasDiscount && originalPrice > 0 ? originalPrice : undefined,
+      current: effectiveCurrentPrice,
+      original: effectiveOriginalPrice,
       currency: 'NGN',
       discount: hasDiscount && (discountPct > 0 || (originalPrice > 0 && discountPrice > 0)) ? {
         percentage: discountPct > 0 ? discountPct : (originalPrice > 0 ? Math.round(((originalPrice - discountPrice) / originalPrice) * 100) : 0),

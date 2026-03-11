@@ -5,7 +5,7 @@ import { Button } from '../UI/Button';
 import { Card, CardContent } from '../UI/Card';
 import { Badge } from '../UI/Badge';
 import { cn } from '../../lib/utils';
-import { formatPrice } from '../../lib/productUtils';
+import { formatPrice, formatDiscountPercentage } from '../../lib/productUtils';
 import { useWishlistStore, type WishlistItem } from '../../store/useWishlistStore';
 import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -112,7 +112,7 @@ const WishlistItemComponent: React.FC<WishlistItemProps> = ({ item }) => {
             {isOnSale && discount && (
               <div className="absolute top-3 right-3">
                 <Badge variant="destructive" className="text-xs bg-primary">
-                  -{discount.percentage}%
+                  -{formatDiscountPercentage(discount.percentage)}%
                 </Badge>
               </div>
             )}

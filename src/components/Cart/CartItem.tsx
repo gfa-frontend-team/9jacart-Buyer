@@ -6,7 +6,7 @@ import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
 import type { CartItem as CartItemType } from "../../types";
 import { cn } from "../../lib/utils";
-import { formatPrice } from "../../lib/productUtils";
+import { formatPrice, formatDiscountPercentage } from "../../lib/productUtils";
 
 interface CartItemProps {
   item: CartItemType;
@@ -178,7 +178,7 @@ const CartItem: React.FC<CartItemProps> = ({
             )}
             {discount && (
               <Badge variant="destructive" className="text-xs bg-red-50 text-red-600 border-red-200 hover:text-white">
-                -{discount.percentage}%
+                -{formatDiscountPercentage(discount.percentage)}%
               </Badge>
             )}
           </div>

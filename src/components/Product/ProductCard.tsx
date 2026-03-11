@@ -9,7 +9,7 @@ import { useWishlistStore } from "../../store/useWishlistStore";
 // import { useProductRatings } from "../../hooks/api/useProductRatings";
 import type { Product, ProductSummary } from "../../types";
 import { cn } from "../../lib/utils";
-import { formatPrice } from "../../lib/productUtils";
+import { formatPrice, formatDiscountPercentage } from "../../lib/productUtils";
 import { preloadProductDetailPage } from "../../lib/preloadProductDetail";
 
 interface ProductCardProps {
@@ -253,7 +253,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 variant="destructive"
                 className="absolute top-2 left-2 z-20 bg-primary text-white text-xs font-semibold px-2 py-1 rounded-md hover:text-white"
               >
-                -{discount.percentage}%
+                -{formatDiscountPercentage(discount.percentage)}%
               </Badge>
             )}
 
