@@ -97,13 +97,17 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
   const unitPrice = parseFloat(apiProduct.unitPrice);
   const discountValue = parseFloat(apiProduct.discountValue);
   const discountPrice = parseFloat(apiProduct.discountPrice);
+  const apiTotalPrice = typeof apiProduct.totalPrice === 'number' ? apiProduct.totalPrice : undefined;
   
   // When discountValue is 0, there's no discount - use unitPrice as current price
   const hasDiscount = discountValue > 0 && discountPrice < unitPrice;
+
+  // Use server-provided totalPrice as the displayed price; fall back to discountPrice or unitPrice
+  const effectiveCurrentPrice = apiTotalPrice ?? (hasDiscount ? discountPrice : unitPrice);
   
   // Create price object
   const price: PriceWithDiscount = {
-    current: hasDiscount ? discountPrice : unitPrice,
+    current: effectiveCurrentPrice,
     original: hasDiscount ? unitPrice : undefined,
     currency: 'NGN',
     discount: hasDiscount ? {
@@ -213,13 +217,17 @@ export const mapApiProductToProductSummary = (apiProduct: ApiProductData): Produ
   const unitPrice = parseFloat(apiProduct.unitPrice);
   const discountValue = parseFloat(apiProduct.discountValue);
   const discountPrice = parseFloat(apiProduct.discountPrice);
+  const apiTotalPrice = typeof apiProduct.totalPrice === 'number' ? apiProduct.totalPrice : undefined;
   
   // When discountValue is 0, there's no discount - use unitPrice as current price
   const hasDiscount = discountValue > 0 && discountPrice < unitPrice;
+
+  // Use server-provided totalPrice as the displayed price; fall back to discountPrice or unitPrice
+  const effectiveCurrentPrice = apiTotalPrice ?? (hasDiscount ? discountPrice : unitPrice);
   
   // Create price object
   const price: PriceWithDiscount = {
-    current: hasDiscount ? discountPrice : unitPrice,
+    current: effectiveCurrentPrice,
     original: hasDiscount ? unitPrice : undefined,
     currency: 'NGN',
     discount: hasDiscount ? {

@@ -18,6 +18,7 @@ export interface ApiProductData {
   productDescription: string;
   productTags: string[];
   unitPrice: string;
+  totalPrice?: number;
   discountType: string;
   discountValue: string;
   discountPrice: string;

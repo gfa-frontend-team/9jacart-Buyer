@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Star,
@@ -74,8 +74,6 @@ const ProductDetailPage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [activeDetailTab, setActiveDetailTab] = useState<string>("description");
-  const mainImageContainerRef = useRef<HTMLDivElement | null>(null);
-  const [imageContainerWidth, setImageContainerWidth] = useState<number | null>(null);
   
   const isWishlisted = product ? isItemInWishlist(product.id) : false;
 
@@ -105,32 +103,6 @@ const ProductDetailPage: React.FC = () => {
       console.warn("Failed to track product view:", err);
     });
   }, [product?.id, isAuthenticated]);
-
-  useEffect(() => {
-    const container = mainImageContainerRef.current;
-    if (!container) return;
-
-    const updateWidth = () => {
-      setImageContainerWidth(container.getBoundingClientRect().width);
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver !== "undefined") {
-      const observer = new ResizeObserver(() => {
-        updateWidth();
-      });
-      observer.observe(container);
-      return () => {
-        observer.disconnect();
-      };
-    } else {
-      window.addEventListener("resize", updateWidth);
-      return () => {
-        window.removeEventListener("resize", updateWidth);
-      };
-    }
-  }, []);
 
   const handleAddToCart = async () => {
     if (!product) return;
@@ -286,7 +258,6 @@ const ProductDetailPage: React.FC = () => {
           <div className="space-y-4">
             {/* Main Image */}
             <div
-              ref={mainImageContainerRef}
               className="aspect-square w-full bg-white rounded-lg border overflow-hidden relative"
             >
               {/* Discount Badge Overlay */}
