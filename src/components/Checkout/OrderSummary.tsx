@@ -62,6 +62,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     {product.storeName && (
                       <p className="text-xs text-gray-500 truncate">{product.storeName}</p>
                     )}
+                    {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+                      <p className="text-xs text-gray-500 truncate">
+                        {Object.entries(item.selectedVariants)
+                          .map(([key, value]) => `${key}: ${value}`)
+                          .join(" • ")}
+                      </p>
+                    )}
                     <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
                   </div>
                   <div className="text-sm font-medium text-gray-900">

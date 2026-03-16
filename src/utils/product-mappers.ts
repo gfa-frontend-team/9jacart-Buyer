@@ -1,5 +1,5 @@
-import type { Product, ProductSummary, PriceWithDiscount, ProductMedia, Inventory, ProductReviews, ProductFlags } from '../types';
-import type { ApiProductData } from '../api/products';
+import type { Product, ProductSummary, PriceWithDiscount, ProductMedia, Inventory, ProductReviews, ProductFlags, ProductVariant, VariantOption, VariantType } from '../types';
+import type { ApiProductData, ApiProductVariation } from '../api/products';
 
 // Helper function to calculate discount percentage
 // Preserves up to 2 decimal places for sub-1% discounts instead of rounding to zero
@@ -169,6 +169,64 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
     videos: [], // API doesn't provide videos
   };
 
+  // Map structured features when provided by the API
+  const rawFeatures = Array.isArray(apiProductUnknown.features)
+    ? (apiProductUnknown.features as string[])
+    : [];
+
+  // Map raw variations (size, color, measurement, etc.) into typed variants
+  const rawVariations = Array.isArray(apiProductUnknown.variations)
+    ? (apiProductUnknown.variations as ApiProductVariation[])
+    : [];
+
+  const variantGroups = new Map<VariantType, VariantOption[]>();
+
+  for (const variation of rawVariations) {
+    if (!variation || variation.value == null) continue;
+
+    const name = String(variation.name ?? "").trim().toLowerCase();
+    let type: VariantType | null = null;
+
+    if (name.includes("color")) {
+      type = "color";
+    } else if (name.includes("size")) {
+      type = "size";
+    } else if (name.includes("measure")) {
+      type = "measurement";
+    } else if (name.includes("style")) {
+      type = "style";
+    } else if (name.includes("material")) {
+      type = "material";
+    }
+
+    if (!type) continue;
+
+    const option: VariantOption = {
+      id: String(variation.variationId ?? `${type}-${variation.value}`),
+      name: variation.name,
+      value: String(variation.value),
+      inStock:
+        variation.stock != null
+          ? Number(variation.stock) > 0
+          : inventory.inStock,
+    };
+
+    const existing = variantGroups.get(type) ?? [];
+    // Avoid duplicate values per type
+    if (!existing.some((opt) => opt.value === option.value)) {
+      existing.push(option);
+      variantGroups.set(type, existing);
+    }
+  }
+
+  const variants: ProductVariant[] =
+    rawVariations.length > 0
+      ? Array.from(variantGroups.entries()).map(([type, options]) => ({
+          type,
+          options,
+        }))
+      : [];
+
   // Create mock reviews (API doesn't provide reviews)
   const reviews: ProductReviews = {
     average: 4.0 + Math.random(), // Random rating between 4-5
@@ -195,11 +253,11 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
     tags: apiProduct.productTags,
     description: apiProduct.productDescription,
     shortDescription: apiProduct.productDescription.substring(0, 150) + '...', // Truncate for short description
-    features: [], // API doesn't provide features
+    features: rawFeatures.length > 0 ? rawFeatures : undefined,
     specifications: {}, // API doesn't provide specifications
     price,
     inventory,
-    variants: [], // API doesn't provide variants
+    variants: variants.length > 0 ? variants : undefined,
     images,
     reviews,
     sellerId: apiProduct.storeName || 'api-seller', // Use storeName as sellerId

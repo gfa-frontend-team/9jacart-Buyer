@@ -40,8 +40,12 @@ export const useCart = () => {
   } = useCartStore();
 
   // Wrapper methods that automatically pass authentication state
-  const addToCart = async (product: Product, quantity = 1) => {
-    await storeAddItem(product, quantity, isAuthenticated);
+  const addToCart = async (
+    product: Product,
+    quantity = 1,
+    selectedVariants?: Record<string, string>
+  ) => {
+    await storeAddItem(product, quantity, isAuthenticated, selectedVariants);
     
     // Show notification for guest users
     if (!isAuthenticated) {

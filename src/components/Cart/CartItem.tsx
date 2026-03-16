@@ -240,6 +240,17 @@ const CartItem: React.FC<CartItemProps> = ({
           </div>
         </div>
 
+        {/* Selected variants */}
+        {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+          <div className="mt-2 text-xs text-gray-600 space-x-2">
+            {Object.entries(item.selectedVariants).map(([key, value]) => (
+              <span key={key}>
+                <span className="font-medium capitalize">{key}:</span> {value}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Item Total */}
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex justify-between items-center">

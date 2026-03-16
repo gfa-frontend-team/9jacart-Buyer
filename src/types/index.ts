@@ -54,7 +54,12 @@ export interface Inventory {
 }
 
 // Variant types
-export type VariantType = "color" | "size" | "material" | "style";
+export type VariantType =
+  | "color"
+  | "size"
+  | "material"
+  | "style"
+  | "measurement";
 
 export interface VariantOption {
   id: string;
@@ -242,6 +247,11 @@ export interface CartItem {
   id: string;           // productId for guest, cartItemId for authenticated
   product: Product;     // Full product data
   quantity: number;
+  /**
+   * Optional selected variant options for this cart line.
+   * Example: { size: "39", color: "Black" }.
+   */
+  selectedVariants?: Record<string, string>;
   
   // Server-side fields (when authenticated)
   cartItemId?: string;  // Backend cart item ID

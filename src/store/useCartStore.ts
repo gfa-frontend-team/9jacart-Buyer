@@ -33,7 +33,12 @@ interface CartStore {
   isMigrating: boolean;
   
   // Core methods
-  addItem: (product: Product, quantity?: number, isAuthenticated?: boolean) => Promise<void>;
+  addItem: (
+    product: Product,
+    quantity?: number,
+    isAuthenticated?: boolean,
+    selectedVariants?: Record<string, string>
+  ) => Promise<void>;
   removeItem: (productId: string, isAuthenticated?: boolean) => Promise<void>;
   updateQuantity: (productId: string, quantity: number, isAuthenticated?: boolean) => Promise<void>;
   clearCart: (isAuthenticated?: boolean) => Promise<void>;
@@ -88,7 +93,15 @@ export const useCartStore = create<CartStore>()(
     const storeName = typeof apiItem.vendor === 'string' 
       ? apiItem.vendor 
       : apiItem.vendor.storeName;
-    
+
+    const selectedVariants =
+      apiItem.variations && apiItem.variations.length > 0
+        ? apiItem.variations.reduce<Record<string, string>>((acc, v) => {
+            const key = v.name?.toLowerCase() || 'option';
+            acc[key] = v.value;
+            return acc;
+          }, {})
+        : undefined;
     return {
       id: apiItem.productId,
       cartItemId: apiItem.cartItemId,
@@ -139,6 +152,7 @@ export const useCartStore = create<CartStore>()(
         updatedAt: new Date()
       } as Product,
       quantity: parseInt(apiItem.quantity),
+      selectedVariants,
       vendor: vendorId, // Store vendorId as string
       price: apiItem.price,
       subtotal: apiItem.subtotal,
@@ -148,16 +162,38 @@ export const useCartStore = create<CartStore>()(
   },
 
   // Add item - different behavior for guest vs authenticated users
-  addItem: async (product: Product, quantity = 1, isAuthenticated = false) => {
+  addItem: async (
+    product: Product,
+    quantity = 1,
+    isAuthenticated = false,
+    selectedVariants?: Record<string, string>
+  ) => {
     set({ error: null });
 
     if (isAuthenticated) {
       // Authenticated: Call API directly
       try {
         set({ isLoading: true });
+        const variations =
+          selectedVariants && Object.keys(selectedVariants).length > 0
+            ? Object.entries(selectedVariants).map(([key, value]) => {
+                const lower = key.toLowerCase();
+                const name =
+                  lower === "size"
+                    ? "Size"
+                    : lower === "color"
+                    ? "Color"
+                    : lower === "measurement"
+                    ? "Measurement"
+                    : key.charAt(0).toUpperCase() + key.slice(1);
+                return { name, value };
+              })
+            : undefined;
+
         await cartApi.addItem({
           productId: product.id,
-          quantity: quantity
+          quantity: quantity,
+          ...(variations ? { variations } : {}),
         });
         
         // Reload cart from server to get updated state
@@ -172,12 +208,19 @@ export const useCartStore = create<CartStore>()(
     } else {
       // Guest: Update in-memory state only
       const { guestItems } = get();
-      const existingItem = guestItems.find(item => item.product.id === product.id);
+      const existingItem = guestItems.find(
+        (item) =>
+          item.product.id === product.id &&
+          JSON.stringify(item.selectedVariants || {}) ===
+            JSON.stringify(selectedVariants || {})
+      );
       
       if (existingItem) {
         set((state) => ({
-          guestItems: state.guestItems.map(item =>
-            item.product.id === product.id
+          guestItems: state.guestItems.map((item) =>
+            item.product.id === product.id &&
+            JSON.stringify(item.selectedVariants || {}) ===
+              JSON.stringify(selectedVariants || {})
               ? { ...item, quantity: item.quantity + quantity }
               : item
           )
@@ -186,7 +229,8 @@ export const useCartStore = create<CartStore>()(
         const newItem: CartItem = {
           id: product.id,
           product,
-          quantity
+          quantity,
+          selectedVariants,
         };
         set((state) => ({
           guestItems: [...state.guestItems, newItem]

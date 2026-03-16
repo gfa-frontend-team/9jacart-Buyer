@@ -107,7 +107,21 @@ const ProductDetailPage: React.FC = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     try {
-      await addToCart(product, quantity);
+      const selectedVariants: Record<string, string> = {};
+      if (colorVariant && selectedColor) {
+        const opt = colorVariant.options.find((o) => o.id === selectedColor);
+        if (opt) selectedVariants.color = opt.value;
+      }
+      if (sizeVariant && selectedSize) {
+        const opt = sizeVariant.options.find((o) => o.id === selectedSize);
+        if (opt) selectedVariants.size = opt.value;
+      }
+
+      await addToCart(
+        product,
+        quantity,
+        Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+      );
       showNotification(
         `${product.name} has been added to cart`,
         'success',
@@ -127,7 +141,21 @@ const ProductDetailPage: React.FC = () => {
   const handleCheckout = async () => {
     if (!product) return;
     try {
-      await addToCart(product, quantity);
+      const selectedVariants: Record<string, string> = {};
+      if (colorVariant && selectedColor) {
+        const opt = colorVariant.options.find((o) => o.id === selectedColor);
+        if (opt) selectedVariants.color = opt.value;
+      }
+      if (sizeVariant && selectedSize) {
+        const opt = sizeVariant.options.find((o) => o.id === selectedSize);
+        if (opt) selectedVariants.size = opt.value;
+      }
+
+      await addToCart(
+        product,
+        quantity,
+        Object.keys(selectedVariants).length > 0 ? selectedVariants : undefined
+      );
       showNotification(
         `${product.name} has been added to cart`,
         'success',
@@ -426,10 +454,6 @@ const ProductDetailPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-600">
-                {product.shortDescription ||
-                  product.description.substring(0, 100) + "..."}
-              </p>
             </div>
 
             {/* Colors */}
@@ -612,7 +636,7 @@ const ProductDetailPage: React.FC = () => {
                       {product.description}
                     </p>
                   </div>
-                  {(product.brand || product.model || product.categoryName) && (
+                  {(product.brand || product.model || product.categoryName || (product.variants && product.variants.length > 0)) && (
                     <div className="pt-4 border-t border-gray-200">
                       <h3 className="font-semibold text-gray-900 mb-3">Product Information</h3>
                       <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -634,6 +658,32 @@ const ProductDetailPage: React.FC = () => {
                             <span className="text-gray-600 ml-2">{product.categoryName}</span>
                           </div>
                         )}
+                        {product.variants &&
+                          product.variants.length > 0 &&
+                          product.variants.map((variant) => {
+                            const label =
+                              variant.type === "size"
+                                ? "Available Sizes"
+                                : variant.type === "color"
+                                ? "Available Colours"
+                                : variant.type === "measurement"
+                                ? "Available Measurements"
+                                : variant.type.charAt(0).toUpperCase() + variant.type.slice(1);
+
+                            const values = variant.options
+                              .filter((option) => option.inStock)
+                              .map((option) => option.value)
+                              .join(", ");
+
+                            if (!values) return null;
+
+                            return (
+                              <div key={variant.type} className="col-span-2 md:col-span-1">
+                                <span className="font-medium text-gray-700">{label}:</span>
+                                <span className="text-gray-600 ml-2">{values}</span>
+                              </div>
+                            );
+                          })}
                       </dl>
                     </div>
                   )}
