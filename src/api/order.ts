@@ -25,6 +25,8 @@ export interface CheckoutRequest {
   orderItems: OrderItem[];
   paymentMethod: string;
   couponCode?: string;
+  guestCheckout?: number;
+  buyerId?: string;
 }
 
 // Order API response types
@@ -173,13 +175,36 @@ export interface OrdersListApiResponse {
 
 // Order API endpoints
 export const orderApi = {
-  // Place order (requires Bearer token)
+  // Place order (authenticated) — backend uses Basic auth; guestCheckout must be 0.
   checkout: async (orderData: CheckoutRequest): Promise<CheckoutResponse> => {
+    const payload: CheckoutRequest = {
+      ...orderData,
+      guestCheckout: 0,
+    };
     return apiClient.post<CheckoutResponse>(
       "/order/checkout",
-      orderData,
+      payload,
       undefined,
-      true
+      false
+    );
+  },
+
+  /**
+   * Guest checkout: same endpoint, Basic auth, guestCheckout: 1.
+   */
+  checkoutAsGuest: async (
+    orderData: CheckoutRequest
+  ): Promise<CheckoutResponse> => {
+    // Backend requires explicit guestCheckout flag in payload.
+    const guestPayload: CheckoutRequest = {
+      ...orderData,
+      guestCheckout: 1,
+    };
+    return apiClient.post<CheckoutResponse>(
+      "/order/checkout",
+      guestPayload,
+      undefined,
+      false
     );
   },
   

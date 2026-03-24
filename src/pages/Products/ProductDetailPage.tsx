@@ -695,12 +695,26 @@ const ProductDetailPage: React.FC = () => {
                 <div className="space-y-4">
                   {product.features && product.features.length > 0 ? (
                     <ul className="space-y-3">
-                      {product.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                          <span className="text-gray-700">{feature}</span>
-                        </li>
-                      ))}
+                      {product.features.map((feature, index) => {
+                        let label: string;
+                        if (typeof feature === "string") {
+                          label = feature;
+                        } else if (feature && typeof feature === "object") {
+                          const f = feature as { name?: string; value?: string };
+                          const n = String(f.name ?? "").trim();
+                          const v = String(f.value ?? "").trim();
+                          label = n && v ? `${n}: ${v}` : v || n || "";
+                        } else {
+                          label = "";
+                        }
+                        if (!label) return null;
+                        return (
+                          <li key={index} className="flex items-start gap-3">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <span className="text-gray-700">{label}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   ) : (
                     <p className="text-gray-600">No features listed for this product.</p>

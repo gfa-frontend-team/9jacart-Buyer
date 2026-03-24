@@ -17,7 +17,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
     shipping,
     flatRate,
     finalTotal,
-    isAuthenticated,
     availableItems,
   } = useCart();
 
@@ -26,10 +25,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
   const [promoError, setPromoError] = useState<string | null>(null);
 
   const handleCheckout = () => {
-    if (!isAuthenticated) {
-      navigate('/auth/login?redirect=/checkout');
-      return;
-    }
     navigate('/checkout');
   };
 
@@ -121,7 +116,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
             size="lg"
             disabled={availableItems.length === 0}
           >
-            {isAuthenticated ? 'Proceed to Checkout' : 'Sign In to Checkout'}
+            Proceed to checkout
           </Button>
 
           {/* Security Info */}

@@ -109,10 +109,21 @@ class ApiClient {
       
       if (!response.ok) {
         console.error('API Error Response:', data);
+        const messages =
+          data && typeof data === 'object' && 'messages' in data
+            ? (data.messages as Record<string, unknown>)
+            : undefined;
+        const firstFieldMessage =
+          messages && typeof messages === 'object'
+            ? Object.values(messages).find((v) => typeof v === 'string')
+            : undefined;
         // Handle API error responses
         throw new ApiError(
           response.status, 
-          data.messages?.error || data.message || `HTTP error! status: ${response.status}`,
+          data.messages?.error ||
+            (typeof firstFieldMessage === 'string' ? firstFieldMessage : undefined) ||
+            data.message ||
+            `HTTP error! status: ${response.status}`,
           data
         );
       }

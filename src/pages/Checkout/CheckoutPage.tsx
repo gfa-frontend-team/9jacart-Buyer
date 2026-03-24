@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import visaLogo from "@/assets/payment-logos/visa-logo.png";
 import mastercardLogo from "@/assets/payment-logos/mastercard-logo.png";
 import {
@@ -30,6 +30,7 @@ import { useProfile } from "../../hooks/api/useProfile";
 import {
   validateBillingDetails,
   formatPhoneNumber,
+  validateCheckoutAccountPassword,
   type BillingDetailsForm,
   type ValidationError,
 } from "../../lib/checkoutValidation";
@@ -51,25 +52,34 @@ interface PaymentMethod {
   disabled?: boolean;
 }
 
+const CHECKOUT_GUEST_PARAM = "guest";
+
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { items, availableItems, subtotal, shipping: cartShipping, flatRate, finalTotal, clearAllItems, isLoading } = useCart();
 
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, register } = useAuthStore();
   const { profile, fetchProfile, getDefaultAddress, getAddresses, addAddress } =
     useProfile();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirectingToPayment, setIsRedirectingToPayment] = useState(false);
-  const [saveInfo, setSaveInfo] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("bank-card");
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     []
   );
-  const [checkoutAsGuest] = useState(false);
+  const checkoutAsGuest =
+    searchParams.get(CHECKOUT_GUEST_PARAM) === "1" && !isAuthenticated;
+
+  const [guestWantsAccount, setGuestWantsAccount] = useState(false);
+  const [guestPassword, setGuestPassword] = useState("");
+  const [guestConfirmPassword, setGuestConfirmPassword] = useState("");
+  /** Used when saving a new address for signed-in users (set as default). */
+  const [newAddressAsDefault, setNewAddressAsDefault] = useState(false);
 
   // Address management state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -250,14 +260,19 @@ const CheckoutPage: React.FC = () => {
     setAddressSaveError(null);
     setAddressSavedSuccess(false);
 
+    if (!billingDetails.streetAddress?.trim() || !billingDetails.townCity?.trim()) {
+      setAddressSaveError("Please enter street address and city.");
+      return;
+    }
+
     try {
       const newAddress: Omit<UserAddress, "id" | "createdAt" | "updatedAt"> = {
-        streetAddress: billingDetails.streetAddress,
-        city: billingDetails.townCity,
+        streetAddress: billingDetails.streetAddress.trim(),
+        city: billingDetails.townCity.trim(),
         state: "Lagos", // Default for now - could be made dynamic
         zipCode: "100001", // Default for now - could be made dynamic
         country: "Nigeria",
-        isDefault: saveInfo, // Use saveInfo checkbox to set as default
+        isDefault: newAddressAsDefault,
       };
 
       await addAddress(newAddress);
@@ -344,6 +359,24 @@ const CheckoutPage: React.FC = () => {
     return validationErrors.find((error) => error.field === field)?.message;
   };
 
+  const isGuestCheckoutFlow = !isAuthenticated && checkoutAsGuest;
+
+  const persistGuestRegisterPrefill = () => {
+    if (!isGuestCheckoutFlow || !guestWantsAccount) return;
+    try {
+      sessionStorage.setItem(
+        "checkout_register_prefill",
+        JSON.stringify({
+          email: billingDetails.emailAddress.trim(),
+          firstName: billingDetails.firstName.trim(),
+          lastName: billingDetails.lastName.trim(),
+        })
+      );
+    } catch {
+      /* ignore quota / private mode */
+    }
+  };
+
   const handlePlaceOrder = async () => {
     // Check if cart is empty first (only check available items)
     if (availableItems.length === 0) {
@@ -352,40 +385,60 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // Check authentication - API requires Bearer token
-    if (!isAuthenticated) {
-      alert("Please sign in to place an order. Guest checkout is not available.");
+    if (!isAuthenticated && !checkoutAsGuest) {
       navigate("/auth/login?redirect=/checkout");
       return;
     }
 
+    const phoneOptional = isGuestCheckoutFlow;
+
     // Show form if hidden and validation is needed
-    // This ensures user can see and fix any missing fields
-    if (!showAddressForm && (!billingDetails.firstName || !billingDetails.emailAddress || !billingDetails.phoneNumber)) {
+    if (
+      !showAddressForm &&
+      (!billingDetails.firstName ||
+        !billingDetails.emailAddress ||
+        (!phoneOptional && !billingDetails.phoneNumber))
+    ) {
       setShowAddressForm(true);
     }
 
-    // Validate form
-    const errors = validateBillingDetails(billingDetails);
+    const errors = validateBillingDetails(billingDetails, {
+      phoneOptional,
+    });
+
+    if (isGuestCheckoutFlow && guestWantsAccount) {
+      if (!guestPassword.trim()) {
+        errors.push({
+          field: "guestPassword",
+          message: "Password is required to create an account",
+        });
+      } else {
+        const pwdMsg = validateCheckoutAccountPassword(guestPassword);
+        if (pwdMsg) {
+          errors.push({ field: "guestPassword", message: pwdMsg });
+        } else if (guestPassword !== guestConfirmPassword) {
+          errors.push({
+            field: "guestConfirmPassword",
+            message: "Passwords don't match",
+          });
+        }
+      }
+    }
 
     if (errors.length > 0) {
       setValidationErrors(errors);
-      
-      // Show form to display errors
       setShowAddressForm(true);
 
-      // Scroll to first error after a brief delay to ensure form is rendered
       setTimeout(() => {
         const firstErrorField = document.querySelector(
           `[name="${errors[0].field}"]`
         );
         if (firstErrorField) {
           firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Focus the field
           (firstErrorField as HTMLElement).focus();
         }
       }, 100);
-      
+
       return;
     }
 
@@ -397,13 +450,20 @@ const CheckoutPage: React.FC = () => {
       const orderItems = transformCartItemsToOrderItems(availableItems);
       const paymentMethod = mapPaymentMethodToApi(selectedPayment);
 
-      // Validate order items
       if (!orderItems || orderItems.length === 0) {
         throw new Error("No items in order. Please add items to your cart.");
       }
 
-      // Validate billing data
-      if (!billingData.firstName || !billingData.emailAddress || !billingData.phoneNumber || !billingData.streetAddress || !billingData.city) {
+      if (
+        !billingData.firstName ||
+        !billingData.emailAddress ||
+        !billingData.streetAddress ||
+        !billingData.city
+      ) {
+        throw new Error("Please complete all required billing information.");
+      }
+
+      if (!phoneOptional && !billingData.phoneNumber?.trim()) {
         throw new Error("Please complete all required billing information.");
       }
 
@@ -411,66 +471,79 @@ const CheckoutPage: React.FC = () => {
         billing: billingData,
         orderItems,
         paymentMethod,
+        ...(isGuestCheckoutFlow && { guestCheckout: 1 }),
+        ...(!isGuestCheckoutFlow && user?.id && { buyerId: user.id }),
         ...(appliedCoupon && { couponCode: appliedCoupon }),
       };
 
-      console.log("🛒 Placing order with data:", checkoutRequest);
+      const response = isGuestCheckoutFlow
+        ? await orderApi.checkoutAsGuest(checkoutRequest)
+        : await orderApi.checkout(checkoutRequest);
 
-      const response = await orderApi.checkout(checkoutRequest);
-
-      console.log("🔍 Checkout response:", response);
-
-      // SUCCESS RESPONSE (backend always returns error: false)
       if (response.error === false) {
-        // Save order number
         if (response.orderNo) {
           setOrderNumber(response.orderNo);
         }
 
-        // PAYSTACK REDIRECT URL
         if (response.paymentData?.authorizationUrl) {
-          console.log(
-            "🔁 Redirecting to Paystack:",
-            response.paymentData.authorizationUrl
-          );
-
-          // Set redirect flag to prevent empty cart page from showing
+          persistGuestRegisterPrefill();
           setIsRedirectingToPayment(true);
           await clearAllItems();
           window.location.href = response.paymentData.authorizationUrl;
           return;
         }
 
-        // FALLBACK redirectUrl
         if (response.redirectUrl) {
-          console.log("Redirecting:", response.redirectUrl);
-
-          // Set redirect flag to prevent empty cart page from showing
+          persistGuestRegisterPrefill();
           setIsRedirectingToPayment(true);
           await clearAllItems();
           window.location.href = response.redirectUrl;
           return;
         }
 
-        // No redirect → show success modal
-        setShowSuccess(true);
         await clearAllItems();
+
+        if (
+          isGuestCheckoutFlow &&
+          guestWantsAccount &&
+          guestPassword.trim()
+        ) {
+          try {
+            await register({
+              firstName: billingDetails.firstName.trim(),
+              lastName:
+                billingDetails.lastName.trim() || billingDetails.firstName.trim(),
+              email: billingDetails.emailAddress.trim(),
+              password: guestPassword,
+            });
+            navigate("/auth/registration-success");
+            return;
+          } catch (regErr) {
+            const regMsg = apiErrorUtils.getErrorMessage(regErr);
+            alert(
+              `Your order was placed. We could not create your account: ${regMsg}. You can still sign up with this email from the login page.`
+            );
+          }
+        }
+
+        setShowSuccess(true);
         return;
       }
 
-      // If API returned error = true
       throw new Error(response.message || "Failed to place order");
     } catch (error) {
       console.error("❌ Checkout failed:", error);
 
       const errorMessage = apiErrorUtils.getErrorMessage(error);
-      
-      // Show more detailed error message
       const errorDetails = error instanceof Error ? error.message : errorMessage;
       alert(`Failed to place order: ${errorDetails}\n\nPlease check your information and try again.`);
 
-      // If it's an authentication error, redirect to login
-      if (errorMessage.includes("Authentication") || errorMessage.includes("401") || errorMessage.includes("token")) {
+      if (
+        !isGuestCheckoutFlow &&
+        (errorMessage.includes("Authentication") ||
+          errorMessage.includes("401") ||
+          errorMessage.includes("token"))
+      ) {
         setTimeout(() => {
           navigate("/auth/login?redirect=/checkout");
         }, 2000);
@@ -482,14 +555,18 @@ const CheckoutPage: React.FC = () => {
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
-    navigate("/orders", {
-      state: {
-        orderPlaced: true,
-        orderTotal: total,
-        paymentMethod: selectedPayment,
-        orderNumber: orderNumber,
-      },
-    });
+    if (isAuthenticated) {
+      navigate("/orders", {
+        state: {
+          orderPlaced: true,
+          orderTotal: total,
+          paymentMethod: selectedPayment,
+          orderNumber: orderNumber,
+        },
+      });
+    } else {
+      navigate("/");
+    }
   };
 
   const breadcrumbItems = [
@@ -557,10 +634,11 @@ const CheckoutPage: React.FC = () => {
             <Card>
               <CardContent className="p-8 text-center">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Sign in to checkout
+                  How would you like to checkout?
                 </h2>
                 <p className="text-gray-600 mb-8">
-                  Sign in to your account for a faster checkout experience.
+                  Sign in for saved addresses and order history, or continue as a
+                  guest with your email and shipping details.
                 </p>
 
                 <div className="space-y-4">
@@ -570,19 +648,34 @@ const CheckoutPage: React.FC = () => {
                       className="flex items-center justify-center"
                     >
                       <User className="w-5 h-5 mr-2" />
-                      Sign In to Your Account
+                      Sign in
                     </Link>
                   </Button>
 
-                  <div className="text-sm text-gray-500">
-                    Don't have an account?{" "}
+                  <Button asChild className="w-full" size="lg" variant="outline">
                     <Link
                       to="/auth/register?redirect=/checkout"
-                      className="text-[#1E4700] hover:text-[#1E4700]/80 font-medium"
+                      className="flex items-center justify-center"
                     >
-                      Create one now
+                      Sign up
                     </Link>
-                  </div>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    onClick={() => {
+                      setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev);
+                        next.set(CHECKOUT_GUEST_PARAM, "1");
+                        return next;
+                      });
+                    }}
+                  >
+                    Continue as guest
+                  </Button>
                 </div>
 
                 {/* Benefits of signing in */}
@@ -693,46 +786,91 @@ const CheckoutPage: React.FC = () => {
                 {/* Show form if no address selected, editing, or guest checkout */}
                 {showAddressForm && (
                   <div className="space-y-4 sm:space-y-6">
-                    {/* First Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name*
-                      </label>
-                      <Input
-                        name="firstName"
-                        value={billingDetails.firstName}
-                        onChange={(e) =>
-                          handleInputChange("firstName", e.target.value)
-                        }
-                        className={cn(
-                          "w-full !border-gray-400",
-                          getFieldError("firstName") &&
-                            "border-red-500 focus:ring-red-500"
+                    {!isAuthenticated && checkoutAsGuest ? (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full name*
+                        </label>
+                        <Input
+                          name="firstName"
+                          value={
+                            [billingDetails.firstName, billingDetails.lastName]
+                              .filter(Boolean)
+                              .join(" ") || ""
+                          }
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            const parts = raw
+                              .trim()
+                              .split(/\s+/)
+                              .filter(Boolean);
+                            setBillingDetails((prev) => ({
+                              ...prev,
+                              firstName: parts[0] ?? "",
+                              lastName: parts.slice(1).join(" "),
+                            }));
+                            setValidationErrors((prev) =>
+                              prev.filter((err) => err.field !== "firstName")
+                            );
+                          }}
+                          className={cn(
+                            "w-full !border-gray-400",
+                            getFieldError("firstName") &&
+                              "border-red-500 focus:ring-red-500"
+                          )}
+                          placeholder="e.g. Adaobi Okonkwo"
+                          autoComplete="name"
+                          required
+                        />
+                        {getFieldError("firstName") && (
+                          <div className="flex items-center mt-1 text-sm text-red-600">
+                            <AlertCircle className="w-4 h-4 mr-1" />
+                            {getFieldError("firstName")}
+                          </div>
                         )}
-                        required
-                      />
-                      {getFieldError("firstName") && (
-                        <div className="flex items-center mt-1 text-sm text-red-600">
-                          <AlertCircle className="w-4 h-4 mr-1" />
-                          {getFieldError("firstName")}
+                      </div>
+                    ) : (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            First Name*
+                          </label>
+                          <Input
+                            name="firstName"
+                            value={billingDetails.firstName}
+                            onChange={(e) =>
+                              handleInputChange("firstName", e.target.value)
+                            }
+                            className={cn(
+                              "w-full !border-gray-400",
+                              getFieldError("firstName") &&
+                                "border-red-500 focus:ring-red-500"
+                            )}
+                            required
+                          />
+                          {getFieldError("firstName") && (
+                            <div className="flex items-center mt-1 text-sm text-red-600">
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              {getFieldError("firstName")}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Last Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Last Name
-                      </label>
-                      <Input
-                        name="lastName"
-                        value={billingDetails.lastName}
-                        onChange={(e) =>
-                          handleInputChange("lastName", e.target.value)
-                        }
-                        className="w-full !border-gray-400"
-                      />
-                    </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Last Name
+                          </label>
+                          <Input
+                            name="lastName"
+                            value={billingDetails.lastName}
+                            onChange={(e) =>
+                              handleInputChange("lastName", e.target.value)
+                            }
+                            className="w-full !border-gray-400"
+                          />
+                        </div>
+                      </>
+                    )}
 
                     {/* Street Address */}
                     <div>
@@ -803,7 +941,15 @@ const CheckoutPage: React.FC = () => {
                     {/* Phone Number */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number*
+                        Phone number
+                        {!isAuthenticated && checkoutAsGuest ? (
+                          <span className="text-gray-500 font-normal">
+                            {" "}
+                            (optional)
+                          </span>
+                        ) : (
+                          <span>*</span>
+                        )}
                       </label>
                       <Input
                         name="phoneNumber"
@@ -816,7 +962,7 @@ const CheckoutPage: React.FC = () => {
                             "border-red-500 focus:ring-red-500"
                         )}
                         placeholder="+2348000000000"
-                        required
+                        required={!(!isAuthenticated && checkoutAsGuest)}
                       />
                       {getFieldError("phoneNumber") && (
                         <div className="flex items-center mt-1 text-sm text-red-600">
@@ -872,6 +1018,23 @@ const CheckoutPage: React.FC = () => {
                               </div>
                             </div>
                           )}
+                          <div className="flex items-center gap-2 pb-3">
+                            <input
+                              id="address-default"
+                              type="checkbox"
+                              checked={newAddressAsDefault}
+                              onChange={(e) =>
+                                setNewAddressAsDefault(e.target.checked)
+                              }
+                              className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                            />
+                            <label
+                              htmlFor="address-default"
+                              className="text-sm text-gray-700"
+                            >
+                              Set as default address
+                            </label>
+                          </div>
                           <div className="flex items-center justify-between">
                             <Button
                               type="button"
@@ -898,41 +1061,117 @@ const CheckoutPage: React.FC = () => {
                         </div>
                       )}
 
-                    {/* Guest save info checkbox */}
+                    {/* Guest: optional account creation (password → signup / OTP flow) */}
                     {!isAuthenticated && checkoutAsGuest && (
-                      <div className="flex items-center space-x-2 pt-4">
-                        <input
-                          id="save-info"
-                          name="save-info"
-                          type="checkbox"
-                          checked={saveInfo}
-                          onChange={(e) => setSaveInfo(e.target.checked)}
-                          className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
-                        />
-                        <label
-                          htmlFor="save-info"
-                          className="text-sm text-gray-700"
-                        >
-                          Save this information for faster check-out next time
-                        </label>
-                      </div>
-                    )}
-
-                    {/* Guest checkout account creation suggestion */}
-                    {!isAuthenticated && checkoutAsGuest && (
-                      <div className="pt-4 p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-2">
-                          Create an account?
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Save your information and get faster checkout, order
-                          tracking, and exclusive offers.
-                        </p>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to="/auth/register?redirect=/checkout">
-                            Create Account
+                      <div className="pt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+                        <div className="flex items-start space-x-2">
+                          <input
+                            id="guest-create-account"
+                            type="checkbox"
+                            checked={guestWantsAccount}
+                            onChange={(e) => {
+                              setGuestWantsAccount(e.target.checked);
+                              if (!e.target.checked) {
+                                setGuestPassword("");
+                                setGuestConfirmPassword("");
+                              }
+                              setValidationErrors((prev) =>
+                                prev.filter(
+                                  (err) =>
+                                    err.field !== "guestPassword" &&
+                                    err.field !== "guestConfirmPassword"
+                                )
+                              );
+                            }}
+                            className="w-4 h-4 mt-0.5 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+                          />
+                          <label
+                            htmlFor="guest-create-account"
+                            className="text-sm text-gray-700"
+                          >
+                            Create an account with this email after placing the
+                            order (order confirmation email will still be sent to
+                            this address).
+                          </label>
+                        </div>
+                        {guestWantsAccount && (
+                          <div className="space-y-3 pl-0 sm:pl-6">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Password*
+                              </label>
+                              <Input
+                                name="guestPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                value={guestPassword}
+                                onChange={(e) => {
+                                  setGuestPassword(e.target.value);
+                                  setValidationErrors((prev) =>
+                                    prev.filter(
+                                      (err) => err.field !== "guestPassword"
+                                    )
+                                  );
+                                }}
+                                className={cn(
+                                  "w-full !border-gray-400",
+                                  getFieldError("guestPassword") &&
+                                    "border-red-500 focus:ring-red-500"
+                                )}
+                              />
+                              {getFieldError("guestPassword") && (
+                                <div className="flex items-center mt-1 text-sm text-red-600">
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                  {getFieldError("guestPassword")}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Confirm password*
+                              </label>
+                              <Input
+                                name="guestConfirmPassword"
+                                type="password"
+                                autoComplete="new-password"
+                                value={guestConfirmPassword}
+                                onChange={(e) => {
+                                  setGuestConfirmPassword(e.target.value);
+                                  setValidationErrors((prev) =>
+                                    prev.filter(
+                                      (err) =>
+                                        err.field !== "guestConfirmPassword"
+                                    )
+                                  );
+                                }}
+                                className={cn(
+                                  "w-full !border-gray-400",
+                                  getFieldError("guestConfirmPassword") &&
+                                    "border-red-500 focus:ring-red-500"
+                                )}
+                              />
+                              {getFieldError("guestConfirmPassword") && (
+                                <div className="flex items-center mt-1 text-sm text-red-600">
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                  {getFieldError("guestConfirmPassword")}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              Same password rules as sign up: upper & lowercase,
+                              number, and a special character (!@$%&*?).
+                            </p>
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-600">
+                          Prefer to register separately?{" "}
+                          <Link
+                            to="/auth/register?redirect=/checkout"
+                            className="text-[#1E4700] hover:text-[#1E4700]/80 font-medium"
+                          >
+                            Create an account
                           </Link>
-                        </Button>
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1130,6 +1369,7 @@ const CheckoutPage: React.FC = () => {
             orderNumber={orderNumber}
             orderTotal={total}
             paymentMethod={selectedPayment}
+            isGuest={isGuestCheckoutFlow}
             onClose={handleSuccessClose}
           />
         )}

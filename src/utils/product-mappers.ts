@@ -169,10 +169,22 @@ export const mapApiProductToProduct = (apiProduct: ApiProductData): Product => {
     videos: [], // API doesn't provide videos
   };
 
-  // Map structured features when provided by the API
-  const rawFeatures = Array.isArray(apiProductUnknown.features)
-    ? (apiProductUnknown.features as string[])
+  // Map structured features when provided by the API (supports string[] or {name, value}[])
+  const rawFeaturesInput = Array.isArray(apiProductUnknown.features)
+    ? apiProductUnknown.features
     : [];
+  const rawFeatures: string[] = rawFeaturesInput
+    .map((f: unknown) => {
+      if (typeof f === 'string') return f.trim() || null;
+      if (f && typeof f === 'object' && 'name' in f) {
+        const obj = f as { name?: string; value?: string };
+        const n = String(obj.name ?? '').trim();
+        const v = String(obj.value ?? '').trim();
+        return n && v ? `${n}: ${v}` : v || n || null;
+      }
+      return null;
+    })
+    .filter((s): s is string => s != null && s.length > 0);
 
   // Map raw variations (size, color, measurement, etc.) into typed variants
   const rawVariations = Array.isArray(apiProductUnknown.variations)

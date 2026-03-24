@@ -8,6 +8,7 @@ export interface AddAddressRequest {
   zipCode: string;
   country: string;
   isDefault: number; // 1 for true, 0 for false
+  guestCheckout?: number; // 0 for authenticated (required by backend)
 }
 
 export interface EditAddressRequest {
@@ -17,6 +18,7 @@ export interface EditAddressRequest {
   zipCode: string;
   country: string;
   isDefault: number; // 1 for true, 0 for false
+  guestCheckout?: number; // 0 for authenticated (required by backend)
 }
 
 // Address API response types
@@ -60,12 +62,14 @@ export interface DeleteAddressResponse {
 export const addressApi = {
   // Add new address (requires Bearer token)
   addAddress: async (data: AddAddressRequest): Promise<AddAddressResponse> => {
-    return apiClient.post<AddAddressResponse>('/buyer/address', data, undefined, true);
+    const payload = { ...data, guestCheckout: 0 };
+    return apiClient.post<AddAddressResponse>('/buyer/address', payload, undefined, true);
   },
 
   // Edit existing address (requires Bearer token) - Uses POST per API docs
   editAddress: async (id: string, data: EditAddressRequest): Promise<EditAddressResponse> => {
-    return apiClient.post<EditAddressResponse>(`/buyer/address/edit/${id}`, data, undefined, true);
+    const payload = { ...data, guestCheckout: 0 };
+    return apiClient.post<EditAddressResponse>(`/buyer/address/edit/${id}`, payload, undefined, true);
   },
 
   // Delete address (requires Bearer token)
