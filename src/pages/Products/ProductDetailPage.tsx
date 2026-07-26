@@ -953,7 +953,12 @@ const ProductDetailPage: React.FC = () => {
                 <div
                   className={cn(
                     "p-6",
-                    hasRelatedProducts && "lg:flex-1 lg:overflow-y-auto lg:min-h-0"
+                    hasRelatedProducts && "lg:flex-1 lg:min-h-0",
+                    // Empty rating fits the matched height without a scrollbar; other tabs may scroll
+                    hasRelatedProducts &&
+                      (activeDetailTab === "rating" && !displayReviews
+                        ? "lg:overflow-hidden"
+                        : "lg:overflow-y-auto")
                   )}
                 >
                   {activeDetailTab === "description" && (
@@ -1075,8 +1080,19 @@ const ProductDetailPage: React.FC = () => {
                   )}
 
                   {activeDetailTab === "rating" && (
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Rating</h2>
+                    <div
+                      className={cn(
+                        !displayReviews && "h-full flex flex-col"
+                      )}
+                    >
+                      <h2
+                        className={cn(
+                          "text-2xl font-bold text-gray-900",
+                          displayReviews ? "mb-6" : "mb-3 shrink-0"
+                        )}
+                      >
+                        Product Rating
+                      </h2>
                       {displayReviews ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           <div className="md:col-span-1 flex flex-col items-center justify-center border-r border-gray-200 pr-6">
@@ -1116,8 +1132,8 @@ const ProductDetailPage: React.FC = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="text-center py-8">
-                          <p className="text-gray-600 mb-4">Be the first to review</p>
+                        <div className="flex-1 flex flex-col items-center justify-center text-center py-2">
+                          <p className="text-gray-600 mb-3">Be the first to review</p>
                           {isAuthenticated && (
                             <Button
                               variant="outline"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '../../components/UI';
 import { useAuthStore } from '../../store/useAuthStore';
 import AccountSidebar from '../../components/Account/AccountSidebar';
@@ -11,13 +11,41 @@ import ContactAdminPage from './ContactAdminPage';
 import Container from '@/components/Layout/Container';
 import { Eye, EyeOff, Wallet } from 'lucide-react';
 
+const ACCOUNT_SECTIONS = [
+  'profile',
+  'addresses',
+  'payment',
+  'orders',
+  'returns',
+  'cancellations',
+  'notifications',
+  'contact-support',
+] as const;
+
+type AccountSection = (typeof ACCOUNT_SECTIONS)[number];
+
+const isAccountSection = (value: string | null): value is AccountSection =>
+  !!value && (ACCOUNT_SECTIONS as readonly string[]).includes(value);
+
 const AccountPage: React.FC = () => {
   const { user } = useAuthStore();
-  const [activeSection, setActiveSection] = useState('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionParam = searchParams.get('section');
+  const activeSection: AccountSection = isAccountSection(sectionParam)
+    ? sectionParam
+    : 'profile';
   const [showWalletBalance, setShowWalletBalance] = useState(false);
 
   const walletBalance = 125000;
   const formattedWalletBalance = `₦${walletBalance.toLocaleString()}`;
+
+  const handleSectionChange = (section: string) => {
+    if (!isAccountSection(section) || section === 'profile') {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    setSearchParams({ section }, { replace: true });
+  };
 
   const renderPlaceholderSection = (title: string, description: string) => (
     <div className="space-y-6">
@@ -101,7 +129,7 @@ const AccountPage: React.FC = () => {
           <div className="lg:col-span-1">
             <AccountSidebar 
               activeSection={activeSection} 
-              onSectionChange={setActiveSection} 
+              onSectionChange={handleSectionChange} 
             />
           </div>
 

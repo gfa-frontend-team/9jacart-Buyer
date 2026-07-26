@@ -155,7 +155,7 @@
 
 
 import React, { Suspense, lazy, useEffect } from "react";
-import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation, Navigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { Loading } from "../components/UI";
 
@@ -177,7 +177,6 @@ const TrackOrderPage = lazy(() => import("../pages/Orders/TrackOrderPage"));
 const RateOrderPage = lazy(() => import("../pages/Orders/RateOrderPage"));
 const AccountPage = lazy(() => import("../pages/Account/AccountPage"));
 const WishlistPage = lazy(() => import("../pages/Account/WishlistPage"));
-const ContactAdminPage = lazy(() => import("../pages/Account/ContactAdminPage"));
 const ContactPage = lazy(() => import("../pages/Support/ContactPage"));
 const FAQPage = lazy(() => import("../pages/Support/FAQPage"));
 const TermsPage = lazy(() => import("../pages/Support/TermsPage"));
@@ -352,7 +351,7 @@ const router = createBrowserRouter([
         path: "contact-admin",
         element: withSuspense(
           <ProtectedRoute>
-            <ContactAdminPage />
+            <Navigate to="/account?section=contact-support" replace />
           </ProtectedRoute>
         ),
       },

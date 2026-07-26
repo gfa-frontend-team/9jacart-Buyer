@@ -253,8 +253,10 @@ const CategoryPage: React.FC = () => {
               </div>
             )}
 
-            {/* Recently Viewed Products (inline, like Related Items; global, no category filter) */}
-            {!loading && <RecentlyViewedProductsSection variant="inline" />}
+            {/* Recently Viewed: hide when category is empty (same as guest empty-category behavior) */}
+            {!loading && products.length > 0 && (
+              <RecentlyViewedProductsSection variant="inline" />
+            )}
 
             {/* Related Items: same-category exclusives, or fallback to featured when all category products are on page */}
             {!loading && displayRelatedProducts.length > 0 && (

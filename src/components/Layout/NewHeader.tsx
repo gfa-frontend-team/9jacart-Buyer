@@ -222,7 +222,7 @@ const NewHeader: React.FC = () => {
                             {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
-                            to="/contact-admin"
+                            to="/account?section=contact-support"
                             className="block px-3 py-3 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors min-h-[44px] flex items-center"
                             onClick={(e) => handleMenuItemClick(e)}
                           >
@@ -331,9 +331,9 @@ const NewHeader: React.FC = () => {
                 <ChevronDown className="w-3 h-3 ml-1" />
               </button> */}
 
-              {/* Help - Direct Link */}
+              {/* Help - opens Contact Support inside My Account */}
               <Link
-                to="/contact-admin"
+                to="/account?section=contact-support"
                 className="flex text-white items-center text-sm hover:bg-[#8DEB6E]/15 px-3 py-2 rounded-md cursor-pointer transition-colors"
               >
                 <HelpCircle className="w-4 h-4 mr-2" />
@@ -394,7 +394,7 @@ const NewHeader: React.FC = () => {
                             {wishlistItems > 0 && `(${wishlistItems})`}
                           </Link>
                           <Link
-                            to="/contact-admin"
+                            to="/account?section=contact-support"
                             className="block px-3 py-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition-colors"
                             onClick={(e) => handleMenuItemClick(e)}
                           >

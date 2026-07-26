@@ -155,6 +155,7 @@ const AddressesSection: React.FC = () => {
             value={formData.streetAddress}
             onChange={handleInputChange}
             placeholder="e.g., 54, John Doe Street"
+            className="!border-gray-400"
           />
           <p className="text-xs text-muted-foreground">
             Include house number and street name
@@ -169,6 +170,7 @@ const AddressesSection: React.FC = () => {
               value={formData.city}
               onChange={handleInputChange}
               placeholder="City"
+              className="!border-gray-400"
             />
           </div>
           <div className="space-y-2">
@@ -178,6 +180,7 @@ const AddressesSection: React.FC = () => {
               value={formData.state}
               onChange={handleInputChange}
               placeholder="State"
+              className="!border-gray-400"
             />
           </div>
           <div className="space-y-2">
@@ -187,6 +190,7 @@ const AddressesSection: React.FC = () => {
               value={formData.zipCode}
               onChange={handleInputChange}
               placeholder="ZIP Code"
+              className="!border-gray-400"
             />
           </div>
         </div>
@@ -198,6 +202,7 @@ const AddressesSection: React.FC = () => {
             value={formData.country}
             onChange={handleInputChange}
             placeholder="Country"
+            className="!border-gray-400"
           />
         </div>
         
