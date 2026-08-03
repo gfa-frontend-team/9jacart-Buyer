@@ -145,7 +145,7 @@ const ContactAdminPage: React.FC = () => {
                   type="text"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full"
+                  className="w-full !border-gray-400"
                   required
                   disabled
                 />
@@ -162,7 +162,7 @@ const ContactAdminPage: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full"
+                  className="w-full !border-gray-400"
                   required
                   disabled
                 />
@@ -180,7 +180,7 @@ const ContactAdminPage: React.FC = () => {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   placeholder="Enter your phone number"
-                  className="w-full"
+                  className="w-full !border-gray-400"
                 />
               </div>
 
@@ -196,7 +196,7 @@ const ContactAdminPage: React.FC = () => {
                   value={formData.subject}
                   onChange={handleInputChange}
                   placeholder="Enter the subject of your message"
-                  className="w-full"
+                  className="w-full !border-gray-400"
                   required
                 />
               </div>
@@ -213,7 +213,7 @@ const ContactAdminPage: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Enter your message here..."
                   rows={6}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                  className="flex w-full rounded-md border border-gray-400 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                   required
                 />
               </div>

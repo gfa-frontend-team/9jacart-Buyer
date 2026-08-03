@@ -36,7 +36,7 @@ const CTASection = () => {
             >
               Start Selling Today
             </motion.a>
-            <Link to="/contact-admin">
+            <Link to="/account?section=contact-support">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

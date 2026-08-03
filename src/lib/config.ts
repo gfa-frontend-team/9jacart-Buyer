@@ -14,10 +14,15 @@ export const config = {
   auth: {
     tokenKey: 'auth-token',
     storageKey: 'auth-storage',
+    rememberMeKey: 'auth-remember-me',
     google: {
       clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
       accessToken: import.meta.env.VITE_GOOGLE_ACCESS_TOKEN || '', // Static access token from backend
     },
+  },
+  neocash: {
+    publicKey: import.meta.env.VITE_NEOCASH_PUBLIC_KEY || 'pk_test_xxx',
+    assetPrefix: 'https://cdn.neocash.ng/widget/v1/',
   },
   features: {
     // Feature flags for development

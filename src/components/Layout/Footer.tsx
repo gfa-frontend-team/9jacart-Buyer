@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
               {/* <li><Link to="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li> */}
               <li><Link to="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link></li>
               <li><Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms & Conditions (T's & C's)</Link></li>
-              <li><Link to="/contact-admin" className="text-gray-300 hover:text-white transition-colors">Contact Admin</Link></li>
+              <li><Link to="/account?section=contact-support" className="text-gray-300 hover:text-white transition-colors">Contact Admin</Link></li>
             </ul>
           </div>
 
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
             {/* Let Us Help You */}
             <h3 className="text-lg font-semibold mb-6 text-white mt-8">Let Us Help You</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/contact-admin" className="text-gray-300 hover:text-white transition-colors">Help (Contact Admin)</Link></li>
+              <li><Link to="/account?section=contact-support" className="text-gray-300 hover:text-white transition-colors">Help (Contact Admin)</Link></li>
             </ul>
           </div>
 

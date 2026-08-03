@@ -6,6 +6,10 @@ import { productsApi } from '../api/products';
 import { apiErrorUtils } from '../utils/api-errors';
 import { ApiError } from '../api/client';
 import { mapApiProductToProduct } from '../utils/product-mappers';
+import { useCheckoutCouponStore } from './useCheckoutCouponStore';
+
+/** Flat rate fee in naira applied to every order (e.g. handling/delivery) */
+export const FLAT_RATE_NGN = 750;
 
 interface CartStore {
   // Guest cart data (persisted to localStorage)
@@ -30,7 +34,12 @@ interface CartStore {
   isMigrating: boolean;
   
   // Core methods
-  addItem: (product: Product, quantity?: number, isAuthenticated?: boolean) => Promise<void>;
+  addItem: (
+    product: Product,
+    quantity?: number,
+    isAuthenticated?: boolean,
+    selectedVariants?: Record<string, string>
+  ) => Promise<void>;
   removeItem: (productId: string, isAuthenticated?: boolean) => Promise<void>;
   updateQuantity: (productId: string, quantity: number, isAuthenticated?: boolean) => Promise<void>;
   clearCart: (isAuthenticated?: boolean) => Promise<void>;
@@ -52,6 +61,7 @@ interface CartStore {
   getTax: (isAuthenticated: boolean) => number;
   getCommission: (isAuthenticated: boolean) => number;
   hasCommission: (isAuthenticated: boolean) => boolean;
+  getFlatRate: () => number;
   getFinalTotal: (isAuthenticated: boolean) => number;
   isItemInCart: (productId: string, isAuthenticated: boolean) => boolean;
   getItemQuantity: (productId: string, isAuthenticated: boolean) => number;
@@ -84,7 +94,15 @@ export const useCartStore = create<CartStore>()(
     const storeName = typeof apiItem.vendor === 'string' 
       ? apiItem.vendor 
       : apiItem.vendor.storeName;
-    
+
+    const selectedVariants =
+      apiItem.variations && apiItem.variations.length > 0
+        ? apiItem.variations.reduce<Record<string, string>>((acc, v) => {
+            const key = v.name?.toLowerCase() || 'option';
+            acc[key] = v.value;
+            return acc;
+          }, {})
+        : undefined;
     return {
       id: apiItem.productId,
       cartItemId: apiItem.cartItemId,
@@ -135,6 +153,7 @@ export const useCartStore = create<CartStore>()(
         updatedAt: new Date()
       } as Product,
       quantity: parseInt(apiItem.quantity),
+      selectedVariants,
       vendor: vendorId, // Store vendorId as string
       price: apiItem.price,
       subtotal: apiItem.subtotal,
@@ -144,16 +163,38 @@ export const useCartStore = create<CartStore>()(
   },
 
   // Add item - different behavior for guest vs authenticated users
-  addItem: async (product: Product, quantity = 1, isAuthenticated = false) => {
+  addItem: async (
+    product: Product,
+    quantity = 1,
+    isAuthenticated = false,
+    selectedVariants?: Record<string, string>
+  ) => {
     set({ error: null });
 
     if (isAuthenticated) {
       // Authenticated: Call API directly
       try {
         set({ isLoading: true });
+        const variations =
+          selectedVariants && Object.keys(selectedVariants).length > 0
+            ? Object.entries(selectedVariants).map(([key, value]) => {
+                const lower = key.toLowerCase();
+                const name =
+                  lower === "size"
+                    ? "Size"
+                    : lower === "color"
+                    ? "Color"
+                    : lower === "measurement"
+                    ? "Measurement"
+                    : key.charAt(0).toUpperCase() + key.slice(1);
+                return { name, value };
+              })
+            : undefined;
+
         await cartApi.addItem({
           productId: product.id,
-          quantity: quantity
+          quantity: quantity,
+          ...(variations ? { variations } : {}),
         });
         
         // Reload cart from server to get updated state
@@ -168,12 +209,19 @@ export const useCartStore = create<CartStore>()(
     } else {
       // Guest: Update in-memory state only
       const { guestItems } = get();
-      const existingItem = guestItems.find(item => item.product.id === product.id);
+      const existingItem = guestItems.find(
+        (item) =>
+          item.product.id === product.id &&
+          JSON.stringify(item.selectedVariants || {}) ===
+            JSON.stringify(selectedVariants || {})
+      );
       
       if (existingItem) {
         set((state) => ({
-          guestItems: state.guestItems.map(item =>
-            item.product.id === product.id
+          guestItems: state.guestItems.map((item) =>
+            item.product.id === product.id &&
+            JSON.stringify(item.selectedVariants || {}) ===
+              JSON.stringify(selectedVariants || {})
               ? { ...item, quantity: item.quantity + quantity }
               : item
           )
@@ -182,7 +230,8 @@ export const useCartStore = create<CartStore>()(
         const newItem: CartItem = {
           id: product.id,
           product,
-          quantity
+          quantity,
+          selectedVariants,
         };
         set((state) => ({
           guestItems: [...state.guestItems, newItem]
@@ -307,6 +356,7 @@ export const useCartStore = create<CartStore>()(
         set({ isLoading: true });
         await cartApi.clearCart();
         set({ serverItems: [], serverSummary: null });
+        useCheckoutCouponStore.getState().clearPersistedCoupon();
       } catch (error) {
         const errorMessage = apiErrorUtils.getErrorMessage(error);
         set({ error: errorMessage });
@@ -317,6 +367,7 @@ export const useCartStore = create<CartStore>()(
     } else {
       // Guest: Clear in-memory state only
       set({ guestItems: [] });
+      useCheckoutCouponStore.getState().clearPersistedCoupon();
     }
   },
 
@@ -620,6 +671,7 @@ export const useCartStore = create<CartStore>()(
 
   // Handle logout - clear server data, keep guest cart empty
   handleLogout: () => {
+    useCheckoutCouponStore.getState().clearPersistedCoupon();
     set({
       serverItems: [],
       serverSummary: null,
@@ -666,28 +718,16 @@ export const useCartStore = create<CartStore>()(
   },
 
   getSubtotal: (isAuthenticated: boolean) => {
-    if (isAuthenticated) {
-      // Use subtotal from server summary if available for accuracy
-      const { serverSummary } = get();
-      if (serverSummary?.subtotal !== undefined) {
-        return serverSummary.subtotal;
-      }
-    }
-    // For guest users or when server summary is not available, calculate from items
+    // Always calculate from live items so the total updates immediately
+    // when quantities are changed via optimistic updates.
     return get().getTotalPrice(isAuthenticated);
   },
 
   getShipping: (isAuthenticated: boolean) => {
-    if (isAuthenticated) {
-      // Use shipping from server summary if available
-      const { serverSummary } = get();
-      if (serverSummary?.shipping !== undefined) {
-        return serverSummary.shipping;
-      }
-    }
-    // For guest users or when server summary is not available, calculate shipping
-    const subtotal = get().getSubtotal(isAuthenticated);
-    return subtotal > 50000 ? 0 : 2500; // Free shipping over ₦50,000 fallback
+    // Shipping pricing is not enabled yet in frontend.
+    // Keep this as 0 so UI consistently shows "Incoming".
+    void isAuthenticated;
+    return 0;
   },
 
   getTax: (isAuthenticated: boolean) => {
@@ -708,10 +748,9 @@ export const useCartStore = create<CartStore>()(
       // Calculate commission from percentage if available
       const { serverSummary } = get();
       if (serverSummary?.platformCommissionPercentage !== undefined) {
-        // Use server's subtotal from summary for accuracy, fallback to calculated subtotal
-        const subtotal = serverSummary.subtotal ?? get().getSubtotal(isAuthenticated);
+        // Use the live calculated subtotal so commission updates with quantity changes
+        const subtotal = get().getSubtotal(isAuthenticated);
         const commissionPercentage = serverSummary.platformCommissionPercentage;
-        // Calculate commission: subtotal * (percentage / 100)
         return subtotal * (commissionPercentage / 100);
       }
     }
@@ -727,11 +766,13 @@ export const useCartStore = create<CartStore>()(
     return false;
   },
 
+  getFlatRate: () => FLAT_RATE_NGN,
+
   getFinalTotal: (isAuthenticated: boolean) => {
     const subtotal = get().getSubtotal(isAuthenticated);
     const shipping = get().getShipping(isAuthenticated);
-    const commission = get().getCommission(isAuthenticated);
-    return subtotal + shipping + commission;
+    const flatRate = get().getFlatRate();
+    return subtotal + shipping + flatRate;
   },
 
   isItemInCart: (productId: string, isAuthenticated: boolean) => {

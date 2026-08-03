@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Modal } from "../UI/Modal";
+import { getCategoryIcon } from "@/lib/categoryIcons";
+import { cn } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -27,6 +29,7 @@ const subcategoryOptions: Record<string, string[]> = {
 
 const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showBorderRight = false }) => {
   const navigate = useNavigate();
+  const { categoryId: selectedCategoryId } = useParams<{ categoryId?: string }>();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
@@ -48,6 +51,20 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
   const getSubcategories = (parentId: string) => {
     return categories.filter((cat) => cat.parentId === parentId && !cat.archived);
   };
+
+  // Expand parent when a subcategory is the active route
+  useEffect(() => {
+    if (!selectedCategoryId) return;
+    const selected = categories.find((cat) => cat.id === selectedCategoryId);
+    if (selected?.parentId) {
+      setExpandedCategories((prev) => {
+        if (prev.has(selected.parentId!)) return prev;
+        const next = new Set(prev);
+        next.add(selected.parentId!);
+        return next;
+      });
+    }
+  }, [selectedCategoryId, categories]);
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -112,40 +129,54 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
     const subcategories = getSubcategories(category.id);
     const hasSubcategories = subcategories.length > 0;
     const isExpanded = expandedCategories.has(category.id);
+    const isSelected = selectedCategoryId === category.id;
     const hasModalOptions =
       category.level === 2 && subcategoryOptions[category.id];
+    const CategoryIcon = getCategoryIcon(category.name, category.id);
+    const isActive = isSelected || isExpanded;
 
     return (
       <li key={category.id}>
         <div
-          className={`
-            group relative text-sm cursor-pointer flex items-center justify-between py-1.5 px-2 rounded-md
-            transition-all duration-300 ease-in-out
-            ${isSubcategory ? "ml-4 pl-4" : ""}
-            text-gray-700 bg-transparent
-            hover:text-primary hover:bg-[#8DEB6E]/10 hover:pl-3
-            ${isSubcategory ? "hover:ml-4" : ""}
-            ${isExpanded ? "text-primary bg-[#8DEB6E]/10" : ""}
-          `}
+          className={cn(
+            "group relative text-sm cursor-pointer flex items-center justify-between gap-2 py-1.5 px-2 rounded-md",
+            "transition-all duration-300 ease-in-out",
+            isSubcategory && "ml-4 pl-4",
+            isActive
+              ? "text-primary bg-[#8DEB6E]/10"
+              : "text-gray-700 bg-transparent hover:text-primary hover:bg-[#8DEB6E]/10 hover:pl-3",
+            isSubcategory && !isActive && "hover:ml-4"
+          )}
           onClick={() => handleCategoryClick(category)}
         >
-          {/* Left accent bar - appears on hover with lemon color */}
+          {/* Left accent bar - visible when selected/expanded, or on hover */}
           <div 
-            className="absolute left-0 top-0 bottom-0 w-1 bg-[#8DEB6E] rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
+            className={cn(
+              "absolute left-0 top-0 bottom-0 w-1 bg-[#8DEB6E] rounded-r-full transition-opacity duration-300 ease-in-out",
+              isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
             aria-hidden="true"
           />
           
-          <span className="font-medium relative z-10 transition-all duration-300 group-hover:translate-x-1">
-            {category.name}
+          <span className="flex min-w-0 flex-1 items-center gap-2 font-medium relative z-10 transition-all duration-300 group-hover:translate-x-1">
+            <CategoryIcon
+              className={cn(
+                "shrink-0 transition-colors duration-300",
+                isSubcategory ? "h-3.5 w-3.5" : "h-4 w-4",
+                isActive ? "text-primary" : "text-gray-400 group-hover:text-primary"
+              )}
+              aria-hidden
+            />
+            <span className="truncate">{category.name}</span>
           </span>
           
           {hasSubcategories && (
             <span
-              className={`
-                relative z-10 transition-all duration-300
-                text-gray-400 group-hover:text-primary
-                ${isExpanded ? "rotate-90 text-primary" : ""}
-              `}
+              className={cn(
+                "relative z-10 transition-all duration-300",
+                isActive ? "text-primary" : "text-gray-400 group-hover:text-primary",
+                isExpanded && "rotate-90"
+              )}
             >
               ›
             </span>
@@ -171,9 +202,21 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:block lg:col-span-1 ${showBorderRight ? "border-r border-gray-200" : ""}`}>
+      <aside
+        className={`hidden lg:block lg:col-span-1 ${
+          showBorderRight
+            ? "relative -mt-4 pt-4"
+            : ""
+        }`}
+      >
         <div className="sticky top-4">
-          <div className="h-[240px] sm:h-[300px] md:h-[360px] lg:h-[420px] overflow-y-auto scroll-smooth scrollbar-thin">
+          <div
+            className={`h-[240px] sm:h-[300px] md:h-[360px] lg:h-[460px] overflow-y-auto scroll-smooth scrollbar-thin ${
+              showBorderRight
+                ? "rounded-lg bg-white shadow-md"
+                : ""
+            }`}
+          >
             <ul className="space-y-0.5 pr-4 lg:pr-6">
               {mainCategories.map((category) => renderCategoryItem(category))}
             </ul>
@@ -193,7 +236,12 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
                 <button
                   key={`mobile-${category.id}`}
                   onClick={() => handleCategoryClick(category)}
-                  className="flex-shrink-0 px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-full text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary transition-colors whitespace-nowrap"
+                  className={cn(
+                    "flex-shrink-0 px-3 sm:px-4 py-2 bg-white border rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                    selectedCategoryId === category.id
+                      ? "border-primary text-primary bg-[#8DEB6E]/10"
+                      : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary"
+                  )}
                 >
                   {category.name}
                   {hasSubcategories && <span className="ml-1">›</span>}

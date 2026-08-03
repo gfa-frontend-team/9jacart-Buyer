@@ -3,7 +3,7 @@ import { useRealProductsList } from "../../hooks/api/useRealProducts";
 import { ProductCard } from "../Product";
 import { Button, Alert } from "../UI";
 import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { normalizeProductImages } from "@/lib/utils";
 
 export default function FastSelling() {
@@ -11,20 +11,20 @@ export default function FastSelling() {
 
   const fastSellingProducts = products
     .filter((p) => p.flags?.bestseller)
-    .slice(0, 4);
+    .slice(0, 5);
   const displayProducts =
-    fastSellingProducts.length >= 4 ? fastSellingProducts : products.slice(0, 4);
+    fastSellingProducts.length >= 5 ? fastSellingProducts : products.slice(0, 5);
 
   if (loading) {
     return (
       <section className="py-8 sm:py-12 bg-gray-50">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
+            <SectionHeader text="Featured Picks" subtitle="Handpicked products you don't want to miss" />
           </div>
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">Loading...</span>
+            <span className="ml-2 text-muted-foreground">Loading featured products...</span>
           </div>
         </div>
       </section>
@@ -36,7 +36,7 @@ export default function FastSelling() {
       <section className="py-8 sm:py-12 bg-gray-50">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
+            <SectionHeader text="Featured Picks" subtitle="Handpicked products you don't want to miss" />
           </div>
           <Alert variant="destructive" className="max-w-md mx-auto">
             <div className="flex flex-col items-center gap-4">
@@ -55,28 +55,36 @@ export default function FastSelling() {
     return null;
   }
 
+  const viewAllLink = (
+    <Link to="/products">
+      <Button
+        variant="outline"
+        className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+      >
+        View All Products
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </Link>
+  );
+
   return (
     <section className="py-8 sm:py-12 bg-gray-50">
       <div className=" mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <SectionHeader text="Fast Selling" subtitle="Popular items selling out quickly" />
+        <div className="mb-12 flex items-center justify-between">
+          <SectionHeader text="Featured Picks" subtitle="Handpicked products you don't want to miss" />
+          <div className="hidden sm:block shrink-0">{viewAllLink}</div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {displayProducts.map((product) => (
             <ProductCard
               key={product.id}
+              eagerImages
               product={normalizeProductImages(product)}
               className="w-full"
             />
           ))}
         </div>
-        <div className="flex justify-center mt-8 sm:mt-12">
-          <Link to="/products">
-            <Button className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
-              View All Products
-            </Button>
-          </Link>
-        </div>
+        <div className="mt-6 flex justify-center sm:hidden">{viewAllLink}</div>
       </div>
     </section>
   );

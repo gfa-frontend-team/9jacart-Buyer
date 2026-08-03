@@ -8,14 +8,7 @@ import { useRealProductsList } from '../../hooks/api/useRealProducts';
 import { normalizeProductImages } from '@/lib/utils';
 
 const LiveProducts: React.FC = () => {
-  const { products, loading, error, refetch, pagination } = useRealProductsList({ page: 1, perPage: 100 }); // Fetch all products
-  
-  // Debug logging (can be removed in production)
-  console.log('🎨 LiveProducts:', { 
-    loading, 
-    productsCount: products?.length,
-    totalItems: pagination?.totalItems
-  });
+  const { products, loading, error, refetch } = useRealProductsList({ page: 1, perPage: 100 });
 
   if (loading) {
     return (
@@ -79,7 +72,10 @@ const LiveProducts: React.FC = () => {
           <SectionHeader text="All Products" subtitle="Explore everything available — updated in real time" />
           
           <Link to="/products">
-            <Button variant="outline" className="hidden sm:flex items-center gap-2 hover:border-[#2ac12a]">
+            <Button
+              variant="outline"
+              className="hidden sm:flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -87,10 +83,11 @@ const LiveProducts: React.FC = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {products.map((product) => (
             <ProductCard
               key={product.id}
+              eagerImages
               product={normalizeProductImages(product)}
               showQuickAdd={true}
               className="h-full"
@@ -101,7 +98,10 @@ const LiveProducts: React.FC = () => {
         {/* Mobile View All Button */}
         <div className="flex justify-center mt-6 sm:hidden">
           <Link to="/products">
-            <Button variant="outline" className="flex items-center gap-2 hover:border-[#2ac12a]">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
               <ChevronRight className="h-4 w-4" />
             </Button>

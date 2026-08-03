@@ -2,12 +2,15 @@ import React from 'react';
 import { CheckCircle, Package, ArrowRight } from 'lucide-react';
 import { Button, Card, CardContent } from '../UI';
 import { Link } from 'react-router-dom';
+import { formatPrice } from '../../lib/productUtils';
 
 interface CheckoutSuccessProps {
   orderNumber: string;
   orderTotal: number;
   paymentMethod: string;
   estimatedDelivery?: string;
+  /** Guest orders: /orders is protected — offer sign-in / register instead. */
+  isGuest?: boolean;
   onClose?: () => void;
 }
 
@@ -16,15 +19,9 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   orderTotal,
   paymentMethod,
   estimatedDelivery = '3-5 business days',
+  isGuest = false,
   onClose
 }) => {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
-
   const getPaymentMethodDisplay = (method: string) => {
     switch (method) {
       case 'cash-on-delivery':
@@ -41,7 +38,7 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-16 p-4 z-50">
       <Card className="w-full max-w-md">
         <CardContent className="p-8 text-center">
           {/* Success Icon */}
@@ -96,13 +93,32 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Button asChild className="w-full">
-              <Link to="/orders" onClick={onClose}>
-                <Package className="w-4 h-4 mr-2" />
-                View Order Details
-              </Link>
-            </Button>
-            
+            {isGuest ? (
+              <>
+                <Button asChild className="w-full">
+                  <Link
+                    to="/auth/login?redirect=/orders"
+                    onClick={onClose}
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    Sign in to track orders
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="w-full">
+                  <Link to="/auth/register" onClick={onClose}>
+                    Create an account
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <Button asChild className="w-full">
+                <Link to="/orders" onClick={onClose}>
+                  <Package className="w-4 h-4 mr-2" />
+                  View Order Details
+                </Link>
+              </Button>
+            )}
+
             <Button variant="outline" asChild className="w-full">
               <Link to="/products" onClick={onClose}>
                 Continue Shopping

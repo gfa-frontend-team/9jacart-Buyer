@@ -9,6 +9,19 @@ export interface ProductsListParams {
   isActive?: string; // "1" to fetch active products only (buyer side)
 }
 
+// Single-variant entry from the backend for a product.
+// These are grouped into typed variants in the product mapper.
+export interface ApiProductVariation {
+  variationId: string;
+  name: string;
+  value: string;
+  /**
+   * Optional per-variant stock quantity.
+   * When present, this is used to determine which variant options are available.
+   */
+  stock?: string | number;
+}
+
 // Products API response types (matching the actual API structure)
 export interface ApiProductData {
   productId: string;
@@ -18,12 +31,22 @@ export interface ApiProductData {
   productDescription: string;
   productTags: string[];
   unitPrice: string;
+  /** Previous/original price before any discount (used for strikethrough display) */
+  oldPrice?: string;
+  totalPrice?: number;
   discountType: string;
   discountValue: string;
   discountPrice: string;
   stock: string;
   minStock: string;
   images: string[];
+  /** Optional structured feature list for the product detail page */
+  features?: string[];
+  /**
+   * Optional raw variations from the API.
+   * These are grouped into typed variants in the product mapper.
+   */
+  variations?: ApiProductVariation[];
   isActive: string;
   storeName: string;
   vendorLogo?: string; // URL-encoded JSON string containing logo URLs

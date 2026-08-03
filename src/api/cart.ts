@@ -4,6 +4,14 @@ import { apiClient } from './client';
 export interface AddToCartRequest {
   productId: string;
   quantity: number;
+  /**
+   * Optional selected variations for this cart item.
+   * Example: [{ name: "Size", value: "45" }].
+   */
+  variations?: {
+    name: string;
+    value: string;
+  }[];
 }
 
 export interface UpdateCartRequest {
@@ -16,12 +24,18 @@ export interface RemoveFromCartRequest {
 }
 
 // Cart API response types (matching backend structure)
+export interface ApiCartItemVariation {
+  name: string;
+  value: string;
+}
+
 export interface ApiCartItem {
   cartItemId: string;
   productId: string;
   productName: string;
   vendor: string | { vendorId: string; storeName: string }; // Can be string or object
   quantity: string; // Backend returns as string
+  variations?: ApiCartItemVariation[];
   price: number;
   subtotal: number;
   addedAt: string;

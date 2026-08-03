@@ -21,6 +21,7 @@ import {
 } from "../../components/UI";
 import { orderApi, type OrderDetailResponse } from "../../api/order";
 import { cn } from "../../lib/utils";
+import { formatPrice } from "../../lib/productUtils";
 import Container from "@/components/Layout/Container";
 
 type OrderStatus =
@@ -263,13 +264,6 @@ const TrackOrderPage: React.FC = () => {
       completed: index < currentIndex,
       current: index === currentIndex,
     }));
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
   };
 
   if (loading) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Trash2, 
@@ -15,6 +15,9 @@ import {
 } from '../../components/UI';
 import { CartItem, CartSummary } from '../../components/Cart';
 import { useCart } from '../../hooks/useCart';
+import { useProfile } from '../../hooks/api/useProfile';
+import { useDeliveryValidation } from '../../hooks/useDeliveryValidation';
+import { inferMixedDeliveryCase } from '../../api/order';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,9 +31,56 @@ const CartPage: React.FC = () => {
     error,
     isAuthenticated
   } = useCart();
+  const { getDefaultAddress } = useProfile();
 
   const [showClearModal, setShowClearModal] = useState(false);
   const [removingItemId, setRemovingItemId] = useState<string | null>(null);
+
+  const defaultAddress = getDefaultAddress();
+  const buyerAddressForDelivery = useMemo(() => {
+    const city = defaultAddress?.city?.trim();
+    const state = defaultAddress?.state?.trim();
+    return [city, state].filter(Boolean).join(', ');
+  }, [defaultAddress]);
+
+  const {
+    validation: deliveryValidation,
+    isLoading: isDeliveryValidationLoading,
+    error: deliveryValidationError,
+  } = useDeliveryValidation({
+    buyerAddress: buyerAddressForDelivery,
+    cartLineItems: items,
+    enabled: items.length > 0 && Boolean(buyerAddressForDelivery),
+  });
+
+  const affectedSet = useMemo(
+    () => new Set(deliveryValidation?.affectedProductIds ?? []),
+    [deliveryValidation?.affectedProductIds]
+  );
+
+  const highlightedProductIds = useMemo(
+    () => items.filter((i) => affectedSet.has(i.product.id)).map((i) => i.product.id),
+    [items, affectedSet]
+  );
+
+  const inferredMixed = useMemo(
+    () =>
+      inferMixedDeliveryCase(
+        deliveryValidation?.affectedProductIds ?? [],
+        items.map((i) => i.product.id)
+      ),
+    [deliveryValidation?.affectedProductIds, items]
+  );
+
+  const showMixedBanner =
+    highlightedProductIds.length > 0 &&
+    (Boolean(deliveryValidation?.isMixedCart) || inferredMixed);
+
+  const heavyItems = useMemo(
+    () => items.filter((item) => (item.product.shipping.weight ?? 0) > 10),
+    [items]
+  );
+  const hasHeavyProduct = heavyItems.length > 0;
 
 
 
@@ -192,6 +242,64 @@ const CartPage: React.FC = () => {
           </Alert>
         )}
 
+        {isDeliveryValidationLoading && (
+          <Alert
+            variant="default"
+            title="Checking delivery eligibility"
+            className="mb-6 border-blue-200 bg-blue-50"
+          >
+            We are validating delivery locations for items in your cart.
+          </Alert>
+        )}
+
+        {deliveryValidationError && (
+          <Alert
+            variant="default"
+            title="Delivery validation unavailable"
+            className="mb-6 border-red-200 bg-red-50"
+          >
+            {deliveryValidationError}
+          </Alert>
+        )}
+
+        {showMixedBanner && (
+          <Alert
+            variant="default"
+            title="Mixed cart detected"
+            className="mb-6 border-green-200 bg-green-50"
+          >
+            Some items in your cart are from vendors located outside Lagos.
+            At the moment, automated delivery is only available for orders where
+            both pickup and delivery locations are within Lagos. Delivery for
+            items outside Lagos is currently handled manually, and our support
+            team will contact you to confirm delivery arrangements and pricing.
+            To continue with automated checkout, you can remove items from
+            vendors outside Lagos.
+          </Alert>
+        )}
+
+        {hasHeavyProduct && (
+          <Alert
+            variant="destructive"
+            className="mb-6"
+          >
+            <p>
+              Products weighing above 10KG require manual delivery arrangements, as our current delivery partner cannot handle shipments exceeding this limit.
+            </p>
+            <ul className="mt-2 space-y-0.5 list-disc list-inside">
+              {heavyItems.map((item) => (
+                <li key={item.product.id}>
+                  <span className="font-medium">{item.product.name}</span>
+                  {' '}— {((item.product.shipping.weight ?? 0)).toFixed(2).replace(/\.00$/, '')}KG
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2">
+              Kindly remove it from the cart or continue via manual delivery method.
+            </p>
+          </Alert>
+        )}
+
         {/* Guest Cart Notice */}
         {!isAuthenticated && items.length > 0 && (
           <Alert 
@@ -213,6 +321,7 @@ const CartPage: React.FC = () => {
                     item={item}
                     onRemove={handleRemoveItem}
                     isRemoving={removingItemId === item.product.id}
+                    isDeliveryFlagged={affectedSet.has(item.product.id)}
                   />
                 </CardContent>
               </Card>

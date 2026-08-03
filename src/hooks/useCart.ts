@@ -2,6 +2,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import { useNotificationContext } from '../providers/NotificationProvider';
 import type { Product } from '../types';
+import { formatPrice } from '../lib/productUtils';
 
 /**
  * Clean cart hook that handles both guest and authenticated users
@@ -32,14 +33,19 @@ export const useCart = () => {
     getTax,
     getCommission,
     hasCommission,
+    getFlatRate,
     getFinalTotal,
     isItemInCart,
     getItemQuantity,
   } = useCartStore();
 
   // Wrapper methods that automatically pass authentication state
-  const addToCart = async (product: Product, quantity = 1) => {
-    await storeAddItem(product, quantity, isAuthenticated);
+  const addToCart = async (
+    product: Product,
+    quantity = 1,
+    selectedVariants?: Record<string, string>
+  ) => {
+    await storeAddItem(product, quantity, isAuthenticated, selectedVariants);
     
     // Show notification for guest users
     if (!isAuthenticated) {
@@ -69,6 +75,7 @@ export const useCart = () => {
   const tax = getTax(isAuthenticated);
   const commission = getCommission(isAuthenticated);
   const showCommission = hasCommission(isAuthenticated);
+  const flatRate = getFlatRate();
   const finalTotal = getFinalTotal(isAuthenticated);
 
   const isInCart = (productId: string) => isItemInCart(productId, isAuthenticated);
@@ -81,18 +88,9 @@ export const useCart = () => {
     tax,
     total: finalTotal,
     itemCount: totalItems,
-    formattedSubtotal: new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(subtotal),
-    formattedShipping: new Intl.NumberFormat("en-NG", {
-      style: "currency", 
-      currency: "NGN",
-    }).format(shipping),
-    formattedTotal: new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN", 
-    }).format(finalTotal),
+    formattedSubtotal: formatPrice(subtotal),
+    formattedShipping: formatPrice(shipping),
+    formattedTotal: formatPrice(finalTotal),
   });
 
   return {
@@ -106,6 +104,7 @@ export const useCart = () => {
     tax,
     commission,
     showCommission,
+    flatRate,
     finalTotal,
     
     // State

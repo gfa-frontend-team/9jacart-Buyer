@@ -5,6 +5,7 @@ import { Button } from '../UI/Button';
 import { Card, CardContent } from '../UI/Card';
 import { Badge } from '../UI/Badge';
 import { cn } from '../../lib/utils';
+import { formatPrice, formatDiscountPercentage } from '../../lib/productUtils';
 import { useWishlistStore, type WishlistItem } from '../../store/useWishlistStore';
 import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -33,19 +34,26 @@ const WishlistItemComponent: React.FC<WishlistItemProps> = ({ item }) => {
     await addToCart(product, 1, isAuthenticated);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
-  };
-
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    }).format(new Date(date));
+    const d = new Date(date);
+
+    try {
+      if (typeof Intl !== 'undefined' && typeof Intl.DateTimeFormat === 'function') {
+        return new Intl.DateTimeFormat('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        }).format(d);
+      }
+    } catch {
+      // If Intl or this locale is not supported, fall back below.
+    }
+
+    if (typeof d.toLocaleDateString === 'function') {
+      return d.toLocaleDateString();
+    }
+
+    return d.toDateString();
   };
 
   const renderStars = (rating: number) => {
@@ -104,7 +112,7 @@ const WishlistItemComponent: React.FC<WishlistItemProps> = ({ item }) => {
             {isOnSale && discount && (
               <div className="absolute top-3 right-3">
                 <Badge variant="destructive" className="text-xs bg-primary">
-                  -{discount.percentage}%
+                  -{formatDiscountPercentage(discount.percentage)}%
                 </Badge>
               </div>
             )}

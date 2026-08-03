@@ -6,17 +6,20 @@ import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
 import type { CartItem as CartItemType } from "../../types";
 import { cn } from "../../lib/utils";
+import { formatPrice, formatDiscountPercentage } from "../../lib/productUtils";
 
 interface CartItemProps {
   item: CartItemType;
   onRemove?: (productId: string) => void;
   isRemoving?: boolean;
+  isDeliveryFlagged?: boolean;
 }
 
 const CartItem: React.FC<CartItemProps> = ({
   item,
   onRemove,
   isRemoving = false,
+  isDeliveryFlagged = false,
 }) => {
   const { updateCartItemQuantity, isOperating } = useCart();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isItemInWishlist } = useWishlistStore();
@@ -85,13 +88,6 @@ const CartItem: React.FC<CartItemProps> = ({
     setIsEditing(true);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-    }).format(price);
-  };
-
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -110,7 +106,8 @@ const CartItem: React.FC<CartItemProps> = ({
     <div
       className={cn(
         "flex flex-col sm:flex-row gap-4 p-4 sm:p-6 transition-all duration-300",
-        isRemoving && "opacity-50 scale-95"
+        isRemoving && "opacity-50 scale-95",
+        isDeliveryFlagged && "bg-green-50/60 ring-1 ring-green-200 rounded-lg"
       )}
     >
       {/* Product Image */}
@@ -140,6 +137,14 @@ const CartItem: React.FC<CartItemProps> = ({
               {product.isSubaccountSet === false && (
                 <Badge variant="destructive" className="text-xs flex-shrink-0 bg-red-50 text-red-600 border-red-200 hover:text-white">
                   Product not available
+                </Badge>
+              )}
+              {isDeliveryFlagged && (
+                <Badge
+                  variant="outline"
+                  className="text-xs flex-shrink-0 border-green-300 text-green-800 bg-green-100"
+                >
+                  Manual delivery item
                 </Badge>
               )}
             </div>
@@ -173,7 +178,7 @@ const CartItem: React.FC<CartItemProps> = ({
 
         {/* Price and Quantity */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2 justify-center sm:justify-start">
+          <div className="flex items-center gap-2 justify-start">
             <span className="font-bold text-lg text-gray-900">
               {formatPrice(currentPrice)}
             </span>
@@ -184,13 +189,13 @@ const CartItem: React.FC<CartItemProps> = ({
             )}
             {discount && (
               <Badge variant="destructive" className="text-xs bg-red-50 text-red-600 border-red-200 hover:text-white">
-                -{discount.percentage}%
+                -{formatDiscountPercentage(discount.percentage)}%
               </Badge>
             )}
           </div>
 
           {/* Quantity Controls */}
-          <div className="flex items-center justify-center sm:justify-end gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
             <div className="flex items-center border rounded-lg">
               <Button
                 variant="ghost"
@@ -245,6 +250,17 @@ const CartItem: React.FC<CartItemProps> = ({
             </Button>
           </div>
         </div>
+
+        {/* Selected variants */}
+        {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
+          <div className="mt-2 text-xs text-gray-600 space-x-2">
+            {Object.entries(item.selectedVariants).map(([key, value]) => (
+              <span key={key}>
+                <span className="font-medium capitalize">{key}:</span> {value}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Item Total */}
         <div className="mt-3 pt-3 border-t border-gray-100">

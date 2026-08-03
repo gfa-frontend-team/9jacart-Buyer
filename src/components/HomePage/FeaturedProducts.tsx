@@ -1,3 +1,8 @@
+/**
+ * Archived: This section is no longer used on the homepage.
+ * "Featured Picks" is now provided by FastSelling (fast-selling products with the title "Featured Picks").
+ * Kept for reference or potential reuse elsewhere.
+ */
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Loader2 } from "lucide-react";
@@ -66,7 +71,7 @@ const FeaturedProducts: React.FC = () => {
           <Link to="/products">
             <Button
               variant="outline"
-              className="hidden sm:flex items-center gap-2 hover:border-[#2ac12a]"
+              className="hidden sm:flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
             >
               View All Products
               <ChevronRight className="h-4 w-4" />
@@ -75,10 +80,11 @@ const FeaturedProducts: React.FC = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           {featuredProducts.map((product) => (
             <ProductCard
               key={product.id}
+              eagerImages
               product={normalizeProductImages(product)}
               showQuickAdd={true}
               className="h-full"
@@ -89,7 +95,10 @@ const FeaturedProducts: React.FC = () => {
         {/* Mobile View All Button */}
         <div className="flex justify-center mt-8 sm:hidden">
           <Link to="/products">
-            <Button variant="outline" className="flex items-center gap-2 hover:border-[#2ac12a]">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
+            >
               View All Products
               <ChevronRight className="h-4 w-4" />
             </Button>

@@ -5,6 +5,7 @@ import { Button, Card, CardContent, Badge, Modal, Loading, Alert } from '../../c
 import { RatingModal } from '../../components/Rating';
 import { orderApi, transformApiOrderToOrder, type OrderDetailResponse } from '../../api/order';
 import type { Order } from '../../types';
+import { formatPrice } from '../../lib/productUtils';
 
 
 const OrdersPage: React.FC = () => {
@@ -90,13 +91,6 @@ const OrdersPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [location.state]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN'
-    }).format(price);
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {

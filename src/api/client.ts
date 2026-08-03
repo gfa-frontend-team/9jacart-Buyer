@@ -1,5 +1,6 @@
 // HTTP client with interceptors for API communication
 import { config } from '../lib/config';
+import { getAuthFromStorage } from '../lib/authStorage';
 
 const API_BASE_URL = config.api.baseUrl;
 
@@ -24,9 +25,8 @@ class ApiClient {
   }
 
   private getAuthToken(): string | null {
-    // Get token from localStorage (Zustand persist storage)
     try {
-      const authStorage = localStorage.getItem('auth-storage');
+      const authStorage = getAuthFromStorage();
       if (authStorage) {
         const parsed = JSON.parse(authStorage);
         return parsed.state?.token || null;
@@ -104,15 +104,35 @@ class ApiClient {
       //   headers: Object.fromEntries(response.headers.entries())
       // });
       
-      // Parse response
-      const data = await response.json();
+      // Parse response defensively: some backend errors return empty/non-JSON bodies.
+      const rawText = await response.text();
+      let data: any = {};
+      if (rawText) {
+        try {
+          data = JSON.parse(rawText);
+        } catch {
+          data = { message: rawText };
+        }
+      }
       
       if (!response.ok) {
         console.error('API Error Response:', data);
+        const messages =
+          data && typeof data === 'object' && 'messages' in data
+            ? (data.messages as Record<string, unknown>)
+            : undefined;
+        const firstFieldMessage =
+          messages && typeof messages === 'object'
+            ? Object.values(messages).find((v) => typeof v === 'string')
+            : undefined;
         // Handle API error responses
         throw new ApiError(
           response.status, 
-          data.messages?.error || data.message || `HTTP error! status: ${response.status}`,
+          (data && typeof data === 'object' ? data.messages?.error : undefined) ||
+            (typeof firstFieldMessage === 'string' ? firstFieldMessage : undefined) ||
+            (data && typeof data === 'object' ? data.message : undefined) ||
+            response.statusText ||
+            `HTTP error! status: ${response.status}`,
           data
         );
       }

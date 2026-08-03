@@ -9,9 +9,72 @@ import {
   mapApiProductToProduct,
 } from "../../utils/product-mappers";
 import { apiErrorUtils } from "../../utils/api-errors";
+import {
+  loadProductsFromSession,
+  saveProductsToSession,
+  loadProductDetailFromSession,
+  saveProductDetailToSession,
+} from "../../lib/sessionCache";
 import type { Product, ProductSummary } from "../../types";
 
 const BUYER_FETCH_PER_PAGE = 100;
+
+// In-memory cache - hydrated from sessionStorage on reload for instant display (< 1s)
+const PRODUCTS_CACHE_STALE_MS = 2 * 60 * 1000; // 2 minutes
+
+function initProductsCache(): Map<
+  string,
+  { products: ProductSummary[]; pagination: ProductsListResponse["pagination"]; ts: number }
+> {
+  const map = new Map<
+    string,
+    { products: ProductSummary[]; pagination: ProductsListResponse["pagination"]; ts: number }
+  >();
+  try {
+    const fromSession = loadProductsFromSession();
+    fromSession.forEach((v, k) => {
+      map.set(k, v as { products: ProductSummary[]; pagination: ProductsListResponse["pagination"]; ts: number });
+    });
+  } catch {
+    // ignore
+  }
+  return map;
+}
+
+const productsListCache = initProductsCache();
+
+// Category-specific products cache (by category + search) for instant navigation
+type CategoryProductsCacheEntry = {
+  products: ProductSummary[];
+  ts: number;
+};
+
+const categoryProductsCache = new Map<string, CategoryProductsCacheEntry>();
+
+// Single product detail cache (memory + session) for instant product page on reload/nav
+const productDetailMemoryCache = new Map<
+  string,
+  { product: Product; ts: number }
+>();
+
+function getCachedProduct(productId: string): Product | null {
+  const mem = productDetailMemoryCache.get(productId);
+  if (mem && Date.now() - mem.ts < PRODUCTS_CACHE_STALE_MS) return mem.product;
+  const session = loadProductDetailFromSession(productId);
+  if (!session?.product) return null;
+  const product = session.product as Product;
+  productDetailMemoryCache.set(productId, { product, ts: session.ts });
+  return product;
+}
+
+// In-flight fetch promises — prevents duplicate API calls when multiple components
+// use the same hook params simultaneously (e.g. FlashSales + LiveProducts on homepage)
+const inFlightFetches = new Map<string, Promise<void>>();
+
+function getProductsListCacheKey(params: ProductsListParams): string {
+  const { page = 1, perPage = 10, search } = params;
+  return `products-${page}-${perPage}-${search?.trim() || ""}`;
+}
 
 async function fetchAllProductSummaries(
   getPage: (page: number) => Promise<ProductsListResponse>
@@ -31,57 +94,95 @@ async function fetchAllProductSummaries(
 
 // Hook for fetching real products list
 export const useRealProductsList = (initialParams: ProductsListParams = {}) => {
-  const [products, setProducts] = useState<ProductSummary[]>([]);
-  const [loading, setLoading] = useState(true); // Start with loading true
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    perPage: 10,
-    totalPages: 1,
-    totalItems: 0,
-  });
+  const cacheKey = getProductsListCacheKey(initialParams);
 
-  const hasFetchedRef = useRef(false); // Prevent double fetching in StrictMode
+  // Stale-while-revalidate: show ANY cached data (even expired) so spinner never shows on reload.
+  // Loading is only true when there is truly no data at all (hard reload / first visit).
+  const anyCached = productsListCache.get(cacheKey);
+  const isCacheFresh = anyCached != null && Date.now() - anyCached.ts < PRODUCTS_CACHE_STALE_MS;
+
+  const [products, setProducts] = useState<ProductSummary[]>(
+    anyCached ? anyCached.products : []
+  );
+  const [loading, setLoading] = useState(!anyCached);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState(
+    anyCached
+      ? anyCached.pagination
+      : { currentPage: 1, perPage: 10, totalPages: 1, totalItems: 0 }
+  );
 
   const fetchProducts = useCallback(
-    async (params: ProductsListParams = {}) => {
-      console.log("🚀 Fetching products:", { ...initialParams, ...params });
-      setLoading(true);
-      setError(null);
+    async (
+      params: ProductsListParams = {},
+      options?: { silent?: boolean }
+    ) => {
+      const mergedParams: ProductsListParams = {
+        ...initialParams,
+        ...params,
+        isActive: "1",
+      };
+      const fetchKey = getProductsListCacheKey(mergedParams);
 
-      try {
-        const mergedParams: ProductsListParams = {
-          ...initialParams,
-          ...params,
-          // Buyer-side rule: only show active products
-          isActive: "1",
-        };
-        const response = await productsApi.getProducts(mergedParams);
-
-        // Map API response to internal types
-        const mappedProducts = mapApiProductsToProductSummaries(response.data);
-
-        setProducts(mappedProducts);
-        setPagination(response.pagination);
-        console.log("✅ Loaded", mappedProducts.length, "products");
-      } catch (err) {
-        const errorMessage = apiErrorUtils.getErrorMessage(err);
-        setError(errorMessage);
-        console.error("❌ Failed to fetch products:", errorMessage);
-      } finally {
-        setLoading(false);
+      // If an identical fetch is already in-flight, wait for it instead of firing a duplicate
+      const existing = inFlightFetches.get(fetchKey);
+      if (existing) {
+        await existing;
+        const updated = productsListCache.get(fetchKey);
+        if (updated) {
+          setProducts(updated.products);
+          setPagination(updated.pagination);
+          setLoading(false);
+        }
+        return;
       }
+
+      if (!options?.silent) {
+        setLoading(true);
+        setError(null);
+      }
+
+      const fetchPromise = (async () => {
+        try {
+          const response = await productsApi.getProducts(mergedParams);
+          const mappedProducts = mapApiProductsToProductSummaries(response.data);
+
+          const entry = {
+            products: mappedProducts,
+            pagination: response.pagination,
+            ts: Date.now(),
+          };
+          productsListCache.set(fetchKey, entry);
+          saveProductsToSession(productsListCache);
+
+          setProducts(mappedProducts);
+          setPagination(response.pagination);
+        } catch (err) {
+          const errorMessage = apiErrorUtils.getErrorMessage(err);
+          setError(errorMessage);
+          if (!options?.silent) {
+            console.error("❌ Failed to fetch products:", errorMessage);
+          }
+        } finally {
+          setLoading(false);
+          inFlightFetches.delete(fetchKey);
+        }
+      })();
+
+      inFlightFetches.set(fetchKey, fetchPromise);
+      await fetchPromise;
     },
     [initialParams]
-  ); // Remove dependency to prevent re-fetching
+  );
 
-  // Load products on mount
+  // Load products on mount — stale-while-revalidate:
+  // If cache is fresh → skip fetch entirely. If stale → fetch silently. If missing → fetch with spinner.
   useEffect(() => {
-    if (!hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      fetchProducts();
+    if (!isCacheFresh) {
+      fetchProducts({}, { silent: !!anyCached });
     }
-  }, [fetchProducts]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const refetch = useCallback(
     (params?: ProductsListParams) => {
@@ -137,29 +238,58 @@ export const useRealProductsList = (initialParams: ProductsListParams = {}) => {
 };
 
 // Buyer-side hook: always paginate over ACTIVE products only (no "holes")
+// Uses the same session-backed cache as useRealProductsList so reloads are instant.
 export const useBuyerActiveProductsList = (params: ProductsListParams = {}) => {
-  const [allProducts, setAllProducts] = useState<ProductSummary[]>([]);
-  const [products, setProducts] = useState<ProductSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    perPage: 10,
-    totalPages: 1,
-    totalItems: 0,
-  });
-
-  const requestIdRef = useRef(0);
-
   const clientPage = Math.max(1, params.page ?? 1);
   const clientPerPage = Math.max(1, params.perPage ?? 10);
   const search = params.search?.trim() || undefined;
 
-  // Fetch the dataset when filters change (search, etc.)
+  // Cache key: buyer-active across all pages, keyed by search term
+  const cacheKey = `buyer-active-${search || ""}`;
+  const cachedEntry = productsListCache.get(cacheKey) as
+    | {
+        products: ProductSummary[];
+        pagination: ProductsListResponse["pagination"];
+        ts: number;
+      }
+    | undefined;
+  const isCacheFresh =
+    cachedEntry != null && Date.now() - cachedEntry.ts < PRODUCTS_CACHE_STALE_MS;
+
+  const [allProducts, setAllProducts] = useState<ProductSummary[]>(
+    cachedEntry ? cachedEntry.products : []
+  );
+  const [products, setProducts] = useState<ProductSummary[]>([]);
+  const [loading, setLoading] = useState(!cachedEntry);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: cachedEntry?.pagination.currentPage ?? 1,
+    perPage: cachedEntry?.pagination.perPage ?? clientPerPage,
+    totalPages: cachedEntry?.pagination.totalPages ?? 1,
+    totalItems: cachedEntry?.pagination.totalItems ?? 0,
+  });
+
+  const requestIdRef = useRef(0);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  const refetch = useCallback(() => setRefetchTrigger((t) => t + 1), []);
+
+  // Fetch the full active-products dataset when filters change (search, etc.)
   useEffect(() => {
     const requestId = ++requestIdRef.current;
-    setLoading(true);
     setError(null);
+
+    const shouldFetch = !isCacheFresh || refetchTrigger > 0;
+    if (!shouldFetch) {
+      // Cache is fresh and no explicit refetch → no spinner on reload.
+      setLoading(false);
+      return;
+    }
+
+    const useSilent = !!cachedEntry && refetchTrigger === 0;
+    if (!useSilent) {
+      setLoading(true);
+    }
 
     fetchAllProductSummaries((page) =>
       productsApi.getProducts({
@@ -172,7 +302,26 @@ export const useBuyerActiveProductsList = (params: ProductsListParams = {}) => {
     )
       .then((allActive) => {
         if (requestId !== requestIdRef.current) return;
+
         setAllProducts(allActive);
+        const totalItems = allActive.length;
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / (params.perPage ?? clientPerPage))
+        );
+
+        const entry = {
+          products: allActive,
+          pagination: {
+            currentPage: 1,
+            perPage: params.perPage ?? clientPerPage,
+            totalPages,
+            totalItems,
+          },
+          ts: Date.now(),
+        };
+        productsListCache.set(cacheKey, entry);
+        saveProductsToSession(productsListCache);
       })
       .catch((err) => {
         if (requestId !== requestIdRef.current) return;
@@ -184,38 +333,43 @@ export const useBuyerActiveProductsList = (params: ProductsListParams = {}) => {
         if (requestId !== requestIdRef.current) return;
         setLoading(false);
       });
-  }, [search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, refetchTrigger]);
 
   // Apply client-side pagination (instant when page changes)
   useEffect(() => {
     const totalItems = allProducts.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / clientPerPage));
+    const perPage = clientPerPage;
+    const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
     const currentPage = Math.min(clientPage, totalPages);
 
-    const start = (currentPage - 1) * clientPerPage;
-    const end = start + clientPerPage;
+    const start = (currentPage - 1) * perPage;
+    const end = start + perPage;
 
     setProducts(allProducts.slice(start, end));
     setPagination({
       currentPage,
-      perPage: clientPerPage,
+      perPage,
       totalPages,
       totalItems,
     });
   }, [allProducts, clientPage, clientPerPage]);
 
-  return { products, loading, error, pagination };
+  return { products, allProducts, loading, error, pagination, refetch };
 };
 
-// Hook for fetching a single real product
+// Hook for fetching a single real product (stale-while-revalidate: show cache immediately on reload)
 export const useRealProduct = (productId: string | null) => {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(false);
+  const cached = productId ? getCachedProduct(productId) : null;
+  const [product, setProduct] = useState<Product | null>(() => cached ?? null);
+  const [loading, setLoading] = useState(() => !cached);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProduct = useCallback(async (id: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchProduct = useCallback(async (id: string, silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await productsApi.getProduct(id);
@@ -224,13 +378,16 @@ export const useRealProduct = (productId: string | null) => {
       if (response.data?.isActive !== "1") {
         setProduct(null);
         setError("Product not available");
+        productDetailMemoryCache.delete(id);
         return;
       }
 
-      // Map API response to internal type
       const mappedProduct = mapApiProductToProduct(response.data);
-
       setProduct(mappedProduct);
+
+      const entry = { product: mappedProduct, ts: Date.now() };
+      productDetailMemoryCache.set(id, entry);
+      saveProductDetailToSession(id, entry);
     } catch (err) {
       const errorMessage = apiErrorUtils.getErrorMessage(err);
       setError(errorMessage);
@@ -241,17 +398,29 @@ export const useRealProduct = (productId: string | null) => {
   }, []);
 
   useEffect(() => {
-    if (productId) {
-      fetchProduct(productId);
-    } else {
+    if (!productId) {
       setProduct(null);
       setError(null);
+      setLoading(false);
+      return;
     }
+    const fromCache = getCachedProduct(productId);
+    if (fromCache) {
+      setProduct(fromCache);
+      setLoading(false);
+      setError(null);
+      fetchProduct(productId, true);
+      return;
+    }
+    setProduct(null);
+    setLoading(true);
+    setError(null);
+    fetchProduct(productId, false);
   }, [productId, fetchProduct]);
 
   const refetch = useCallback(() => {
     if (productId) {
-      return fetchProduct(productId);
+      return fetchProduct(productId, false);
     }
   }, [productId, fetchProduct]);
 
@@ -268,24 +437,35 @@ export const useFeaturedProducts = (count: number = 8) => {
   return useRealProductsList({ page: 1, perPage: count });
 };
 
-// Hook for products by category
-export const useRealProductsByCategory = (categoryId: string | null, params: Omit<ProductsListParams, 'category'> = {}) => {
-  const [allProducts, setAllProducts] = useState<ProductSummary[]>([]);
+// Hook for products by category (stale-while-revalidate with cache)
+export const useRealProductsByCategory = (
+  categoryId: string | null,
+  params: Omit<ProductsListParams, "category"> = {}
+) => {
+  const clientPage = Math.max(1, params.page ?? 1);
+  const clientPerPage = Math.max(1, params.perPage ?? 10);
+  const search = params.search?.trim() || undefined;
+
+  const cacheKey = `${categoryId || "none"}-${search || ""}`;
+  const cachedEntry = categoryId ? categoryProductsCache.get(cacheKey) : undefined;
+  const isCacheFresh =
+    cachedEntry != null &&
+    Date.now() - cachedEntry.ts < PRODUCTS_CACHE_STALE_MS;
+
+  const [allProducts, setAllProducts] = useState<ProductSummary[]>(
+    cachedEntry ? cachedEntry.products : []
+  );
   const [products, setProducts] = useState<ProductSummary[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!cachedEntry);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
-    currentPage: 1,
-    perPage: 10,
+    currentPage: cachedEntry ? clientPage : 1,
+    perPage: cachedEntry ? clientPerPage : 10,
     totalPages: 1,
     totalItems: 0,
   });
 
   const requestIdRef = useRef(0);
-
-  const clientPage = Math.max(1, params.page ?? 1);
-  const clientPerPage = Math.max(1, params.perPage ?? 10);
-  const search = params.search?.trim() || undefined;
 
   // Fetch the dataset when category/filter changes
   useEffect(() => {
@@ -298,21 +478,91 @@ export const useRealProductsByCategory = (categoryId: string | null, params: Omi
     }
 
     const requestId = ++requestIdRef.current;
-    setLoading(true);
     setError(null);
 
-    fetchAllProductSummaries((page) =>
-      productsApi.getProductsByCategory(categoryId, {
-        page,
-        perPage: BUYER_FETCH_PER_PAGE,
-        ...(search ? { search } : {}),
-        // Buyer-side rule: only show active products (API may ignore; we also filter client-side)
-        isActive: "1",
-      })
-    )
-      .then((allActive) => {
+    const useSilent = !!cachedEntry;
+
+    if (!useSilent) {
+      setLoading(true);
+    }
+
+    // The category endpoint (/product/category/:id/items) does not return `totalPrice`,
+    // so product cards would show unitPrice instead of the discounted price.
+    // Fix: run both fetches in parallel:
+    //   1. category endpoint  → correct product set for this category (filtering)
+    //   2. general endpoint   → correct totalPrice-based prices
+    // Then merge: keep the category product set, replace each price with the
+    // correct price from the general endpoint.
+    // The general results are session-cached so on warm navigations no extra API call is made.
+    const buyerActiveCacheKey = "buyer-active-" + (search || "");
+
+    const getGeneralProducts = (): Promise<ProductSummary[]> => {
+      const cached = productsListCache.get(buyerActiveCacheKey);
+      if (cached && Array.isArray(cached.products) && cached.products.length > 0) {
+        return Promise.resolve(cached.products as ProductSummary[]);
+      }
+      return fetchAllProductSummaries((page) =>
+        productsApi.getProducts({
+          page,
+          perPage: BUYER_FETCH_PER_PAGE,
+          ...(search ? { search } : {}),
+          isActive: "1",
+        })
+      )
+        .then((all) => {
+          productsListCache.set(buyerActiveCacheKey, {
+            products: all,
+            pagination: {
+              currentPage: 1,
+              perPage: BUYER_FETCH_PER_PAGE,
+              totalPages: 1,
+              totalItems: all.length,
+            },
+            ts: Date.now(),
+          });
+          saveProductsToSession(productsListCache);
+          return all;
+        })
+        .catch((): ProductSummary[] => []);
+    };
+
+    Promise.all([
+      fetchAllProductSummaries((page) =>
+        productsApi.getProductsByCategory(categoryId, {
+          page,
+          perPage: BUYER_FETCH_PER_PAGE,
+          ...(search ? { search } : {}),
+          // Buyer-side rule: only show active products (API may ignore; we also filter client-side)
+          isActive: "1",
+        })
+      ),
+      getGeneralProducts(),
+    ])
+      .then(([categoryProducts, generalProducts]) => {
         if (requestId !== requestIdRef.current) return;
-        setAllProducts(allActive);
+
+        // Build a price lookup from the general endpoint products (which carry totalPrice).
+        const priceMap = new Map<string, ProductSummary["price"]>();
+        for (const p of generalProducts) {
+          if (p.id) priceMap.set(p.id, p.price);
+        }
+
+        // Replace each category product's price with the correct totalPrice-based price.
+        // If a product is not found in the general set (rare), keep its original price.
+        const enriched = categoryProducts.map((product) => {
+          const correctPrice = priceMap.get(product.id);
+          return correctPrice ? { ...product, price: correctPrice } : product;
+        });
+
+        setAllProducts(enriched);
+
+        // Update cache for this category + search combo
+        if (categoryId) {
+          categoryProductsCache.set(cacheKey, {
+            products: enriched,
+            ts: Date.now(),
+          });
+        }
       })
       .catch((err) => {
         if (requestId !== requestIdRef.current) return;
@@ -324,7 +574,7 @@ export const useRealProductsByCategory = (categoryId: string | null, params: Omi
         if (requestId !== requestIdRef.current) return;
         setLoading(false);
       });
-  }, [categoryId, search]);
+  }, [categoryId, search, cacheKey, cachedEntry, isCacheFresh]);
 
   // Apply client-side pagination (instant when page changes)
   useEffect(() => {

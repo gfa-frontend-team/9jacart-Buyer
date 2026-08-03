@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button, Alert } from '../../components/UI';
 import { GoogleSignInButton } from '../../components/Auth';
@@ -19,6 +19,28 @@ const RegisterPage: React.FC = () => {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('checkout_register_prefill');
+      if (!raw) return;
+      const data = JSON.parse(raw) as {
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+      };
+      setFormData((prev) => ({
+        ...prev,
+        firstName: data.firstName?.trim() || prev.firstName,
+        lastName: data.lastName?.trim() || prev.lastName,
+        email: data.email?.trim() || prev.email,
+      }));
+    } catch {
+      /* ignore */
+    } finally {
+      sessionStorage.removeItem('checkout_register_prefill');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

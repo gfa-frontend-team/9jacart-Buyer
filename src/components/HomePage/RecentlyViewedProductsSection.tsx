@@ -21,10 +21,12 @@ export interface RecentlyViewedProductsSectionProps {
   variant?: "inline" | "section";
   /** Extra class for the wrapper */
   className?: string;
+  /** Optional override for product grid layout classes */
+  gridClassName?: string;
 }
 
 const gridClass =
-  "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6";
+  "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6";
 
 /**
  * Recently Viewed Products section. Styled like Related Items.
@@ -43,6 +45,7 @@ const RecentlyViewedProductsSection: React.FC<
   showQuickAdd = true,
   variant = "inline",
   className,
+  gridClassName,
 }) => {
   const { products, loading, isAuthenticated } = useRecentlyViewedProducts({
     categoryId,
@@ -59,7 +62,7 @@ const RecentlyViewedProductsSection: React.FC<
     <Link to="/products">
       <Button
         variant="outline"
-        className="flex items-center gap-2 hover:border-[#2ac12a]"
+        className="flex items-center gap-2 bg-white border-[#2ac12a] text-gray-900 hover:bg-[#8DEB6E] hover:text-[#1E4700] hover:border-[#2ac12a]"
       >
         View All Products
         <ChevronRight className="h-4 w-4" />
@@ -113,6 +116,8 @@ const RecentlyViewedProductsSection: React.FC<
     );
   };
 
+  const resolvedGridClass = gridClassName || gridClass;
+
   const sectionHeaderBlock = (
     <SectionHeader text="Recently Viewed" subtitle="Your recently viewed items are waiting" />
   );
@@ -123,7 +128,7 @@ const RecentlyViewedProductsSection: React.FC<
         className={cn("py-16 bg-white", className)}
         data-section="recently-viewed-products"
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
             <div>
               {sectionHeaderBlock}
@@ -137,12 +142,13 @@ const RecentlyViewedProductsSection: React.FC<
             renderEmptyOrAuthState()
           ) : products.length > 0 ? (
             <>
-              <div className={gridClass}>
+              <div className={resolvedGridClass}>
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={normalizeProductImages(product)}
                     showQuickAdd={showQuickAdd}
+                    eagerImages
                     className="w-full"
                   />
                 ))}
@@ -172,12 +178,13 @@ const RecentlyViewedProductsSection: React.FC<
       {loading && isAuthenticated ? (
         renderEmptyOrAuthState()
       ) : products.length > 0 ? (
-        <div className={gridClass}>
+        <div className={resolvedGridClass}>
           {products.map((product) => (
             <ProductCard
               key={product.id}
               product={normalizeProductImages(product)}
               showQuickAdd={showQuickAdd}
+              eagerImages
               className="w-full"
             />
           ))}

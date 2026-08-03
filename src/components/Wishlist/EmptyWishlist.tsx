@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag } from 'lucide-react';
-import { Button } from '../UI/Button';
+import { buttonVariants } from '../UI/Button';
 import { Card, CardContent } from '../UI/Card';
+import { cn } from '../../lib/utils';
 
 const EmptyWishlist: React.FC = () => {
   return (
@@ -21,18 +22,23 @@ const EmptyWishlist: React.FC = () => {
         </div>
         
         <div className="space-y-3">
-          <Button asChild className="w-full">
-            <Link to="/products">
-              <ShoppingBag className="w-4 h-4 mr-2" />
-              Start Shopping
-            </Link>
-          </Button>
+          <Link
+            to="/products"
+            className={cn(buttonVariants({ variant: 'default' }), 'w-full gap-2')}
+          >
+            <ShoppingBag className="w-4 h-4 shrink-0" />
+            Start Shopping
+          </Link>
           
-          <Button variant="outline" asChild className="w-full">
-            <Link to="/">
-              Browse Categories
-            </Link>
-          </Button>
+          <Link
+            to="/"
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'w-full !border-gray-400'
+            )}
+          >
+            Browse Categories
+          </Link>
         </div>
         
         <div className="mt-6 pt-6 border-t border-border">

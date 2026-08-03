@@ -51,8 +51,6 @@ const CategoryPage: React.FC = () => {
     setCurrentPage(1);
   }, [categoryId, debouncedSearchQuery]);
 
-  const isInitialLoad = loading && products.length === 0;
-
   const currentPageIds = React.useMemo(
     () => new Set(products.map((p) => p.id)),
     [products]
@@ -70,9 +68,10 @@ const CategoryPage: React.FC = () => {
   }, [featuredPool, currentPageIds]);
 
   const displayRelatedProducts = React.useMemo(() => {
+    if (allProducts.length === 0) return [];
     if (filteredRelatedProducts.length > 0) return filteredRelatedProducts;
     return fallbackRelatedProducts;
-  }, [filteredRelatedProducts, fallbackRelatedProducts]);
+  }, [allProducts, filteredRelatedProducts, fallbackRelatedProducts]);
 
     // Redirect services category to services page
   if (categoryId === "services") {
@@ -127,8 +126,9 @@ const CategoryPage: React.FC = () => {
               {categoryTitle}
             </h1>
             <p className="text-gray-600 mt-1 sm:mt-2">
-              Showing {products.length} of {pagination.totalItems} active product
-              {pagination.totalItems !== 1 ? "s" : ""}
+              {loading
+                ? "Loading products..."
+                : `Showing ${products.length} of ${pagination.totalItems} active product${pagination.totalItems !== 1 ? "s" : ""}`}
             </p>
           </div>
 
@@ -164,8 +164,15 @@ const CategoryPage: React.FC = () => {
           {/* Categories Sidebar */}
           {categoriesLoading ? (
             <div className="hidden lg:block lg:col-span-1 pr-4 lg:pr-6">
-              <div className="sticky top-4 flex items-center justify-center py-8">
-                <Loading size="sm" />
+              <div className="sticky top-4 py-4">
+                <div className="space-y-2">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="h-4 w-3/4 rounded bg-gray-100 animate-pulse"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           ) : categoriesError ? (
@@ -179,10 +186,11 @@ const CategoryPage: React.FC = () => {
           )}
 
           {/* Products Content */}
-          <div className="lg:col-span-3 xl:col-span-4">
-            {isInitialLoad ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <Loading size="lg" />
+          <div className="lg:col-span-3 xl:col-span-4 min-h-[650px]">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <Loading />
+                <p className="text-gray-500 text-sm">Loading products...</p>
               </div>
             ) : products.length > 0 ? (
               <>
@@ -245,8 +253,10 @@ const CategoryPage: React.FC = () => {
               </div>
             )}
 
-            {/* Recently Viewed Products (inline, like Related Items; global, no category filter) */}
-            {!loading && <RecentlyViewedProductsSection variant="inline" />}
+            {/* Recently Viewed: hide when category is empty (same as guest empty-category behavior) */}
+            {!loading && products.length > 0 && (
+              <RecentlyViewedProductsSection variant="inline" />
+            )}
 
             {/* Related Items: same-category exclusives, or fallback to featured when all category products are on page */}
             {!loading && displayRelatedProducts.length > 0 && (

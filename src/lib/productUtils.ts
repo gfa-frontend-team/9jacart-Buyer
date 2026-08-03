@@ -1,18 +1,45 @@
-import type { 
-  Product, 
-  ProductSummary, 
-  ProductWithRelations, 
-  Category, 
+import type {
+  Product,
+  ProductSummary,
+  ProductWithRelations,
+  Category,
   Seller,
-  PriceWithDiscount 
+  PriceWithDiscount
 } from '../types';
 
 // Price utilities
 export const formatPrice = (price: number, currency: string = 'NGN'): string => {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency,
-  }).format(price);
+  const safePrice = Number.isFinite(price) ? price : 0;
+
+  try {
+    if (typeof Intl !== 'undefined' && typeof Intl.NumberFormat === 'function') {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency,
+      }).format(safePrice);
+    }
+  } catch {
+    // If Intl or the specific locale/currency is not supported,
+    // fall back to a simple string format below.
+  }
+
+  const symbol = currency === 'NGN' ? '₦' : '';
+  const formatted = safePrice.toFixed(2);
+
+  return symbol ? `${symbol}${formatted}` : `${formatted} ${currency}`;
+};
+
+/**
+ * Formats a discount percentage for display badges and labels.
+ * - Values >= 1 are shown as integers (e.g. 5 → "5")
+ * - Values between 0 and 1 keep up to 2 significant decimal places (e.g. 0.05 → "0.05")
+ */
+export const formatDiscountPercentage = (percentage: number): string => {
+  if (!percentage || percentage <= 0) return '0';
+  if (percentage < 1) {
+    return percentage.toFixed(2).replace(/\.?0+$/, '');
+  }
+  return Math.round(percentage).toString();
 };
 
 export const calculateDiscountedPrice = (price: PriceWithDiscount): number => {
