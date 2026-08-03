@@ -12,6 +12,7 @@ import Container from "@/components/Layout/Container";
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const category = searchParams.get("category") || "";
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
@@ -20,6 +21,7 @@ const SearchResultsPage: React.FC = () => {
       page: currentPage,
       perPage,
       search: query,
+      category
     }
   );
 
@@ -28,15 +30,16 @@ const SearchResultsPage: React.FC = () => {
   // Reset page when search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [query]);
+  }, [query,category]);
 
   useEffect(() => {
     refetch({
       page: currentPage,
       perPage,
       ...(query && { search: query }),
+      ...(category && { category }), // <-- add category
     });
-  }, [query, currentPage]);
+  }, [query, category, currentPage]); // <-- add category
 
   const isInitialLoad = loading && products.length === 0;
 

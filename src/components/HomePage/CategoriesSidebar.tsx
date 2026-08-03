@@ -166,6 +166,8 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
     );
   };
 
+  console.log(mainCategories,"mainCategories")
+
   return (
     <>
       {/* Desktop Sidebar */}
