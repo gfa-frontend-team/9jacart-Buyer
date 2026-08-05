@@ -105,7 +105,7 @@ export default function FlashSales() {
               text="Today's deal"
               subtitle="Explore products with remarkable discounts"
             />
-            <div className="flex min-h-touch justify-start border-t border-white/20 lg:col-span-1  lg:items-center lg:justify-end lg:border-t-0 lg:pt-0">
+            <div className="md:hidden flex min-h-touch justify-start border-t border-white/20 lg:col-span-1  lg:items-center lg:justify-end lg:border-t-0 lg:pt-0">
               <Link
                 to="/#flash-deals"
                 className="inline-flex min-h-touch items-center gap-1.5 rounded-md bg-[#8DEB6E]/20 px-3 py-1.5 text-sm font-semibold text-[#FACC15] transition-colors hover:bg-[#8DEB6E]/25 lg:min-h-0 lg:py-1.5"

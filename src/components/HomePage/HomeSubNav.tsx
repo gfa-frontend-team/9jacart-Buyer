@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Menu, Zap } from "lucide-react";
@@ -21,7 +22,7 @@ const HomeSubNav: React.FC = () => {
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
       new Set()
     );
-  const [modalState, setModalState] = useState<{
+  const [, setModalState] = useState<{
     isOpen: boolean;
     category: Category | null;
     options: string[];
