@@ -21,7 +21,7 @@ interface CategoriesSidebarProps {
 }
 
 // Define subcategory service options
-const subcategoryOptions: Record<string, string[]> = {
+export const subcategoryOptions: Record<string, string[]> = {
   "mobile-topup": ["Buy Airtime", "Buy Mobile Data"],
   bills: ["Postpaid", "Prepaid"],
   // Add more subcategory options as needed
@@ -224,8 +224,44 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
         </div>
       </aside>
 
+      {/* Desktop Categories - Horizontal scroll */}
+      {/* <div className="hidden lg:block mt-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {mainCategories.length > 0 ? (
+            mainCategories.slice(0, 8).map((category) => {
+              const subcategories = getSubcategories(category.id);
+              const hasSubcategories = subcategories.length > 0;
+
+              return (
+                <button
+                  key={`desktop-${category.id}`}
+                  onClick={() => handleCategoryClick(category)}
+                  className={cn(
+                    "flex-shrink-0 px-3 py-2 bg-white border rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                    selectedCategoryId === category.id
+                      ? "border-primary text-primary bg-[#8DEB6E]/10"
+                      : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary"
+                  )}
+                >
+                  {category.name}
+                  {hasSubcategories && <span className="ml-1">›</span>}
+                </button>
+              );
+            })
+          ) : (
+            Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={`desktop-skeleton-${index}`}
+                className="flex-shrink-0 px-4 py-2 bg-gray-100 rounded-full animate-pulse"
+                style={{ width: `${60 + Math.random() * 40}px`, height: '32px' }}
+              />
+            ))
+          )}
+        </div>
+      </div> */}
+
       {/* Mobile Categories - Horizontal scroll */}
-      <div className="lg:hidden mb-3 sm:mb-4 -mx-4 px-4">
+      {/* <div className="hidden lg:block mb-3 sm:mb-4 -mx-4 px-4">
         <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {mainCategories.length > 0 ? (
             mainCategories.slice(0, 8).map((category) => {
@@ -259,7 +295,7 @@ const CategoriesSidebar: React.FC<CategoriesSidebarProps> = ({ categories, showB
             ))
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Service Options Modal */}
       <Modal

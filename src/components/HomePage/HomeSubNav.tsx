@@ -1,6 +1,10 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Menu, Zap } from "lucide-react";
+import { useAllRealCategories } from "@/hooks";
+import type { Category } from "@/types";
+import { subcategoryOptions } from "./CategoriesSidebar";
+import { cn } from "@/lib/utils";
 
 const VENDOR_SELL_URL = "http://vendors.9jacart.ng";
 
@@ -11,12 +15,81 @@ const activeUnderline =
 
 const HomeSubNav: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+    const { categoryId: selectedCategoryId } = useParams<{ categoryId?: string }>();
+
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+      new Set()
+    );
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    category: Category | null;
+    options: string[];
+  }>({
+    isOpen: false,
+    category: null,
+    options: [],
+  });
+
+    const toggleCategory = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const { categories } = useAllRealCategories();
+  const allMainCategories = categories.filter(
+    (cat) => cat.level === 1 && !cat.archived,
+  );
+  const mainCategories = allMainCategories;
+
+  const getSubcategories = (parentId: string) => {
+    return categories.filter(
+      (cat) => cat.parentId === parentId && !cat.archived,
+    );
+  };
+
+  const handleCategoryClick = (category: Category) => {
+    const subcategories = getSubcategories(category.id);
+    const hasSubcategories = subcategories.length > 0;
+
+    if (category.level === 1) {
+      // Level 1 categories
+      if (hasSubcategories) {
+        // Has subcategories - toggle expand/collapse
+        toggleCategory(category.id);
+      } else {
+        // No subcategories - navigate directly
+        navigate(`/category/${category.id}`, {
+          state: { categoryName: category.name },
+        });
+      }
+    } else if (category.level === 2) {
+      // Level 2 categories (subcategories) - open modal
+      const options = subcategoryOptions[category.id] || [];
+      if (options.length > 0) {
+        setModalState({
+          isOpen: true,
+          category,
+          options,
+        });
+      } else {
+        // Fallback to direct navigation if no options defined
+        navigate(`/category/${category.id}`, {
+          state: { categoryName: category.name },
+        });
+      }
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === "/products") return location.pathname === "/products";
     if (path === "/deals") return location.pathname === "/deals";
-    if (path === "/new-arrivals")
-      return location.pathname === "/new-arrivals";
+    if (path === "/new-arrivals") return location.pathname === "/new-arrivals";
     if (path === "/bestsellers") return location.pathname === "/bestsellers";
     if (path === "/orders")
       return (
@@ -48,7 +121,44 @@ const HomeSubNav: React.FC = () => {
             </Link>
           </div>
 
-          <div className="flex min-h-touch flex-wrap items-center justify-start gap-x-6 gap-y-2 border-t border-white/20 pt-2 sm:gap-x-8 lg:col-span-3 lg:h-full lg:min-h-0 lg:flex-nowrap lg:gap-x-10 lg:justify-start lg:border-t-0 lg:pt-0 xl:col-span-4 lg:px-1">
+          <div className="lg:hidden my-3 sm:mb-4 -mx-4 px-4">
+            <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {mainCategories.length > 0
+                ? mainCategories.slice(0, 8).map((category) => {
+                    const subcategories = getSubcategories(category.id);
+                    const hasSubcategories = subcategories.length > 0;
+
+                    return (
+                      <button
+                        key={`mobile-${category.id}`}
+                        onClick={() => handleCategoryClick(category)}
+                        className={cn(
+                          "flex-shrink-0 px-3 sm:px-4 py-2 bg-white border rounded-full text-xs sm:text-sm font-medium transition-colors whitespace-nowrap",
+                          selectedCategoryId === category.id
+                            ? "border-primary text-primary bg-[#8DEB6E]/10"
+                            : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-primary hover:text-primary",
+                        )}
+                      >
+                        {category.name}
+                        {hasSubcategories && <span className="ml-1">›</span>}
+                      </button>
+                    );
+                  })
+                : // Loading skeleton for mobile categories
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <div
+                      key={`skeleton-${index}`}
+                      className="flex-shrink-0 px-4 py-2 bg-gray-100 rounded-full animate-pulse"
+                      style={{
+                        width: `${60 + Math.random() * 40}px`,
+                        height: "32px",
+                      }}
+                    />
+                  ))}
+            </div>
+          </div>
+
+          <div className="flex min-h-touch overflow-x-auto scrollbar-hide items-center justify-center gap-x-6 gap-y-2 border-t border-white/20 pt-2 sm:gap-x-8 lg:col-span-3 lg:h-full lg:min-h-0 lg:flex-nowrap lg:gap-x-10 lg:justify-start lg:border-t-0 lg:pt-0 xl:col-span-4 lg:px-1">
             <Link
               to="/deals"
               className={`${linkClass} ${isActive("/deals") ? activeUnderline : ""}`}
@@ -89,7 +199,7 @@ const HomeSubNav: React.FC = () => {
             </a>
           </div>
 
-          <div className="flex min-h-touch justify-start border-t border-white/20 pt-2 lg:col-span-1 lg:h-full lg:min-h-0 lg:items-center lg:justify-end lg:border-t-0 lg:pt-0">
+          <div className="hidden lg:flex min-h-touch justify-start border-t border-white/20 pt-2 lg:col-span-1 lg:h-full lg:min-h-0 lg:items-center lg:justify-end lg:border-t-0 lg:pt-0">
             <Link
               to="/#flash-deals"
               className="inline-flex min-h-touch items-center gap-1.5 rounded-md bg-[#8DEB6E]/20 px-3 py-1.5 text-sm font-semibold text-[#FACC15] transition-colors hover:bg-[#8DEB6E]/25 lg:min-h-0 lg:py-1.5"

@@ -367,7 +367,7 @@ const NewHeader: React.FC = () => {
               <form onSubmit={handleSearch} className="flex-1 max-w-2xl min-w-0">
                 <div className="flex rounded-md overflow-hidden bg-white">
                   {/* Category Dropdown */}
-                  <div className="relative flex-shrink-0 bg-primary">
+                  {/* <div className="relative flex-shrink-0 bg-primary">
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
@@ -380,7 +380,7 @@ const NewHeader: React.FC = () => {
                       ))}
                     </select>
                     <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-primary-foreground pointer-events-none" />
-                  </div>
+                  </div> */}
 
                   {/* Search Input */}
                   <input
