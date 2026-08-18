@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './lib/amplifyLivenessSetup'
 import './index.css'
 // Eagerly hydrate session caches before React renders for instant homepage on reload
 import './hooks/api/useRealProducts'

@@ -28,6 +28,12 @@ export interface CheckoutRequest {
   billing: BillingDetails;
   orderItems: OrderItem[];
   paymentMethod: string;
+  /**
+   * NeoCash BNPL application id from widget `onApprovalPending`.
+   * Backend must persist on the order and reconcile via NeoCash webhooks
+   * (approved / declined / additional checks). Buyer must not treat widget
+   * close or Paystack redirect as BNPL approval.
+   */
   applicationId?: string;
   couponCode?: string;
   guestCheckout?: number;

@@ -25,29 +25,48 @@ export const BNPL_MIN_ORDER_NAIRA = Math.ceil(
 );
 
 /**
- * Minimum placeholder cart for account-area BNPL setup (widget requires a cart).
- * Amounts are in kobo. Uses a total above {@link BNPL_MIN_ORDER_NAIRA} so onboarding
- * always satisfies NeoCash eligibility. Not a real purchase.
+ * Legacy device-only note from an older account-page widget flow (removed in Phase 4).
+ * Not NeoCash approval — safe to clear.
  */
-export const BNPL_ACCOUNT_SETUP_CART_NAIRA = 50_000;
-
-export const BNPL_ACCOUNT_SETUP_CART: Cart = {
-  items: [
-    {
-      name: "Pay Small Small — account verification",
-      qty: 1,
-      price: BNPL_ACCOUNT_SETUP_CART_NAIRA * 100,
-    },
-  ],
-  total: BNPL_ACCOUNT_SETUP_CART_NAIRA * 100,
-  currency: "NGN",
-};
-
 const BNPL_SETUP_STORAGE_KEY = "9ja_bnpl_profile_setup";
 
 export interface BnplProfileSetupRecord {
   applicationId: string;
   completedAt: string;
+}
+
+export function nairaToKobo(naira: number): number {
+  return Math.round(naira * 100);
+}
+
+export function isBnplMerchandiseEligible(merchandiseNaira: number): boolean {
+  return Number.isFinite(merchandiseNaira) && merchandiseNaira >= BNPL_MIN_ORDER_NAIRA;
+}
+
+export function unitPriceNaira(price: number | { current: number }): number {
+  return typeof price === "number" ? price : price.current;
+}
+
+/**
+ * NeoCash cart for checkout. Merchandise only (no shipping/fees/discounts).
+ * `total` is always `sum(price * qty)` in kobo.
+ */
+export function buildNeoCashMerchandiseCart(
+  items: Array<{
+    name: string;
+    quantity: number;
+    unitPriceNaira: number;
+    imageUrl?: string;
+  }>
+): Cart {
+  const cartItems = items.map((item) => ({
+    name: item.name,
+    qty: item.quantity,
+    price: nairaToKobo(item.unitPriceNaira),
+    ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
+  }));
+  const total = cartItems.reduce((sum, line) => sum + line.price * line.qty, 0);
+  return { items: cartItems, total, currency: "NGN" };
 }
 
 export function buildPartnerPrefill(fields: {
@@ -73,18 +92,6 @@ export function getBnplProfileSetup(): BnplProfileSetupRecord | null {
     return parsed;
   } catch {
     return null;
-  }
-}
-
-export function saveBnplProfileSetup(applicationId: string): void {
-  const record: BnplProfileSetupRecord = {
-    applicationId,
-    completedAt: new Date().toISOString(),
-  };
-  try {
-    localStorage.setItem(BNPL_SETUP_STORAGE_KEY, JSON.stringify(record));
-  } catch {
-    /* quota / private mode */
   }
 }
 

@@ -37,6 +37,8 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
     }
   };
 
+  const isBnplOrder = paymentMethod === "buy-now-pay-later";
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-16 p-4 z-50">
       <Card className="w-full max-w-md">
@@ -51,7 +53,9 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
             Order Placed Successfully!
           </h2>
           <p className="text-gray-600 mb-6">
-            Thank you for your purchase. Your order has been confirmed.
+            {isBnplOrder
+              ? "Your order is recorded. Complete Pay Today in the NeoCash window if you have not already — final Pay Small Small approval is confirmed via NeoCash."
+              : "Thank you for your purchase. Your order has been confirmed."}
           </p>
 
           {/* Order Details */}
@@ -85,7 +89,9 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
                   What's Next?
                 </h4>
                 <p className="text-xs text-blue-700">
-                  You'll receive an email confirmation shortly. We'll notify you when your order ships.
+                  {isBnplOrder
+                    ? "We will email you when NeoCash confirms your Pay Small Small application. Order status may show as pending until then."
+                    : "You'll receive an email confirmation shortly. We'll notify you when your order ships."}
                 </p>
               </div>
             </div>

@@ -3,7 +3,6 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import visaLogo from "@/assets/payment-logos/visa-logo.png";
 import mastercardLogo from "@/assets/payment-logos/mastercard-logo.png";
 import wakaLineLogoWhite from "@/assets/mywakawaka-logo-white.png";
-import { init as initBnplWidget } from "@neocash/bnpl-widget";
 import type { WidgetHandle } from "@neocash/bnpl-widget";
 import {
   CreditCard,
@@ -51,8 +50,15 @@ import { useCheckoutCouponStore } from "../../store/useCheckoutCouponStore";
 import { apiErrorUtils } from "../../utils/api-errors";
 import { cn } from "../../lib/utils";
 import { formatPrice } from "../../lib/productUtils";
-import { config } from "../../lib/config";
-import { BNPL_WIDGET_THEME, buildPartnerPrefill } from "../../lib/bnplWidget";
+import { initNeoCashBnplWidget } from "../../lib/neocashInit";
+import {
+  BNPL_MIN_ORDER_NAIRA,
+  BNPL_WIDGET_THEME,
+  buildNeoCashMerchandiseCart,
+  buildPartnerPrefill,
+  isBnplMerchandiseEligible,
+  unitPriceNaira,
+} from "../../lib/bnplWidget";
 import type { UserAddress } from "../../types";
 
 interface PaymentMethod {
@@ -137,9 +143,15 @@ const CheckoutPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState("bank-card");
   const bnplWidgetHandleRef = useRef<WidgetHandle | null>(null);
   const bnplApplicationIdRef = useRef<string | null>(null);
+  /** True while we call handle.close() so onClose does not treat it as a user cancel. */
+  const bnplCloseIsProgrammaticRef = useRef(false);
+  const bnplOrderCompletedRef = useRef(false);
   // Kept in a ref so the widget callbacks always see the latest version
   // without the widget needing to be re-initialised on every render.
   const handlePlaceOrderRef = useRef<(() => Promise<void>) | null>(null);
+  const [isBnplWidgetOpen, setIsBnplWidgetOpen] = useState(false);
+  const [bnplAwaitingWidgetClose, setBnplAwaitingWidgetClose] = useState(false);
+  const [bnplWidgetError, setBnplWidgetError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
@@ -196,39 +208,14 @@ const CheckoutPage: React.FC = () => {
   });
 
   const isShippingDetailsComplete = useMemo(() => {
+    const phoneOptional =
+      isGuestCheckoutFlow && selectedPayment !== "buy-now-pay-later";
     return (
       validateBillingDetails(billingDetails, {
-        phoneOptional: isGuestCheckoutFlow,
+        phoneOptional,
       }).length === 0
     );
-  }, [isGuestCheckoutFlow, billingDetails]);
-
-  const paymentMethods: PaymentMethod[] = useMemo(
-    () => [
-      {
-        id: "bank-card",
-        name: "Bank/Card",
-        icon: <CreditCard className="w-5 h-5" />,
-        disabled: false,
-      },
-      {
-        id: "cash-on-delivery",
-        name: "Pay on delivery",
-        icon: <Truck className="w-5 h-5" />,
-        disabled: true,
-      },
-      {
-        id: "buy-now-pay-later",
-        name: "Buy Now, Pay Later",
-        icon: <Shield className="w-5 h-5" />,
-        disabled: !isShippingDetailsComplete,
-        disabledReason: !isShippingDetailsComplete
-          ? "Complete shipping details first"
-          : undefined,
-      },
-    ],
-    [isShippingDetailsComplete]
-  );
+  }, [isGuestCheckoutFlow, selectedPayment, billingDetails]);
 
   // Load profile and set up addresses
   useEffect(() => {
@@ -281,12 +268,6 @@ const CheckoutPage: React.FC = () => {
       setIsInitialLoad(false);
     }
   }, [isAuthenticated, profile, user, checkoutAsGuest, getDefaultAddress, isInitialLoad]);
-
-  useEffect(() => {
-    if (!isShippingDetailsComplete && selectedPayment === "buy-now-pay-later") {
-      setSelectedPayment("bank-card");
-    }
-  }, [isShippingDetailsComplete, selectedPayment]);
 
   // Use filtered values from cart (already exclude unavailable products).
   // When `couponPricingSnapshot` is set, discount is already reflected in `payableSubtotal` (API `cartSummary.total`).
@@ -389,6 +370,45 @@ const CheckoutPage: React.FC = () => {
   }, [deliveryValidation?.scenario, deliveryValidation?.automatedDeliveryFee, showAutomatedDeliveryUi, cartShipping]);
 
   const total = merchandiseSubtotal + shipping + flatRate - summaryDiscount;
+
+  const isBnplEligible = isBnplMerchandiseEligible(merchandiseSubtotal);
+  const bnplDisabledReason = !isShippingDetailsComplete
+    ? "Complete shipping details first"
+    : !isBnplEligible
+      ? `Add items totaling at least ₦${BNPL_MIN_ORDER_NAIRA.toLocaleString("en-NG")} to use Pay Small Small`
+      : undefined;
+
+  const paymentMethods: PaymentMethod[] = useMemo(
+    () => [
+      {
+        id: "bank-card",
+        name: "Bank/Card",
+        icon: <CreditCard className="w-5 h-5" />,
+        disabled: false,
+      },
+      {
+        id: "cash-on-delivery",
+        name: "Pay on delivery",
+        icon: <Truck className="w-5 h-5" />,
+        disabled: true,
+      },
+      {
+        id: "buy-now-pay-later",
+        name: "Buy Now, Pay Later",
+        icon: <Shield className="w-5 h-5" />,
+        disabled: !isShippingDetailsComplete || !isBnplEligible,
+        disabledReason: bnplDisabledReason,
+      },
+    ],
+    [isShippingDetailsComplete, isBnplEligible, bnplDisabledReason]
+  );
+
+  useEffect(() => {
+    if (selectedPayment !== "buy-now-pay-later") return;
+    if (!isShippingDetailsComplete || !isBnplEligible) {
+      setSelectedPayment("bank-card");
+    }
+  }, [isShippingDetailsComplete, isBnplEligible, selectedPayment]);
 
   useEffect(() => {
     if (!appliedCoupon || !couponPricingSnapshot) return;
@@ -626,32 +646,60 @@ const CheckoutPage: React.FC = () => {
     clearPersistedCoupon,
   ]);
 
+  const closeBnplWidgetProgrammatically = () => {
+    if (!bnplWidgetHandleRef.current) return;
+    bnplCloseIsProgrammaticRef.current = true;
+    bnplWidgetHandleRef.current.close();
+    bnplWidgetHandleRef.current = null;
+    setIsBnplWidgetOpen(false);
+  };
+
+  const finishBnplAfterWidgetClose = async () => {
+    persistGuestRegisterPrefill();
+    bnplOrderCompletedRef.current = false;
+    setBnplAwaitingWidgetClose(false);
+    setShowSuccess(true);
+    bnplApplicationIdRef.current = null;
+    await clearAllItems();
+  };
+
+  // Close the overlay only when leaving checkout — never from a selectedPayment
+  // effect, so React Strict Mode cannot kill the NeoCash session.
   useEffect(() => {
-    if (
-      selectedPayment !== "buy-now-pay-later" ||
-      !isShippingDetailsComplete
-    ) {
-      bnplWidgetHandleRef.current?.close();
-      bnplWidgetHandleRef.current = null;
+    return () => {
+      closeBnplWidgetProgrammatically();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (selectedPayment === "buy-now-pay-later") return;
+    if (!bnplOrderCompletedRef.current) {
       bnplApplicationIdRef.current = null;
+    }
+    closeBnplWidgetProgrammatically();
+  }, [selectedPayment]);
+
+  const openBnplWidget = () => {
+    if (bnplWidgetHandleRef.current) return;
+
+    if (!isBnplMerchandiseEligible(merchandiseSubtotal)) {
+      setBnplWidgetError(
+        `Pay Small Small is available on merchandise of ₦${BNPL_MIN_ORDER_NAIRA.toLocaleString("en-NG")} or more.`
+      );
       return;
     }
 
-    const widgetCart = {
-      items: itemsForCheckout.map((item) => ({
+    setBnplWidgetError(null);
+
+    const widgetCart = buildNeoCashMerchandiseCart(
+      itemsForCheckout.map((item) => ({
         name: item.product.name,
-        qty: item.quantity,
-        // App stores prices in naira; widget expects kobo (naira x100)
-        price: Math.round(
-          (typeof item.product.price === "number"
-            ? item.product.price
-            : item.product.price.current) * 100
-        ),
+        quantity: item.quantity,
+        unitPriceNaira: unitPriceNaira(item.product.price),
         imageUrl: item.product.images?.main ?? undefined,
-      })),
-      total: Math.round(total * 100),
-      currency: "NGN" as const,
-    };
+      }))
+    );
 
     const prefill = buildPartnerPrefill({
       firstName: billingDetails.firstName,
@@ -660,38 +708,49 @@ const CheckoutPage: React.FC = () => {
       email: billingDetails.emailAddress,
     });
 
-    const handle = initBnplWidget({
-      publicKey: config.neocash.publicKey,
-      assetPrefix: config.neocash.assetPrefix,
-      cart: widgetCart,
-      ...(prefill && { partnerPrefill: prefill }),
-      theme: BNPL_WIDGET_THEME,
-      onApprovalPending: (applicationId) => {
-        // Place the order after the BNPL application has been submitted.
-        bnplApplicationIdRef.current = applicationId;
-        handlePlaceOrderRef.current?.();
-      },
-      onClose: () => {
-        bnplWidgetHandleRef.current = null;
-        setSelectedPayment("bank-card");
-      },
-      onError: (err) => {
-        console.error("NeoCash BNPL widget error:", err);
-        bnplWidgetHandleRef.current = null;
-        setSelectedPayment("bank-card");
-      },
-    });
-
-    bnplWidgetHandleRef.current = handle;
-
-    return () => {
-      handle.close();
-      bnplWidgetHandleRef.current = null;
-    };
-    // Only re-run when the payment method changes -- cart snapshot is
-    // intentionally captured once when the user opens the widget.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPayment]);
+    try {
+      const handle = initNeoCashBnplWidget({
+        cart: widgetCart,
+        ...(prefill && { partnerPrefill: prefill }),
+        theme: BNPL_WIDGET_THEME,
+        onApprovalPending: (applicationId) => {
+          bnplApplicationIdRef.current = applicationId;
+          void handlePlaceOrderRef.current?.();
+        },
+        onClose: () => {
+          const programmatic = bnplCloseIsProgrammaticRef.current;
+          bnplCloseIsProgrammaticRef.current = false;
+          bnplWidgetHandleRef.current = null;
+          setIsBnplWidgetOpen(false);
+          if (bnplOrderCompletedRef.current) {
+            void finishBnplAfterWidgetClose();
+            return;
+          }
+          // User dismiss: keep BNPL selected so they can retry. Programmatic
+          // close (unmount / payment switch) must not flip the radio.
+          if (!programmatic) {
+            setBnplWidgetError(null);
+          }
+        },
+        onError: (err) => {
+          console.error("NeoCash BNPL widget error:", err);
+          bnplWidgetHandleRef.current = null;
+          setIsBnplWidgetOpen(false);
+          setBnplWidgetError(
+            "Pay Small Small could not be opened. Please try again or choose another payment method."
+          );
+        },
+      });
+      bnplWidgetHandleRef.current = handle;
+      setIsBnplWidgetOpen(true);
+    } catch (err) {
+      console.error("NeoCash BNPL widget init error:", err);
+      setIsBnplWidgetOpen(false);
+      setBnplWidgetError(
+        "Pay Small Small could not be opened. Please try again or choose another payment method."
+      );
+    }
+  };
 
   const persistGuestRegisterPrefill = () => {
     if (!isGuestCheckoutFlow || !guestWantsAccount) return;
@@ -741,7 +800,8 @@ const CheckoutPage: React.FC = () => {
       return;
     }
 
-    const phoneOptional = isGuestCheckoutFlow;
+    const phoneOptional =
+      isGuestCheckoutFlow && selectedPayment !== "buy-now-pay-later";
 
     // Show form if hidden and validation is needed
     if (
@@ -849,6 +909,16 @@ const CheckoutPage: React.FC = () => {
     }
     setIsValidatingDelivery(false);
 
+    // BNPL: validate first, then open the widget. Checkout API runs only after
+    // NeoCash returns applicationId via onApprovalPending.
+    if (
+      selectedPayment === "buy-now-pay-later" &&
+      !bnplApplicationIdRef.current
+    ) {
+      openBnplWidget();
+      return;
+    }
+
     setIsProcessing(true);
     setValidationErrors([]);
 
@@ -900,6 +970,21 @@ const CheckoutPage: React.FC = () => {
       if (response.error === false) {
         if (response.orderNo) {
           setOrderNumber(response.orderNo);
+        }
+
+        if (paymentMethod === "bnpl") {
+          if (
+            response.paymentData?.authorizationUrl ||
+            response.redirectUrl
+          ) {
+            console.warn(
+              "Ignoring Paystack/redirect URL for BNPL; NeoCash owns the Pay Today deposit."
+            );
+          }
+          persistGuestRegisterPrefill();
+          bnplOrderCompletedRef.current = true;
+          setBnplAwaitingWidgetClose(true);
+          return;
         }
 
         if (response.paymentData?.authorizationUrl) {
@@ -972,8 +1057,13 @@ const CheckoutPage: React.FC = () => {
     { label: "Checkout", isCurrentPage: true },
   ];
 
-  // Show loading state while cart is being fetched or redirecting to payment
-  if (isLoading || isRedirectingToPayment) {
+  // Show loading state while cart is being fetched or redirecting to payment.
+  // BNPL keeps checkout mounted while the widget overlay is still open.
+  if (
+    (isLoading || isRedirectingToPayment) &&
+    !showSuccess &&
+    !bnplAwaitingWidgetClose
+  ) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
@@ -996,7 +1086,13 @@ const CheckoutPage: React.FC = () => {
 
   // Only show empty cart message after loading is complete
   // Don't show empty cart page if we're redirecting to payment (prevents flash before Paystack redirect)
-  if (!isLoading && items.length === 0 && !isRedirectingToPayment) {
+  if (
+    !isLoading &&
+    items.length === 0 &&
+    !isRedirectingToPayment &&
+    !showSuccess &&
+    !bnplAwaitingWidgetClose
+  ) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
         <div className=" mx-auto px-4 sm:px-6 lg:px-8">
@@ -1343,7 +1439,8 @@ const CheckoutPage: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Phone number
-                        {!isAuthenticated && checkoutAsGuest ? (
+                        {isGuestCheckoutFlow &&
+                        selectedPayment !== "buy-now-pay-later" ? (
                           <span className="text-gray-500 font-normal">
                             {" "}
                             (optional)
@@ -1363,7 +1460,10 @@ const CheckoutPage: React.FC = () => {
                             "border-red-500 focus:ring-red-500"
                         )}
                         placeholder="+2348000000000"
-                        required={!(!isAuthenticated && checkoutAsGuest)}
+                        required={
+                          !isGuestCheckoutFlow ||
+                          selectedPayment === "buy-now-pay-later"
+                        }
                       />
                       {getFieldError("phoneNumber") && (
                         <div className="flex items-center mt-1 text-sm text-red-600">
@@ -1914,14 +2014,31 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Place Order Button */}
-                {selectedPayment !== "buy-now-pay-later" && (
-                  <Button
-                    onClick={handlePlaceOrder}
+                {bnplWidgetError && (
+                  <Alert variant="destructive" className="mt-4">
+                    <p>{bnplWidgetError}</p>
+                  </Alert>
+                )}
+
+                {bnplAwaitingWidgetClose && (
+                  <Alert className="mt-4">
+                    <p>
+                      Your Pay Small Small application was submitted. Keep the
+                      NeoCash window open to finish Pay Today if shown, then
+                      close it to see your order confirmation.
+                    </p>
+                  </Alert>
+                )}
+
+                {/* Place Order / Continue with Pay Small Small */}
+                <Button
+                    onClick={() => void handlePlaceOrder()}
                     disabled={
                       isProcessing ||
                       isValidatingDelivery ||
-                      isDeliveryValidationLoading
+                      isDeliveryValidationLoading ||
+                      isBnplWidgetOpen ||
+                      bnplAwaitingWidgetClose
                     }
                     className="w-full mt-8 bg-[#8DEB6E] hover:bg-[#8DEB6E]/90 text-primary py-3 text-base font-medium border border-[#2ac12a]"
                   >
@@ -1935,11 +2052,14 @@ const CheckoutPage: React.FC = () => {
                         <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                         <span>Processing...</span>
                       </div>
+                    ) : isBnplWidgetOpen ? (
+                      "Pay Small Small is open"
+                    ) : selectedPayment === "buy-now-pay-later" ? (
+                      "Continue with Pay Small Small"
                     ) : (
                       "Place Order"
                     )}
                   </Button>
-                )}
               </CardContent>
             </Card>
           </div>
