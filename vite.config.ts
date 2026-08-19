@@ -11,6 +11,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: [
+      "@neocash/bnpl-widget",
+      "aws-amplify",
+      "@aws-amplify/ui-react-liveness",
+    ],
+  },
   build: {
     rollupOptions: {
       output: {

@@ -113,9 +113,10 @@
   --sidebar-ring: oklch(0.45 0.12 142);
 }
 @layer base {
-  * {
+  /* Scope host resets to #root so NeoCash overlay (mounted on body) is not restyled. */
+  #root,
+  #root * {
     @apply border-border outline-ring/50;
-    
   }
   
   html{
@@ -126,30 +127,30 @@
     @apply bg-background text-foreground;
   }
 
-  /* All clickable elements should have pointer cursor */
-  button,
-  a,
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  label[for],
-  label:has(input[type="checkbox"]),
-  label:has(input[type="radio"]) {
+  /* Clickable elements inside the app shell only */
+  #root button,
+  #root a,
+  #root [role="button"],
+  #root input[type="button"],
+  #root input[type="submit"],
+  #root input[type="reset"],
+  #root label[for],
+  #root label:has(input[type="checkbox"]),
+  #root label:has(input[type="radio"]) {
     @apply cursor-pointer;
   }
 }
 
 @layer utilities {
-  /* Ensure ALL buttons always use pointer cursor across the app */
-  button,
-  button:disabled,
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
-  input[type="button"]:disabled,
-  input[type="submit"]:disabled,
-  input[type="reset"]:disabled {
+  /* Pointer cursor for app shell controls only (not NeoCash widget on body) */
+  #root button,
+  #root button:disabled,
+  #root input[type="button"],
+  #root input[type="submit"],
+  #root input[type="reset"],
+  #root input[type="button"]:disabled,
+  #root input[type="submit"]:disabled,
+  #root input[type="reset"]:disabled {
     cursor: pointer !important;
   }
 

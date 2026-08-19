@@ -7,6 +7,7 @@ import {
   BNPL_MIN_ORDER_NAIRA,
   BNPL_MIN_PAY_NOW_RATE,
 } from "../../lib/bnplWidget";
+import { isBnplWidgetOpen } from "../../lib/bnplOverlayState";
 import {
   hasBnplWelcomeBeenSeen,
   markBnplWelcomeSeen,
@@ -22,18 +23,18 @@ const HIGHLIGHTS = [
   `Pay about ${payTodayPercent}% today; spread the rest over flexible plans (up to 5 months).`,
   "Approval may include identity checks (e.g. BVN) via our NeoCash partner.",
   "Fees and repayment terms are shown upfront before you confirm.",
-  "You can set up Pay Small Small under Account → Payment for a faster checkout.",
+  "Choose Pay Small Small at checkout on an eligible order to complete verification.",
 ] as const;
 
 function shouldSkipPath(pathname: string): boolean {
   return (
-    // Don't interfere with the checkout BNPL flow.
-    pathname.startsWith("/checkout")
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/account")
   );
 }
 
 /**
- * Informational BNPL popup after login. Isolated from checkout/account BNPL widgets.
+ * Informational BNPL popup after login. Skips checkout, account, and active widget flows.
  */
 const BnplWelcomePopup: React.FC = () => {
   const { pathname } = useLocation();
@@ -53,8 +54,6 @@ const BnplWelcomePopup: React.FC = () => {
     setIsOpen(false);
   }, []);
 
-  // Show popup after the user is on a normal website route for a few seconds.
-  // This is route-based (not the exact login/sign-up moment).
   useEffect(() => {
     if (!isAuthenticated) {
       clearTimer();
@@ -70,14 +69,12 @@ const BnplWelcomePopup: React.FC = () => {
       return;
     }
 
-    if (shouldSkipPath(pathname)) {
+    if (shouldSkipPath(pathname) || isBnplWidgetOpen()) {
       clearTimer();
       setIsOpen(false);
       return;
     }
 
-    // If a timer is already running, don't restart it on every re-render/path change.
-    // This prevents redirect chains on production from continuously clearing the timer.
     if (timerRef.current) return;
 
     timerRef.current = setTimeout(() => {
@@ -85,12 +82,13 @@ const BnplWelcomePopup: React.FC = () => {
       if (!useAuthStore.getState().isAuthenticated) return;
       if (hasBnplWelcomeBeenSeen()) return;
       if (shouldSkipPath(window.location.pathname)) return;
+      if (isBnplWidgetOpen()) return;
       setIsOpen(true);
     }, SHOW_DELAY_MS);
   }, [isAuthenticated, pathname, isOpen, clearTimer]);
 
   useEffect(() => {
-    if (isOpen && shouldSkipPath(pathname)) {
+    if (isOpen && (shouldSkipPath(pathname) || isBnplWidgetOpen())) {
       setIsOpen(false);
     }
   }, [isOpen, pathname]);
@@ -113,7 +111,7 @@ const BnplWelcomePopup: React.FC = () => {
               src="/banners/9jacart%20BNPL%20seal.png"
               alt=""
               aria-hidden
-                className="absolute inset-0 h-full w-full scale-[1.15] object-cover opacity-90"
+              className="absolute inset-0 h-full w-full scale-[1.15] object-cover opacity-90"
             />
           </div>
           <p className="text-sm text-muted-foreground leading-snug">

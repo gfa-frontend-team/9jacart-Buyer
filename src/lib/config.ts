@@ -1,3 +1,20 @@
+function resolveNeocashPublicKey(): string {
+  const configured = import.meta.env.VITE_NEOCASH_PUBLIC_KEY || "pk_test_xxx";
+  const testKey = import.meta.env.VITE_NEOCASH_PUBLIC_KEY_TEST;
+  if (import.meta.env.DEV) {
+    const key = (testKey || configured).trim();
+    if (key.startsWith("pk_live_")) {
+      console.warn(
+        "NeoCash: development is using a live public key. Set VITE_NEOCASH_PUBLIC_KEY_TEST to a pk_test_ key."
+      );
+    }
+    return key;
+  }
+  return configured;
+}
+
+const neocashPublicKey = resolveNeocashPublicKey();
+
 // App configuration
 export const config = {
   app: {
@@ -21,8 +38,7 @@ export const config = {
     },
   },
   neocash: {
-    publicKey: import.meta.env.VITE_NEOCASH_PUBLIC_KEY || 'pk_test_xxx',
-    assetPrefix: 'https://cdn.neocash.ng/widget/v1/',
+    publicKey: neocashPublicKey,
   },
   features: {
     // Feature flags for development
