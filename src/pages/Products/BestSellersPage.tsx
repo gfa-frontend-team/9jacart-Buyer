@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Breadcrumb, Loading, Alert } from '../../components/UI';
+import { Breadcrumb, Loading, ErrorState } from '../../components/UI';
 import ProductCard from '../../components/Product/ProductCard';
 import { useRealProductsList } from '../../hooks/api/useRealProducts';
 import { normalizeProductImages } from '@/lib/utils';
@@ -38,9 +38,7 @@ const BestSellersPage: React.FC = () => {
     return (
       <Container>
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </Container>
     );

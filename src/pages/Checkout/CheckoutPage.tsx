@@ -11,6 +11,7 @@ import {
   AlertCircle,
   User,
   Plus,
+  Info,
 } from "lucide-react";
 import {
   Button,
@@ -178,7 +179,7 @@ const CheckoutPage: React.FC = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const justSavedAddressRef = useRef(false);
 
-  // Coupon state (persisted in session for cart â†” checkout)
+  // Coupon state (persisted in session for cart ↔ checkout)
   const appliedCoupon = useCheckoutCouponStore((s) => s.appliedCoupon);
   const couponPricingSnapshot = useCheckoutCouponStore((s) => s.pricingSnapshot);
   const setPersistedCoupon = useCheckoutCouponStore((s) => s.setPersistedCoupon);
@@ -270,8 +271,8 @@ const CheckoutPage: React.FC = () => {
   }, [isAuthenticated, profile, user, checkoutAsGuest, getDefaultAddress, isInitialLoad]);
 
   // Use filtered values from cart (already exclude unavailable products).
-  // When `couponPricingSnapshot` is set, discount is already reflected in `payableSubtotal` (API `cartSummary.total`).
-  const summaryDiscount = couponPricingSnapshot ? 0 : couponDiscount;
+  // Coupon discount is shown as its own line and subtracted once from the cart subtotal
+  const summaryDiscount = couponDiscount;
 
   const checkoutExcludedSet = useMemo(
     () => new Set(checkoutExcludedProductIds),
@@ -301,8 +302,8 @@ const CheckoutPage: React.FC = () => {
     }, 0);
   }, [itemsForCheckout]);
 
-  const merchandiseSubtotal =
-    couponPricingSnapshot?.payableSubtotal ?? cartSubtotal;
+  // Payable merchandise after coupon (used for BNPL eligibility)
+  const merchandiseSubtotal = Math.max(0, cartSubtotal - couponDiscount);
 
   const buyerAddressForDelivery = useMemo(
     () => buildBuyerAddressLine(billingDetails, selectedAddress),
@@ -369,10 +370,12 @@ const CheckoutPage: React.FC = () => {
     return cartShipping;
   }, [deliveryValidation?.scenario, deliveryValidation?.automatedDeliveryFee, showAutomatedDeliveryUi, cartShipping]);
 
-  const total = merchandiseSubtotal + shipping + flatRate - summaryDiscount;
+  const total = Math.max(0, cartSubtotal - summaryDiscount) + shipping + flatRate;
 
   const isBnplEligible = isBnplMerchandiseEligible(merchandiseSubtotal);
-  const bnplDisabledReason = !isShippingDetailsComplete
+  const bnplDisabledReason = !isAuthenticated
+    ? "Log in to use Buy Now, Pay Later"
+    : !isShippingDetailsComplete
     ? "Complete shipping details first"
     : !isBnplEligible
       ? `Add items totaling at least ₦${BNPL_MIN_ORDER_NAIRA.toLocaleString("en-NG")} to use Pay Small Small`
@@ -396,11 +399,11 @@ const CheckoutPage: React.FC = () => {
         id: "buy-now-pay-later",
         name: "Buy Now, Pay Later",
         icon: <Shield className="w-5 h-5" />,
-        disabled: !isShippingDetailsComplete || !isBnplEligible,
+        disabled: !isAuthenticated || !isShippingDetailsComplete || !isBnplEligible,
         disabledReason: bnplDisabledReason,
       },
     ],
-    [isShippingDetailsComplete, isBnplEligible, bnplDisabledReason]
+    [isAuthenticated, isShippingDetailsComplete, isBnplEligible, bnplDisabledReason]
   );
 
   useEffect(() => {
@@ -418,7 +421,7 @@ const CheckoutPage: React.FC = () => {
     if (drift <= 1) return;
     clearPersistedCoupon();
     setCouponError(
-      "Cart changed â€” please re-apply your coupon if you still want the discount."
+      "Cart changed — please re-apply your coupon if you still want the discount."
     );
   }, [appliedCoupon, couponPricingSnapshot, cartSubtotal, clearPersistedCoupon]);
 
@@ -568,14 +571,21 @@ const CheckoutPage: React.FC = () => {
 
     setCouponError(null);
 
-    if (isGuestCheckoutFlow) {
-      setPersistedCoupon(trimmed, null);
+    if (!isAuthenticated) {
+      setCouponError("Please sign in to apply a coupon code.");
       return;
     }
 
     setIsCouponApplying(true);
     try {
       const snapshot = await orderApi.applyCoupon(trimmed);
+      if (!snapshot || snapshot.discountAmount <= 0) {
+        // Server accepted the request but no discount applies to this cart
+        clearPersistedCoupon();
+        void orderApi.removeCoupon().catch(() => undefined);
+        setCouponError("This coupon code is invalid or doesn't apply to your cart.");
+        return;
+      }
       setPersistedCoupon(trimmed, snapshot);
     } catch (e) {
       clearPersistedCoupon();
@@ -611,6 +621,10 @@ const CheckoutPage: React.FC = () => {
       couponHydrateAttemptedRef.current = null;
     }
   }, [appliedCoupon]);
+
+  useEffect(() => {
+    if (!isAuthenticated && appliedCoupon) clearPersistedCoupon();
+  }, [isAuthenticated, appliedCoupon, clearPersistedCoupon]);
 
   useEffect(() => {
     if (!isAuthenticated || isGuestCheckoutFlow) return;
@@ -1174,18 +1188,6 @@ const CheckoutPage: React.FC = () => {
                   </Button>
                 </div>
 
-                {/* Benefits of signing in */}
-                <div className="mt-8 p-4 bg-[#1E4700]/10 rounded-lg text-left">
-                  <h4 className="font-medium text-[#1E4700] mb-2">
-                    Benefits of signing in:
-                  </h4>
-                  <ul className="text-sm text-[#1E4700] space-y-1">
-                    <li>â€¢ Faster checkout with saved information</li>
-                    <li>â€¢ Order tracking and history</li>
-                    <li>â€¢ Exclusive member offers</li>
-                    <li>â€¢ Easy returns and exchanges</li>
-                  </ul>
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -1713,7 +1715,7 @@ const CheckoutPage: React.FC = () => {
                       Remove All Non-Lagos Items
                     </Button>
                     <p className="text-xs text-green-900/80">
-                      Removes non-Lagos lines from this checkout only â€” they stay in your
+                      Removes non-Lagos lines from this checkout only — they stay in your
                       cart.
                     </p>
                   </div>
@@ -1733,7 +1735,7 @@ const CheckoutPage: React.FC = () => {
                   {heavyCheckoutItems.map((item) => (
                     <li key={item.product.id}>
                       <span className="font-medium">{item.product.name}</span>
-                      {' '}â€” {((item.product.shipping.weight ?? 0)).toFixed(2).replace(/\.00$/, '')}KG
+                      {' '}— {((item.product.shipping.weight ?? 0)).toFixed(2).replace(/\.00$/, '')}KG
                     </li>
                   ))}
                 </ul>
@@ -1745,7 +1747,7 @@ const CheckoutPage: React.FC = () => {
 
             <OrderSummary
               items={itemsForCheckout}
-              subtotal={merchandiseSubtotal}
+              subtotal={cartSubtotal}
               shipping={shipping}
               showShipping={Boolean(deliveryValidation) && showAutomatedDeliveryUi}
               flatRate={flatRate}
@@ -1883,7 +1885,7 @@ const CheckoutPage: React.FC = () => {
                       disabled={isCouponRemoving}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
-                      {isCouponRemoving ? "Removingâ€¦" : "Remove"}
+                      {isCouponRemoving ? "Removing…" : "Remove"}
                     </Button>
                   </div>
                 ) : (
@@ -1909,7 +1911,7 @@ const CheckoutPage: React.FC = () => {
                         onClick={() => void handleApplyCoupon()}
                         disabled={!couponCode.trim() || isCouponApplying}
                       >
-                        {isCouponApplying ? "Applyingâ€¦" : "Apply"}
+                        {isCouponApplying ? "Applying…" : "Apply"}
                       </Button>
                     </div>
 
@@ -1920,10 +1922,16 @@ const CheckoutPage: React.FC = () => {
                       </div>
                     )}
 
-                    {isGuestCheckoutFlow && (
+                    {!isAuthenticated && (
                       <p className="text-xs text-muted-foreground">
-                        Guest checkout: your code is sent with the order. Sign in
-                        to validate coupons against your cart first.
+                        Have a coupon?{" "}
+                        <Link
+                          to="/auth/login?redirect=/checkout"
+                          className="font-medium text-primary underline"
+                        >
+                          Sign in
+                        </Link>{" "}
+                        to use it.
                       </p>
                     )}
                   </div>
@@ -2002,12 +2010,25 @@ const CheckoutPage: React.FC = () => {
                               </div>
                             )}
                           </label>
-                          {isDisabled && (
-                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10">
-                              {method.disabledReason ?? "feature coming soon"}
-                              <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-gray-900"></div>
-                            </div>
-                          )}
+                          {isDisabled && method.id === "buy-now-pay-later" && !isAuthenticated ? (
+                            <p className="mt-1.5 flex items-center gap-1.5 px-1 text-xs text-gray-600">
+                              <Info className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden />
+                              <span>
+                                <Link
+                                  to="/auth/login?redirect=/checkout"
+                                  className="font-medium text-primary underline"
+                                >
+                                  Log in
+                                </Link>{" "}
+                                to use Buy Now, Pay Later
+                              </span>
+                            </p>
+                          ) : isDisabled ? (
+                            <p className="mt-1.5 flex items-center gap-1.5 px-1 text-xs text-gray-500">
+                              <Info className="h-3.5 w-3.5 flex-shrink-0" aria-hidden />
+                              {method.disabledReason ?? "Coming soon"}
+                            </p>
+                          ) : null}
                         </div>
                       );
                     })}

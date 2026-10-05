@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Breadcrumb, Loading, Alert } from "../../components/UI";
+import { Breadcrumb, Loading, ErrorState } from "../../components/UI";
 import ProductCard from "../../components/Product/ProductCard";
 import CategoriesSidebar from "../../components/HomePage/CategoriesSidebar";
 import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyViewedProductsSection";
-import { useRealProductsList } from "../../hooks/api/useRealProducts";
+import { useRealProductsList, useRealProductsByCategory } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "@/lib/utils";
 import Container from "@/components/Layout/Container";
@@ -16,14 +16,21 @@ const SearchResultsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
-  const { products, loading, error, pagination, refetch } = useRealProductsList(
-    {
-      page: currentPage,
-      perPage,
-      search: query,
-      category
-    }
-  );
+  const listResult = useRealProductsList({
+    page: currentPage,
+    perPage,
+    search: query,
+  });
+
+  // When a category is selected in the header, search within that category only
+  const categoryResult = useRealProductsByCategory(category || null, {
+    page: currentPage,
+    perPage,
+    ...(query && { search: query }),
+  });
+
+  const { products, loading, error, pagination } = category ? categoryResult : listResult;
+  const { refetch } = listResult;
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useAllRealCategories();
 
@@ -33,13 +40,13 @@ const SearchResultsPage: React.FC = () => {
   }, [query,category]);
 
   useEffect(() => {
+    if (category) return; // category results come from useRealProductsByCategory
     refetch({
       page: currentPage,
       perPage,
       ...(query && { search: query }),
-      ...(category && { category }), // <-- add category
     });
-  }, [query, category, currentPage]); // <-- add category
+  }, [query, category, currentPage]);
 
   const isInitialLoad = loading && products.length === 0;
 
@@ -47,13 +54,15 @@ const SearchResultsPage: React.FC = () => {
     return (
       <Container className="min-h-screen p-6">
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </Container>
     );
   }
+
+  const categoryName = category
+    ? categories.find((c) => c.id === category)?.name
+    : undefined;
 
   const breadcrumbItems = [
     { label: "Products", href: "/products" },
@@ -78,6 +87,11 @@ const SearchResultsPage: React.FC = () => {
                   Results for "<span className="font-medium">{query}</span>" -{" "}
                   {products.length} active product
                   {products.length !== 1 ? "s" : ""}
+                  {categoryName && (
+                    <>
+                      {" "}in <span className="font-medium">{categoryName}</span>
+                    </>
+                  )}
                 </>
               ) : (
                 "Enter a search term to find products"
@@ -166,11 +180,6 @@ const SearchResultsPage: React.FC = () => {
                         ? `No products found for "${query}"`
                         : "Enter a search term to find products"}
                     </p>
-                    {query && (
-                      <p className="text-gray-400 mt-2">
-                        Try different keywords or browse all products
-                      </p>
-                    )}
                   </div>
                 </div>
                 {/* Recently Viewed when search has no results (no category = global) */}

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Loading, Alert } from "../../components/UI";
+import { Loading, ErrorState } from "../../components/UI";
 import { ProductCard } from "@/components/Product";
 import { useRealProductsList } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
@@ -168,9 +168,7 @@ const VendorStorefrontPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-white p-6">
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </div>
     );

@@ -346,7 +346,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
               {/* Price */}
               <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-md font-medium text-red-400">
+                <span className="text-md font-semibold text-[#28a745]">
                   {formatPrice(currentPrice)}
                 </span>
                 {originalPrice && originalPrice > currentPrice && (

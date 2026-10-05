@@ -158,6 +158,7 @@ import React, { Suspense, lazy, useEffect } from "react";
 import { createBrowserRouter, RouterProvider, useLocation, Navigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
 import { Loading } from "../components/UI";
+import RouteErrorPage from "../pages/Error/RouteErrorPage";
 
 // HomePage eager - critical for fast reload
 import HomePage from "../pages/Home/HomePage";
@@ -257,7 +258,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <LayoutWithScrollToTop />,
+    errorElement: <RouteErrorPage />,
     children: [
+      {
+      // Pathless route: page errors render inside the layout (header/footer stay visible)
+      errorElement: <RouteErrorPage />,
+      children: [
       {
         index: true,
         element: <HomePage />,
@@ -420,12 +426,15 @@ const router = createBrowserRouter([
         path: "*",
         element: withSuspense(<NotFoundPage />),
       },
+      ],
+      },
     ],
   },
   // Auth routes (with AuthLayout)
   {
     path: "auth",
     element: <AuthLayoutWithScrollToTop />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         path: "login",

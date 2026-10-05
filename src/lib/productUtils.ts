@@ -7,6 +7,15 @@ import type {
   PriceWithDiscount
 } from '../types';
 
+/** True when a product is on discount (discount badge or reduced price) — used by Today's deal and /deals. */
+export const isDiscountedProduct = (product: ProductSummary): boolean => {
+  const price = typeof product.price === 'object' ? product.price : null;
+  if (!price) return false;
+  const hasDiscountBadge = !!price.discount && price.discount.percentage > 0;
+  const hasPriceReduction = price.original != null && price.current < price.original;
+  return hasDiscountBadge || hasPriceReduction;
+};
+
 // Price utilities
 export const formatPrice = (price: number, currency: string = 'NGN'): string => {
   const safePrice = Number.isFinite(price) ? price : 0;

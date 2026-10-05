@@ -105,15 +105,15 @@ const CartItem: React.FC<CartItemProps> = ({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row gap-4 p-4 sm:p-6 transition-all duration-300",
+        "flex flex-row gap-3 sm:gap-4 p-3 sm:p-6 transition-all duration-300",
         isRemoving && "opacity-50 scale-95",
         isDeliveryFlagged && "bg-green-50/60 ring-1 ring-green-200 rounded-lg"
       )}
     >
       {/* Product Image */}
-      <div className="flex-shrink-0 sm:w-24">
+      <div className="flex-shrink-0 w-20 sm:w-24">
         <Link to={`/products/${product.id}`}>
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden mx-auto sm:mx-0">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden">
             <Image
               src={product.images.main}
               alt={product.images.alt}
@@ -130,7 +130,7 @@ const CartItem: React.FC<CartItemProps> = ({
             <div className="flex items-start gap-2">
               <Link
                 to={`/products/${product.id}`}
-                className="font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 flex-1"
+                className="text-sm sm:text-base font-medium text-gray-900 hover:text-primary transition-colors line-clamp-2 flex-1"
               >
                 {product.name}
               </Link>
@@ -149,7 +149,7 @@ const CartItem: React.FC<CartItemProps> = ({
               )}
             </div>
             {product.storeName && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 truncate">
                 <span className="font-medium">{product.storeName}</span>
               </p>
             )}
@@ -162,14 +162,15 @@ const CartItem: React.FC<CartItemProps> = ({
             variant="ghost"
             size="icon"
             onClick={() => onRemove?.(product.id)}
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"
+            className="h-8 w-8 sm:h-10 sm:w-10 -mr-1 -mt-1 sm:m-0 text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"
+            aria-label="Remove item"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Reviews */}
-        <div className="flex items-center gap-1 mb-3">
+        <div className={cn("items-center gap-1 mb-3", product.reviews.total > 0 ? "flex" : "hidden sm:flex")}>
           {renderStars(product.reviews.average)}
           <span className="text-sm text-gray-600 ml-1">
             ({product.reviews.total})
@@ -177,9 +178,9 @@ const CartItem: React.FC<CartItemProps> = ({
         </div>
 
         {/* Price and Quantity */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2 justify-start">
-            <span className="font-bold text-lg text-gray-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 justify-start">
+            <span className="font-bold text-base sm:text-lg text-[#28a745]">
               {formatPrice(currentPrice)}
             </span>
             {originalPrice && (
@@ -201,7 +202,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => handleQuantityChange(item.quantity - 1)}
-                className="h-10 w-10 sm:h-8 sm:w-8 rounded-none touch-target-sm"
+                className="h-9 w-9 sm:h-8 sm:w-8 rounded-none touch-target-sm"
                 disabled={item.quantity <= 1 || isOperating}
               >
                 <Minus className="w-3 h-3" />
@@ -214,7 +215,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 onBlur={handleQuantityInputBlur}
                 onFocus={handleQuantityInputFocus}
                 onKeyDown={handleQuantityInputKeyDown}
-                className="w-12 sm:w-10 px-2 py-2 sm:py-1 text-sm font-medium text-center border-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset bg-transparent"
+                className="w-10 px-1 py-1.5 sm:py-1 text-sm font-medium text-center border-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset bg-transparent"
                 disabled={isOperating}
                 aria-label="Quantity"
               />
@@ -222,7 +223,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => handleQuantityChange(item.quantity + 1)}
-                className="h-10 w-10 sm:h-8 sm:w-8 rounded-none touch-target-sm"
+                className="h-9 w-9 sm:h-8 sm:w-8 rounded-none touch-target-sm"
                 disabled={isOperating}
               >
                 <Plus className="w-3 h-3" />
@@ -263,7 +264,7 @@ const CartItem: React.FC<CartItemProps> = ({
         )}
 
         {/* Item Total */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-gray-100">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">
               Subtotal ({item.quantity} {item.quantity === 1 ? "item" : "items"}

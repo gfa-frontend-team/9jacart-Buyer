@@ -186,8 +186,8 @@ const CartPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 max-w-[960px] lg:max-w-7xl 2xl:max-w-[1550px] mx-auto">
       <div className=" mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
-          <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-1 sm:gap-4 min-w-0">
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
@@ -216,15 +216,15 @@ const CartPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-shrink-0 gap-2">
             {items.length > 0 && (
               <Button
                 variant="outline"
                 onClick={() => setShowClearModal(true)}
-                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-600 touch-target"
+                className="h-9 px-3 text-sm sm:h-10 sm:px-4 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-600"
                 disabled={isLoading}
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-4 h-4 mr-1.5 sm:mr-2" />
                 Clear Cart
               </Button>
             )}
@@ -300,16 +300,6 @@ const CartPage: React.FC = () => {
           </Alert>
         )}
 
-        {/* Guest Cart Notice */}
-        {!isAuthenticated && items.length > 0 && (
-          <Alert 
-            variant="default" 
-            title="Guest Cart"
-            className="mb-6 border-orange-200 bg-orange-50"
-          >
-            Your cart will be lost when you refresh the page. <Link to="/auth/login" className="font-medium text-orange-700 hover:text-orange-800 underline">Sign in</Link> to save your cart.
-          </Alert>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
