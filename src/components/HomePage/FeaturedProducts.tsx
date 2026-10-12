@@ -6,7 +6,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Loader2 } from "lucide-react";
-import { Button, Alert } from "../UI";
+import { Button, ErrorState } from "../UI";
 import SectionHeader from "../UI/SectionHeader";
 import ProductCard from "../Product/ProductCard";
 import { useFeaturedProducts } from "../../hooks/api/useRealProducts";
@@ -48,14 +48,7 @@ const FeaturedProducts: React.FC = () => {
             <SectionHeader text="Featured Picks" subtitle="Error loading our featured picks" />
           </div>
 
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <div className="flex flex-col items-center gap-4">
-              <p>{error}</p>
-              <Button onClick={() => refetch()} variant="outline" size="sm">
-                Try Again
-              </Button>
-            </div>
-          </Alert>
+          <ErrorState error={error} variant="inline" showHomeButton={false} onRetry={() => refetch()} />
         </div>
       </section>
     );

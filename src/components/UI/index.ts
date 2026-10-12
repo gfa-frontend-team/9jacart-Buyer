@@ -10,6 +10,8 @@ export { Alert } from './Alert';
 export { Image } from './Image';
 export { default as CartBadge } from './CartBadge';
 export { ErrorBoundary } from './ErrorBoundary';
+export { ErrorState } from './ErrorState';
+
 export { Toast, ToastContainer } from './Toast';
 export { default as FloatingBubbles } from './FloatingBubbles';
 

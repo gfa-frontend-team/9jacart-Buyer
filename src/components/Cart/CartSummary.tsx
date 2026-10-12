@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Truck, Shield, ShieldCheck, RotateCcw, Headset, BadgeCheck, AlertCircle } from "lucide-react";
 import { Button, Card, CardContent, Alert, Input } from "../UI";
 import { useCart } from "../../hooks/useCart";
@@ -36,10 +36,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
   const [isPromoRemoving, setIsPromoRemoving] = useState(false);
 
   const cartLineSubtotal = subtotal;
-  const merchandiseSubtotal =
-    pricingSnapshot?.payableSubtotal ?? cartLineSubtotal;
-  const displayTotal = merchandiseSubtotal + shipping + flatRate;
   const discountBannerAmount = pricingSnapshot?.discountAmount ?? 0;
+  const displayTotal =
+    Math.max(0, cartLineSubtotal - discountBannerAmount) + shipping + flatRate;
   const promoApplied = Boolean(appliedCoupon);
 
   useEffect(() => {
@@ -54,6 +53,11 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
       "Cart changed — please re-apply your coupon if you still want the discount."
     );
   }, [appliedCoupon, pricingSnapshot, cartLineSubtotal, clearPersistedCoupon]);
+
+  // Guests can't have a verified coupon; drop any stale unverified one
+  useEffect(() => {
+    if (!isAuthenticated && appliedCoupon) clearPersistedCoupon();
+  }, [isAuthenticated, appliedCoupon, clearPersistedCoupon]);
 
   const handleCheckout = () => {
     navigate("/checkout");
@@ -73,14 +77,19 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
     }
 
     if (!isAuthenticated) {
-      setPersistedCoupon(trimmed, null);
-      setPromoError(null);
+      setPromoError("Please sign in to apply a promo code.");
       return;
     }
 
     setIsPromoApplying(true);
     try {
       const snapshot = await orderApi.applyCoupon(trimmed);
+      if (!snapshot || snapshot.discountAmount <= 0) {
+        clearPersistedCoupon();
+        void orderApi.removeCoupon().catch(() => undefined);
+        setPromoError("This promo code is invalid or doesn't apply to your cart.");
+        return;
+      }
       setPersistedCoupon(trimmed, snapshot);
       setPromoError(null);
     } catch (e) {
@@ -124,8 +133,17 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
               <span className="text-gray-600">
                 Subtotal ({totalItems} {totalItems === 1 ? "item" : "items"})
               </span>
-              <span className="font-medium">{formatPrice(merchandiseSubtotal)}</span>
+              <span className="font-medium">{formatPrice(cartLineSubtotal)}</span>
             </div>
+
+            {discountBannerAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Discount ({appliedCoupon})</span>
+                <span className="font-medium text-[#28a745]">
+                  -{formatPrice(discountBannerAmount)}
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Shipping</span>
@@ -246,8 +264,11 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
 
               {!isAuthenticated && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Sign in to validate this code against your cart. As a guest, the
-                  code is saved and sent when you place your order.
+                  Have a promo code?{" "}
+                  <Link to="/auth/login?redirect=/cart" className="font-medium text-primary underline">
+                    Sign in
+                  </Link>{" "}
+                  to use it.
                 </p>
               )}
             </>
@@ -276,27 +297,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
             </div>
           )}
 
-          {!promoApplied && (
-            <div className="mt-3">
-              <p className="text-xs text-gray-500 mb-2">Try these codes:</p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPromoCode("SAVE10")}
-                  className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                >
-                  SAVE10
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPromoCode("FREESHIP")}
-                  className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                >
-                  FREESHIP
-                </button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -9,11 +9,14 @@ import {
   Menu,
   HelpCircle,
   X,
-  ChevronRight,
+  LayoutGrid,
 } from "lucide-react";
+import { getCategoryIcon } from "../../lib/categoryIcons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
+import { useAllRealCategories } from "../../hooks/api/useRealCategories";
+import SearchSuggestions from "./SearchSuggestions";
 import logoImage from "../../assets/logo.png";
 
 const NewHeader: React.FC = () => {
@@ -23,7 +26,9 @@ const NewHeader: React.FC = () => {
   const { totalItems: cartTotalItems } = useCart();
   const { getTotalItems: getWishlistItems } = useWishlistStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  // "" = all categories, otherwise a category id
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -31,69 +36,46 @@ const NewHeader: React.FC = () => {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Categories data with icons and subcategories
-  const categories = [
-    {
-      id: "all",
-      name: "All Categories",
-      icon: "📦",
-      subcategories: [],
-    },
-    {
-      id: "electronics",
-      name: "Electronics",
-      icon: "📱",
-      subcategories: ["Phones", "Laptops", "Accessories", "Gaming"],
-    },
-    {
-      id: "clothing",
-      name: "Clothing",
-      icon: "👕",
-      subcategories: ["Men", "Women", "Kids", "Accessories"],
-    },
-    {
-      id: "home-garden",
-      name: "Home & Garden",
-      icon: "🏠",
-      subcategories: ["Furniture", "Decor", "Kitchen", "Garden"],
-    },
-    {
-      id: "sports",
-      name: "Sports",
-      icon: "⚽",
-      subcategories: ["Fitness", "Outdoor", "Team Sports", "Cycling"],
-    },
-    {
-      id: "books",
-      name: "Books",
-      icon: "📚",
-      subcategories: ["Fiction", "Non-Fiction", "Academic", "Children"],
-    },
-    {
-      id: "beauty",
-      name: "Beauty",
-      icon: "💄",
-      subcategories: ["Makeup", "Skincare", "Hair", "Fragrance"],
-    },
-    {
-      id: "automotive",
-      name: "Automotive",
-      icon: "🚗",
-      subcategories: ["Parts", "Accessories", "Tools", "Maintenance"],
-    },
-  ];
+  // Real categories from the API (same source as the category pages)
+  const { categories: allCategories } = useAllRealCategories();
+  const mainCategories = allCategories.filter(
+    (cat) => cat.level === 1 && !cat.archived
+  );
+  const getSubcategories = (parentId: string) =>
+    allCategories.filter((cat) => cat.parentId === parentId && !cat.archived);
+  const [expandedMenuCategory, setExpandedMenuCategory] = useState<string | null>(null);
 
-  // Search categories for dropdown
-  const searchCategories = [
-    "All",
-    "Electronics",
-    "Clothing",
-    "Home & Garden",
-    "Sports",
-    "Books",
-    "Beauty",
-    "Automotive",
-  ];
+  // Only one search box is visible at a time; render suggestions for that one
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const renderCategorySelect = (selectClassName: string, chevronClassName: string) => (
+    <div className="relative flex-shrink-0 bg-primary">
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        aria-label="Search category"
+        className={`bg-primary text-primary-foreground appearance-none font-normal h-full w-full truncate border-0 outline-none cursor-pointer ${selectClassName}`}
+      >
+        <option value="">All</option>
+        {mainCategories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className={`absolute top-1/2 -translate-y-1/2 text-primary-foreground pointer-events-none ${chevronClassName}`}
+      />
+    </div>
+  );
 
   const totalItems = cartTotalItems;
   const wishlistItems = getWishlistItems();
@@ -153,16 +135,30 @@ const NewHeader: React.FC = () => {
     };
   }, [showAccountMenu, showMobileMenu]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitSearch = () => {
     if (searchQuery.trim()) {
       const searchParams = new URLSearchParams();
       searchParams.set("q", searchQuery.trim());
-      if (selectedCategory !== "All") {
-        searchParams.set("category", selectedCategory.toLowerCase());
+      if (selectedCategory) {
+        searchParams.set("category", selectedCategory);
       }
+      setShowSuggestions(false);
+      (document.activeElement as HTMLElement | null)?.blur();
       navigate(`/search?${searchParams.toString()}`);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitSearch();
+  };
+
+  const searchInputHandlers = {
+    onFocus: () => setShowSuggestions(true),
+    onBlur: () => setShowSuggestions(false),
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") setShowSuggestions(false);
+    },
   };
 
   const handleLogout = () => {
@@ -219,6 +215,7 @@ const NewHeader: React.FC = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setShowMobileMenu(false);
+    setShowSuggestions(false);
   }, [location.pathname]);
 
   return (
@@ -364,29 +361,20 @@ const NewHeader: React.FC = () => {
               </button>
 
               {/* Search Bar */}
-              <form onSubmit={handleSearch} className="flex-1 max-w-2xl min-w-0">
+              <form onSubmit={handleSearch} className="relative flex-1 max-w-2xl min-w-0">
                 <div className="flex rounded-md overflow-hidden bg-white">
                   {/* Category Dropdown */}
-                  {/* <div className="relative flex-shrink-0 bg-primary">
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="bg-primary text-primary-foreground px-3 py-2 appearance-none pr-8 min-w-[100px] w-auto max-w-[140px] font-normal h-full border-0 outline-none"
-                    >
-                      {searchCategories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-primary-foreground pointer-events-none" />
-                  </div> */}
+                  {renderCategorySelect(
+                    "px-3 py-2 pr-8 text-sm min-w-[100px] max-w-[160px]",
+                    "right-2 w-4 h-4"
+                  )}
 
                   {/* Search Input */}
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    {...searchInputHandlers}
                     placeholder="Search products..."
                     className="flex-1 px-4 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#8DEB6E] min-w-0"
                   />
@@ -394,11 +382,21 @@ const NewHeader: React.FC = () => {
                   {/* Search Button */}
                   <button
                     type="submit"
+                    aria-label="Search"
                     className="px-4 text-primary-foreground py-2 bg-primary hover:bg-primary/90 flex-shrink-0 transition-colors font-medium"
                   >
                     <Search className="w-5 h-5" />
                   </button>
                 </div>
+                {isDesktop && (
+                  <SearchSuggestions
+                    query={searchQuery}
+                    categoryId={selectedCategory}
+                    open={showSuggestions}
+                    onClose={() => setShowSuggestions(false)}
+                    onSeeAll={submitSearch}
+                  />
+                )}
               </form>
 
               {/* Right Side Items */}
@@ -527,31 +525,21 @@ const NewHeader: React.FC = () => {
 
             {/* Mobile/Tablet Search Bar */}
             <div className="lg:hidden">
-              <form onSubmit={handleSearch} className="w-full">
+              <form onSubmit={handleSearch} className="relative w-full">
                 <div className="flex rounded-md overflow-hidden bg-white">
                   {/* Category Dropdown - Mobile */}
-                  <div className="relative flex-shrink-0 bg-primary">
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="bg-primary text-primary-foreground px-2 sm:px-3 py-2 text-xs sm:text-sm appearance-none pr-6 sm:pr-8 min-w-[80px] w-auto font-normal h-full border-0 outline-none"
-                    >
-                      {searchCategories.slice(0, 6).map((category) => (
-                        <option key={category} value={category}>
-                          {category.length > 8
-                            ? category.substring(0, 8) + "..."
-                            : category}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground pointer-events-none" />
-                  </div>
+                  {renderCategorySelect(
+                    "px-2 sm:px-3 py-2 pr-6 sm:pr-8 text-xs sm:text-sm min-w-[64px] max-w-[110px] sm:max-w-[150px]",
+                    "right-1 sm:right-2 w-3 h-3 sm:w-4 sm:h-4"
+                  )}
 
                   {/* Search Input - Mobile */}
                   <input
-                    type="text"
+                    type="search"
+                    enterKeyHint="search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    {...searchInputHandlers}
                     placeholder="Search products..."
                     className="flex-1 px-2 sm:px-4 py-2 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#8DEB6E] min-w-0"
                   />
@@ -559,11 +547,21 @@ const NewHeader: React.FC = () => {
                   {/* Search Button - Mobile */}
                   <button
                     type="submit"
-                    className="px-2 sm:px-4 text-primary-foreground py-2 bg-primary hover:bg-primary/90 flex-shrink-0 transition-colors font-medium"
+                    aria-label="Search"
+                    className="px-3 sm:px-4 text-primary-foreground py-2 bg-primary hover:bg-primary/90 flex-shrink-0 transition-colors font-medium"
                   >
                     <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
+                {!isDesktop && (
+                  <SearchSuggestions
+                    query={searchQuery}
+                    categoryId={selectedCategory}
+                    open={showSuggestions}
+                    onClose={() => setShowSuggestions(false)}
+                    onSeeAll={submitSearch}
+                  />
+                )}
               </form>
             </div>
           </div>
@@ -634,51 +632,70 @@ const NewHeader: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  {categories.map((category) => (
-                    <div key={category.id} className="px-2">
-                      <button
-                        onClick={() => {
-                          if (category.id === "all") {
-                            navigate("/products");
-                          } else {
-                            navigate(
-                              `/search?category=${category.id.toLowerCase()}`
-                            );
-                          }
-                          setShowMobileMenu(false);
-                        }}
-                        className="w-full flex items-center justify-between px-3 py-3 text-white hover:bg-white/10 rounded-md transition-colors group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{category.icon}</span>
-                          <span className="font-medium">{category.name}</span>
-                        </div>
-                        {category.subcategories.length > 0 && (
-                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
-                        )}
-                      </button>
-
-                      {/* Subcategories - shown inline */}
-                      {category.subcategories.length > 0 && (
-                        <div className="ml-12 space-y-1 border-l border-gray-600 pl-4">
-                          {category.subcategories.map((sub) => (
+                  <div className="px-2">
+                    <Link
+                      to="/products"
+                      className="w-full flex items-center gap-3 px-3 py-3 text-white hover:bg-white/10 rounded-md transition-colors"
+                    >
+                      <LayoutGrid className="w-5 h-5 text-[#8DEB6E]" aria-hidden />
+                      <span className="font-medium">All Categories</span>
+                    </Link>
+                  </div>
+                  {mainCategories.length === 0 &&
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <div key={`menu-skeleton-${index}`} className="px-5 py-2">
+                        <div className="h-5 w-40 animate-pulse rounded bg-white/10" />
+                      </div>
+                    ))}
+                  {mainCategories.map((category) => {
+                    const Icon = getCategoryIcon(category.name, category.id);
+                    const subcategories = getSubcategories(category.id);
+                    const expanded = expandedMenuCategory === category.id;
+                    return (
+                      <div key={category.id} className="px-2">
+                        <div className="flex items-center rounded-md hover:bg-white/10 transition-colors">
+                          <Link
+                            to={`/category/${category.id}`}
+                            state={{ categoryName: category.name }}
+                            className="flex flex-1 min-w-0 items-center gap-3 px-3 py-3 text-white"
+                          >
+                            <Icon className="w-5 h-5 shrink-0 text-[#8DEB6E]" aria-hidden />
+                            <span className="font-medium truncate">{category.name}</span>
+                          </Link>
+                          {subcategories.length > 0 && (
                             <button
-                              key={sub}
-                              onClick={() => {
-                                navigate(
-                                  `/search?category=${category.id}&subcategory=${sub.toLowerCase()}`
-                                );
-                                setShowMobileMenu(false);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                              type="button"
+                              onClick={() =>
+                                setExpandedMenuCategory(expanded ? null : category.id)
+                              }
+                              className="p-3 text-gray-400 hover:text-white transition-colors"
+                              aria-label={`${expanded ? "Hide" : "Show"} ${category.name} subcategories`}
+                              aria-expanded={expanded}
                             >
-                              {sub}
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+                              />
                             </button>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {expanded && (
+                          <div className="ml-11 space-y-1 border-l border-gray-600 pl-3 pb-1">
+                            {subcategories.map((sub) => (
+                              <Link
+                                key={sub.id}
+                                to={`/category/${sub.id}`}
+                                state={{ categoryName: sub.name }}
+                                className="block px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                              >
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Quick Links */}
@@ -687,13 +704,29 @@ const NewHeader: React.FC = () => {
                     Quick Links
                   </h3>
                   <div className="space-y-2">
-                    <Link
-                      to="/products"
+                    {[
+                      { to: "/deals", label: "Today's Deals" },
+                      { to: "/new-arrivals", label: "New Arrivals" },
+                      { to: "/bestsellers", label: "Best Sellers" },
+                      { to: "/orders", label: "Track Order" },
+                    ].map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className="block px-3 py-3 text-white hover:bg-white/10 rounded-md transition-colors"
+                        onClick={() => setShowMobileMenu(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                    <a
+                      href="http://vendors.9jacart.ng"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="block px-3 py-3 text-white hover:bg-white/10 rounded-md transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
                     >
-                      All Products
-                    </Link>
+                      Sell on 9ja Cart
+                    </a>
                     <Link
                       to="/contact"
                       className="block px-3 py-3 text-white hover:bg-white/10 rounded-md transition-colors"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
-import { Breadcrumb, Loading, Alert } from '../../components/UI';
+import { Breadcrumb, Loading, ErrorState } from '../../components/UI';
 import ProductCard from '../../components/Product/ProductCard';
 import CategoriesSidebar from '../../components/HomePage/CategoriesSidebar';
 import RecentlyViewedProductsSection from '../../components/HomePage/RecentlyViewedProductsSection';
@@ -44,9 +44,7 @@ const ProductsPage: React.FC = () => {
     return (
       <Container>
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </Container>
     );

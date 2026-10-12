@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Breadcrumb, Loading, Alert } from '../../components/UI';
+import { Breadcrumb, Loading, ErrorState } from '../../components/UI';
 import ProductCard from '../../components/Product/ProductCard';
 import CategoriesSidebar from '../../components/HomePage/CategoriesSidebar';
-import { useRealProductsList } from '../../hooks/api/useRealProducts';
+import { useBuyerActiveProductsList } from '../../hooks/api/useRealProducts';
+import { isDiscountedProduct } from '@/lib/productUtils';
 import { useAllRealCategories } from '../../hooks/api/useRealCategories';
 import { normalizeProductImages } from '@/lib/utils';
 import Container from '@/components/Layout/Container';
@@ -10,43 +11,36 @@ import Container from '@/components/Layout/Container';
 const DealsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 50; // Fetch more to filter for deals
+  const perPage = 12;
 
-  const { 
-    products: allProducts, 
-    loading, 
-    error, 
-    refetch 
-  } = useRealProductsList({ 
-    page: currentPage, 
-    perPage,
-    ...(searchQuery && { search: searchQuery })
-  });
+  // Same source + filter as the homepage "Today's deal" section: every discounted product
+  const { allProducts, loading, error } = useBuyerActiveProductsList({});
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useAllRealCategories();
 
-  // Filter products that have discounts
   const dealsProducts = useMemo(() => {
-    return allProducts.filter(product => product.price.discount !== undefined);
-  }, [allProducts]);
+    const term = searchQuery.trim().toLowerCase();
+    const unique = Array.from(
+      new Map(allProducts.filter(isDiscountedProduct).map((p) => [p.id, p])).values()
+    );
+    return term ? unique.filter((p) => p.name.toLowerCase().includes(term)) : unique;
+  }, [allProducts, searchQuery]);
 
   // Paginate filtered deals
   const paginatedDeals = useMemo(() => {
-    const startIndex = (currentPage - 1) * 12;
-    const endIndex = startIndex + 12;
+    const startIndex = (currentPage - 1) * perPage;
+    const endIndex = startIndex + perPage;
     return dealsProducts.slice(startIndex, endIndex);
   }, [dealsProducts, currentPage]);
 
-  const totalDealsPages = Math.ceil(dealsProducts.length / 12);
+  const totalDealsPages = Math.ceil(dealsProducts.length / perPage);
   const isInitialLoad = loading && allProducts.length === 0;
 
   if (error) {
     return (
       <Container>
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </Container>
     );
@@ -80,12 +74,7 @@ const DealsPage: React.FC = () => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  refetch({ page: 1, perPage, search: searchQuery });
-                }
-              }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
         </div>

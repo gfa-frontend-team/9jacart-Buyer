@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react";
 
-import { Button, Alert } from "../UI";
+import { Button, ErrorState } from "../UI";
 import SectionHeader from "../UI/SectionHeader";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import type { Category } from "../../types";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { cn } from "@/lib/utils";
+import { useAutoAdvance } from "@/hooks/useAutoAdvance";
 import { getDefaultCategoryImage } from "@/utils/category-mappers";
 
 type ShowcaseCategory = Category & { icon: LucideIcon };
@@ -24,7 +25,7 @@ const transformCategories = (categories: Category[]): ShowcaseCategory[] => {
 };
 
 const categoryCardSlotClass =
-  "w-[calc((100cqw-0.75rem)/2)] shrink-0 sm:w-[calc((100cqw-2rem)/3)] lg:w-[calc((100cqw-5rem)/6)]";
+  "snap-start w-[calc((100cqw-0.75rem)/2)] shrink-0 sm:w-[calc((100cqw-2rem)/3)] lg:w-[calc((100cqw-5rem)/6)]";
 
 function ShopCategoryCard({
   category,
@@ -96,6 +97,8 @@ const CategoryShowcase: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  // Mobile: move through the categories on its own; pauses while touched/hovered
+  const autoAdvanceHandlers = useAutoAdvance(scrollRef);
 
   const categories = transformCategories(rawCategories);
 
@@ -203,14 +206,7 @@ const CategoryShowcase: React.FC = () => {
             />
           </div>
 
-          <Alert variant="destructive" className="max-w-md mx-auto">
-            <div className="flex flex-col items-center gap-4">
-              <p>{error}</p>
-              <Button onClick={() => refetch()} variant="outline" size="sm">
-                Try Again
-              </Button>
-            </div>
-          </Alert>
+          <ErrorState error={error} variant="inline" showHomeButton={false} onRetry={() => refetch()} />
         </div>
       </section>
     );
@@ -250,17 +246,13 @@ const CategoryShowcase: React.FC = () => {
 
         <div
           ref={scrollRef}
+          {...autoAdvanceHandlers}
           className={cn(
-            "@container pb-2",
-            needsScroll ? "overflow-x-auto scrollbar-hide" : "overflow-x-hidden"
+            "@container pb-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory",
+            !needsScroll && "lg:overflow-x-hidden"
           )}
         >
-          <div
-            className={cn(
-              "flex gap-3 sm:gap-4",
-              needsScroll ? "w-max min-w-full" : "w-full"
-            )}
-          >
+          <div className="flex w-max min-w-full gap-3 sm:gap-4">
             {categories.map((category) => (
               <ShopCategoryCard
                 key={category.id}

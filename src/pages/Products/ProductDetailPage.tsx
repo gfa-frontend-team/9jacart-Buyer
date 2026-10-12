@@ -41,6 +41,7 @@ import { cn, normalizeProductImages } from "../../lib/utils";
 import { BNPL_MIN_ORDER_NAIRA } from "../../lib/bnplWidget";
 import { formatPrice, formatDiscountPercentage } from "../../lib/productUtils";
 import { RelatedProductCard } from "@/components/Product";
+import ImageLightbox from "@/components/Product/ImageLightbox";
 import RecentlyViewedProductsSection from "@/components/HomePage/RecentlyViewedProductsSection";
 import { useNotificationContext } from "../../providers/NotificationProvider";
 import visaLogo from "@/assets/payment-logos/visa-logo.png";
@@ -124,6 +125,7 @@ const ProductDetailPage: React.FC = () => {
   const displayReviews = hasRealReviews ? apiReviews : null;
 
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
@@ -145,10 +147,15 @@ const ProductDetailPage: React.FC = () => {
   };
 
   const scrollRelated = (direction: "left" | "right") => {
+    // Move exactly one card so the next product lands fully at the start
     const container = relatedScrollRef.current;
-    if (!container) return;
+    const track = container?.firstElementChild as HTMLElement | null;
+    const card = track?.firstElementChild as HTMLElement | null;
+    if (!container || !track || !card) return;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const step = card.offsetWidth + gap;
     container.scrollBy({
-      left: direction === "left" ? -container.clientWidth * 0.8 : container.clientWidth * 0.8,
+      left: direction === "left" ? -step : step,
       behavior: "smooth",
     });
   };
@@ -553,18 +560,38 @@ const ProductDetailPage: React.FC = () => {
                       -{formatDiscountPercentage(discount.percentage)}%
                     </Badge>
                   )}
-                  <Image
-                    src={imageGallery[selectedImage] || product.images.main}
-                    alt={product.images.alt}
-                    className="w-full h-full object-contain p-4"
-                    aspectRatio="auto"
-                    objectFit="contain"
-                    lazy={false}
-                  />
-                  <div className="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 border border-gray-200 text-gray-600">
+                  <button
+                    type="button"
+                    onClick={() => setLightboxOpen(true)}
+                    className="block w-full h-full cursor-zoom-in"
+                    aria-label="View full-size image"
+                  >
+                    <Image
+                      src={imageGallery[selectedImage] || product.images.main}
+                      alt={product.images.alt}
+                      className="w-full h-full object-cover sm:object-contain sm:p-4"
+                      aspectRatio="auto"
+                      objectFit="cover"
+                      lazy={false}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLightboxOpen(true)}
+                    className="absolute bottom-3 right-3 p-2 rounded-full bg-white/90 border border-gray-200 text-gray-600 shadow-sm hover:bg-white hover:text-primary transition-colors"
+                    aria-label="Zoom image"
+                  >
                     <ZoomIn className="w-4 h-4" aria-hidden />
-                  </div>
+                  </button>
                 </div>
+                <ImageLightbox
+                  images={imageGallery.length > 0 ? imageGallery : [product.images.main]}
+                  index={selectedImage}
+                  alt={product.images.alt || product.name}
+                  open={lightboxOpen}
+                  onClose={() => setLightboxOpen(false)}
+                  onIndexChange={setSelectedImage}
+                />
 
                 {imageGallery.length > 1 && (
                   <div className="flex sm:hidden gap-2 mt-3 overflow-x-auto scrollbar-hide pb-1">
@@ -608,9 +635,22 @@ const ProductDetailPage: React.FC = () => {
                 </Badge>
               )}
 
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
-                {product.name}
-              </h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+                {/* Mobile/tablet: compact price beside the title */}
+                <div className="xl:hidden flex-shrink-0 text-right">
+                  <p className="text-lg font-bold text-[#28a745] leading-tight">
+                    {formatPrice(currentPrice)}
+                  </p>
+                  {originalPrice && (
+                    <p className="text-xs text-gray-400 line-through">
+                      {formatPrice(originalPrice)}
+                    </p>
+                  )}
+                </div>
+              </div>
 
               <div>
                 {product.vendorId ? (
@@ -661,7 +701,7 @@ const ProductDetailPage: React.FC = () => {
               )}
 
               <div className="space-y-1">
-                <div className="flex items-baseline gap-2 flex-wrap">
+                <div className="hidden xl:flex items-baseline gap-2 flex-wrap">
                   <span className="text-3xl font-bold text-[#28a745]">
                     {formatPrice(currentPrice)}
                   </span>
@@ -1182,7 +1222,7 @@ const ProductDetailPage: React.FC = () => {
                           type="button"
                           aria-label="Scroll related products left"
                           onClick={() => scrollRelated("left")}
-                          className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+                          className="absolute left-1 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-md hover:bg-gray-50"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
@@ -1190,7 +1230,7 @@ const ProductDetailPage: React.FC = () => {
                           type="button"
                           aria-label="Scroll related products right"
                           onClick={() => scrollRelated("right")}
-                          className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+                          className="absolute right-1 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white/95 text-gray-700 shadow-md hover:bg-gray-50"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
@@ -1198,13 +1238,13 @@ const ProductDetailPage: React.FC = () => {
                     )}
                     <div
                       ref={relatedScrollRef}
-                      className="overflow-x-auto scrollbar-hide px-6"
+                      className="@container overflow-x-auto scrollbar-hide snap-x snap-mandatory"
                     >
                       <div className="flex gap-3 w-max min-w-full pb-1">
                         {filteredRelatedProducts.map((relatedProduct) => (
                           <div
                             key={relatedProduct.id}
-                            className="w-[220px] sm:w-[240px] flex-shrink-0"
+                            className="snap-start w-[85cqw] sm:w-[240px] flex-shrink-0"
                           >
                             <RelatedProductCard
                               product={normalizeProductImages(relatedProduct)}

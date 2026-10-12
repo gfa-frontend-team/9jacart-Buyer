@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, Navigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import { Breadcrumb, Loading, Alert } from "../../components/UI";
+import { Breadcrumb, Loading, ErrorState } from "../../components/UI";
 import ProductCard from "../../components/Product/ProductCard";
 import CategoriesSidebar from "../../components/HomePage/CategoriesSidebar";
 import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyViewedProductsSection";
@@ -83,9 +83,7 @@ const CategoryPage: React.FC = () => {
     return (
       <Container className="min-h-screen p-6">
         <div className=" mx-auto">
-          <Alert variant="destructive" title="Error">
-            {error}
-          </Alert>
+          <ErrorState error={error} />
         </div>
       </Container>
     );

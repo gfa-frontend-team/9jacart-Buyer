@@ -1,6 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Alert } from './Alert';
-import { Button } from './Button';
+import { ErrorState } from './ErrorState';
 
 interface Props {
   children: ReactNode;
@@ -25,38 +24,13 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('Uncaught error:', error, errorInfo);
   }
 
-  private handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
-
   public render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      return (
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="max-w-md w-full">
-            <Alert variant="destructive" title="Something went wrong">
-              <p className="mb-4">
-                An unexpected error occurred. Please try refreshing the page.
-              </p>
-              <div className="flex gap-2">
-                <Button onClick={this.handleReset} variant="outline" size="sm">
-                  Try Again
-                </Button>
-                <Button 
-                  onClick={() => window.location.reload()} 
-                  size="sm"
-                >
-                  Refresh Page
-                </Button>
-              </div>
-            </Alert>
-          </div>
-        </div>
-      );
+      return <ErrorState error={this.state.error} className="min-h-screen" />;
     }
 
     return this.props.children;

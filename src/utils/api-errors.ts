@@ -5,6 +5,20 @@ export const apiErrorUtils = {
   // Extract user-friendly error message from API error
   getErrorMessage: (error: unknown): string => {
     if (error instanceof ApiError) {
+      // Never surface technical transport/auth messages to buyers
+      if (error.status === 0) {
+        return "We couldn't connect. Please check your internet connection and try again.";
+      }
+      if (error.status === 408) {
+        return 'This is taking longer than usual. Please try again.';
+      }
+      if (error.status >= 500) {
+        return "We're having trouble on our end. Please try again in a moment.";
+      }
+      if (/token|jwt|unauthori[sz]ed/i.test(error.message)) {
+        return 'Your session has expired. Please sign in to continue.';
+      }
+
       // Handle specific API error responses
       if (error.data && typeof error.data === 'object') {
         const data = error.data as Record<string, unknown>;
@@ -87,8 +101,8 @@ export const apiErrorUtils = {
     
     // Handle network errors
     if (error instanceof Error) {
-      if (error.message.includes('fetch')) {
-        return 'Network error. Please check your connection.';
+      if (/fetch|network|load failed/i.test(error.message)) {
+        return "We couldn't connect. Please check your internet connection and try again.";
       }
       return error.message;
     }
