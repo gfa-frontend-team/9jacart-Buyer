@@ -12,6 +12,7 @@ import {
   User,
   Plus,
   Info,
+  Landmark,
 } from "lucide-react";
 import {
   Button,
@@ -52,6 +53,8 @@ import { apiErrorUtils } from "../../utils/api-errors";
 import { cn } from "../../lib/utils";
 import { formatPrice } from "../../lib/productUtils";
 import { initNeoCashBnplWidget } from "../../lib/neocashInit";
+import WemaBnplFlow, { type WemaBnplResult } from "../../components/Checkout/WemaBnplFlow";
+import { getWemaEligibility } from "../../lib/wemaBnpl";
 import {
   BNPL_MIN_ORDER_NAIRA,
   BNPL_WIDGET_THEME,
@@ -151,6 +154,9 @@ const CheckoutPage: React.FC = () => {
   // without the widget needing to be re-initialised on every render.
   const handlePlaceOrderRef = useRef<(() => Promise<void>) | null>(null);
   const [isBnplWidgetOpen, setIsBnplWidgetOpen] = useState(false);
+  // Wema BNPL: loan is set up in WemaBnplFlow, then the order is placed with its references
+  const [showWemaFlow, setShowWemaFlow] = useState(false);
+  const wemaResultRef = useRef<WemaBnplResult | null>(null);
   const [bnplAwaitingWidgetClose, setBnplAwaitingWidgetClose] = useState(false);
   const [bnplWidgetError, setBnplWidgetError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -381,6 +387,16 @@ const CheckoutPage: React.FC = () => {
       ? `Add items totaling at least ₦${BNPL_MIN_ORDER_NAIRA.toLocaleString("en-NG")} to use Pay Small Small`
       : undefined;
 
+  // Like NeoCash, Wema finances merchandise only (after coupon; no delivery/fees)
+  const wemaEligibility = getWemaEligibility(merchandiseSubtotal);
+  const wemaDisabledReason = !isAuthenticated
+    ? "Log in to pay later with Wema"
+    : !isShippingDetailsComplete
+      ? "Complete shipping details first"
+      : !wemaEligibility.eligible
+        ? wemaEligibility.reason
+        : undefined;
+
   const paymentMethods: PaymentMethod[] = useMemo(
     () => [
       {
@@ -402,9 +418,22 @@ const CheckoutPage: React.FC = () => {
         disabled: !isAuthenticated || !isShippingDetailsComplete || !isBnplEligible,
         disabledReason: bnplDisabledReason,
       },
+      {
+        id: "wema-bnpl",
+        name: "Pay later with Wema (ALAT)",
+        icon: <Landmark className="w-5 h-5" />,
+        disabled: Boolean(wemaDisabledReason),
+        disabledReason: wemaDisabledReason,
+      },
     ],
-    [isAuthenticated, isShippingDetailsComplete, isBnplEligible, bnplDisabledReason]
+    [isAuthenticated, isShippingDetailsComplete, isBnplEligible, bnplDisabledReason, wemaDisabledReason]
   );
+
+  useEffect(() => {
+    if (selectedPayment === "wema-bnpl" && wemaDisabledReason) {
+      setSelectedPayment("bank-card");
+    }
+  }, [selectedPayment, wemaDisabledReason]);
 
   useEffect(() => {
     if (selectedPayment !== "buy-now-pay-later") return;
@@ -923,6 +952,13 @@ const CheckoutPage: React.FC = () => {
     }
     setIsValidatingDelivery(false);
 
+    // Wema BNPL: set up the loan first (consent → ALAT approval → offer → disburse);
+    // WemaBnplFlow calls back into this function to place the order.
+    if (selectedPayment === "wema-bnpl" && !wemaResultRef.current) {
+      setShowWemaFlow(true);
+      return;
+    }
+
     // BNPL: validate first, then open the widget. Checkout API runs only after
     // NeoCash returns applicationId via onApprovalPending.
     if (
@@ -966,6 +1002,17 @@ const CheckoutPage: React.FC = () => {
           bnplApplicationIdRef.current && {
             applicationId: bnplApplicationIdRef.current,
           }),
+        ...(paymentMethod === "wema-bnpl" &&
+          wemaResultRef.current && {
+            wemaBnpl: {
+              consentId: wemaResultRef.current.consentId,
+              loanEligibilityId: wemaResultRef.current.loanEligibilityId,
+              merchantCustomerReference: wemaResultRef.current.merchantCustomerReference,
+              productAmount: wemaResultRef.current.productAmount,
+              equityAmount: wemaResultRef.current.equityAmount,
+              tenure: wemaResultRef.current.tenure,
+            },
+          }),
         ...(isGuestCheckoutFlow && { guestCheckout: 1 }),
         ...(isGuestCheckoutFlow &&
           guestWantsAccount &&
@@ -1001,6 +1048,19 @@ const CheckoutPage: React.FC = () => {
           return;
         }
 
+        // Wema BNPL works exactly like NeoCash: the BNPL partner handles the down payment,
+        // so any Paystack/redirect URL returned for the order is ignored (same as "bnpl").
+        if (paymentMethod === "wema-bnpl") {
+          if (response.paymentData?.authorizationUrl || response.redirectUrl) {
+            console.warn("Ignoring Paystack/redirect URL for Wema BNPL, same as NeoCash.");
+          }
+          persistGuestRegisterPrefill();
+          await clearAllItems();
+          wemaResultRef.current = null;
+          setShowSuccess(true);
+          return;
+        }
+
         if (response.paymentData?.authorizationUrl) {
           persistGuestRegisterPrefill();
           setIsRedirectingToPayment(true);
@@ -1019,6 +1079,7 @@ const CheckoutPage: React.FC = () => {
 
         await clearAllItems();
         bnplApplicationIdRef.current = null;
+        wemaResultRef.current = null;
 
         setShowSuccess(true);
         return;
@@ -2010,7 +2071,9 @@ const CheckoutPage: React.FC = () => {
                               </div>
                             )}
                           </label>
-                          {isDisabled && method.id === "buy-now-pay-later" && !isAuthenticated ? (
+                          {isDisabled &&
+                          (method.id === "buy-now-pay-later" || method.id === "wema-bnpl") &&
+                          !isAuthenticated ? (
                             <p className="mt-1.5 flex items-center gap-1.5 px-1 text-xs text-gray-600">
                               <Info className="h-3.5 w-3.5 flex-shrink-0 text-primary" aria-hidden />
                               <span>
@@ -2020,7 +2083,9 @@ const CheckoutPage: React.FC = () => {
                                 >
                                   Log in
                                 </Link>{" "}
-                                to use Buy Now, Pay Later
+                                {method.id === "wema-bnpl"
+                                  ? "to pay later with Wema"
+                                  : "to use Buy Now, Pay Later"}
                               </span>
                             </p>
                           ) : isDisabled ? (
@@ -2077,6 +2142,8 @@ const CheckoutPage: React.FC = () => {
                       "Pay Small Small is open"
                     ) : selectedPayment === "buy-now-pay-later" ? (
                       "Continue with Pay Small Small"
+                    ) : selectedPayment === "wema-bnpl" && !wemaResultRef.current ? (
+                      "Continue with Wema"
                     ) : (
                       "Place Order"
                     )}
@@ -2085,6 +2152,21 @@ const CheckoutPage: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        <WemaBnplFlow
+          open={showWemaFlow}
+          productAmount={merchandiseSubtotal}
+          onClose={() => setShowWemaFlow(false)}
+          onComplete={async (result) => {
+            // Loan is disbursed: keep the references so a retry never re-runs the loan
+            wemaResultRef.current = result;
+            try {
+              await handlePlaceOrderRef.current?.();
+            } finally {
+              setShowWemaFlow(false);
+            }
+          }}
+        />
 
         {/* Success Modal */}
         {showSuccess && (
