@@ -35,6 +35,18 @@ export interface CheckoutRequest {
    * close or Paystack redirect as BNPL approval.
    */
   applicationId?: string;
+  /**
+   * Wema Bank BNPL (ALAT) loan, disbursed before the order is placed.
+   * TODO(backend): confirm field names + how the down payment (equityAmount) is collected.
+   */
+  wemaBnpl?: {
+    consentId: string;
+    loanEligibilityId: string;
+    merchantCustomerReference: string | null;
+    productAmount: number;
+    equityAmount: number;
+    tenure: number;
+  };
   couponCode?: string;
   guestCheckout?: number;
   createAccount?: number;
@@ -972,6 +984,7 @@ export const mapPaymentMethodToApi = (uiPaymentMethod: string): string => {
     "bank-card": "card",
     "cash-on-delivery": "cod",
     "buy-now-pay-later": "bnpl",
+    "wema-bnpl": "wema-bnpl",
     "emergency-credit": "credit",
   };
 
