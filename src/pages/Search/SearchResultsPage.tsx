@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Breadcrumb, Loading, ErrorState } from "../../components/UI";
 import ProductCard from "../../components/Product/ProductCard";
 import CategoriesSidebar from "../../components/HomePage/CategoriesSidebar";
-import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyViewedProductsSection";
-import { useRealProductsList, useRealProductsByCategory } from "../../hooks/api/useRealProducts";
+import DiscoverMore from "../../components/Product/DiscoverMore";
+import { useRealProductsList } from "../../hooks/api/useRealProducts";
+import { addRecentSearch } from "@/lib/recentSearches";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "@/lib/utils";
 import Container from "@/components/Layout/Container";
@@ -16,37 +17,57 @@ const SearchResultsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
-  const listResult = useRealProductsList({
-    page: currentPage,
-    perPage,
-    search: query,
-  });
+  // The search endpoint (/product/items?search=) ignores category filters and the
+  // category endpoint ignores search, so with a category we fetch the search
+  // results in one batch and keep only that category's products.
+  const CATEGORY_SEARCH_BATCH = 100;
+  const fetchParams = category
+    ? { page: 1, perPage: CATEGORY_SEARCH_BATCH, ...(query && { search: query }) }
+    : { page: currentPage, perPage, ...(query && { search: query }) };
 
-  // When a category is selected in the header, search within that category only
-  const categoryResult = useRealProductsByCategory(category || null, {
-    page: currentPage,
-    perPage,
-    ...(query && { search: query }),
-  });
-
-  const { products, loading, error, pagination } = category ? categoryResult : listResult;
-  const { refetch } = listResult;
+  const {
+    products: fetchedProducts,
+    loading,
+    error,
+    pagination: serverPagination,
+    refetch,
+  } = useRealProductsList(fetchParams);
 
   const { categories, loading: categoriesLoading, error: categoriesError } = useAllRealCategories();
 
   // Reset page when search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [query,category]);
+  }, [query, category]);
 
   useEffect(() => {
-    if (category) return; // category results come from useRealProductsByCategory
-    refetch({
-      page: currentPage,
-      perPage,
-      ...(query && { search: query }),
-    });
-  }, [query, category, currentPage]);
+    if (query) addRecentSearch(query);
+  }, [query]);
+
+  useEffect(() => {
+    refetch(fetchParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, category, category ? 1 : currentPage]);
+
+  const categoryMatches = useMemo(() => {
+    if (!category) return [];
+    const allowed = new Set([
+      category,
+      ...categories.filter((c) => c.parentId === category).map((c) => c.id),
+    ]);
+    return fetchedProducts.filter((p) => allowed.has(p.categoryId));
+  }, [category, categories, fetchedProducts]);
+
+  const products = category
+    ? categoryMatches.slice((currentPage - 1) * perPage, currentPage * perPage)
+    : fetchedProducts;
+  const totalResults = category ? categoryMatches.length : serverPagination.totalItems || products.length;
+  const pagination = category
+    ? {
+        currentPage,
+        totalPages: Math.max(1, Math.ceil(categoryMatches.length / perPage)),
+      }
+    : serverPagination;
 
   const isInitialLoad = loading && products.length === 0;
 
@@ -85,8 +106,8 @@ const SearchResultsPage: React.FC = () => {
               {query ? (
                 <>
                   Results for "<span className="font-medium">{query}</span>" -{" "}
-                  {products.length} active product
-                  {products.length !== 1 ? "s" : ""}
+                  {totalResults} active product
+                  {totalResults !== 1 ? "s" : ""}
                   {categoryName && (
                     <>
                       {" "}in <span className="font-medium">{categoryName}</span>
@@ -173,17 +194,16 @@ const SearchResultsPage: React.FC = () => {
               </>
             ) : (
               <>
-                <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex items-center justify-center py-10">
                   <div className="text-center">
                     <p className="text-gray-500 text-lg">
                       {query
-                        ? `No products found for "${query}"`
+                        ? `No products found for "${query}"${categoryName ? ` in ${categoryName}` : ""}`
                         : "Enter a search term to find products"}
                     </p>
                   </div>
                 </div>
-                {/* Recently Viewed when search has no results (no category = global) */}
-                <RecentlyViewedProductsSection variant="inline" />
+                <DiscoverMore title="You might like these" />
               </>
             )}
           </div>

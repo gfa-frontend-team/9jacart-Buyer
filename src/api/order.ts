@@ -34,19 +34,7 @@ export interface CheckoutRequest {
    * (approved / declined / additional checks). Buyer must not treat widget
    * close or Paystack redirect as BNPL approval.
    */
-  applicationId?: string;
-  /**
-   * Wema Bank BNPL (ALAT) loan, disbursed before the order is placed.
-   * TODO(backend): confirm field names + how the down payment (equityAmount) is collected.
-   */
-  wemaBnpl?: {
-    consentId: string;
-    loanEligibilityId: string;
-    merchantCustomerReference: string | null;
-    productAmount: number;
-    equityAmount: number;
-    tenure: number;
-  };
+  applicationId?: string; // NeoCash application id, or the Wema reference for Wema BNPL
   couponCode?: string;
   guestCheckout?: number;
   createAccount?: number;
@@ -615,13 +603,15 @@ export interface ApplyCouponCartSummary {
 }
 
 /**
- * Normalized pricing from apply-coupon. Backend uses `cartSummary.total` as the
- * post-discount merchandise total; that value is what checkout shows as "Subtotal".
+ * Normalized pricing from apply-coupon. `cartSummary.total` includes shipping, so the
+ * payable merchandise subtotal is `cartSummary.subtotal - discount`.
  */
 export interface CouponPricingSnapshot {
   payableSubtotal: number;
   discountAmount: number;
   preDiscountSubtotal: number;
+  /** e.g. "10% off your entire order" */
+  description?: string;
 }
 
 function numFromUnknown(v: unknown): number | undefined {
@@ -668,13 +658,20 @@ export function parseApplyCouponResponse(payload: unknown): CouponPricingSnapsho
   const discountAmount =
     discountField > 0 ? discountField : discountFromCoupon ?? 0;
 
+  const shipping = numFromUnknown(cs.shipping) ?? 0;
+  const tax = numFromUnknown(cs.tax) ?? 0;
   const preDiscountSubtotal =
-    subtotal !== undefined ? subtotal : total + discountAmount;
+    subtotal !== undefined ? subtotal : total - shipping - tax + discountAmount;
+  const description =
+    coupon && typeof coupon.description === "string" && coupon.description.trim()
+      ? coupon.description.trim()
+      : undefined;
 
   return {
-    payableSubtotal: total,
+    payableSubtotal: Math.max(0, preDiscountSubtotal - discountAmount),
     discountAmount,
     preDiscountSubtotal,
+    ...(description && { description }),
   };
 }
 
@@ -984,7 +981,8 @@ export const mapPaymentMethodToApi = (uiPaymentMethod: string): string => {
     "bank-card": "card",
     "cash-on-delivery": "cod",
     "buy-now-pay-later": "bnpl",
-    "wema-bnpl": "wema-bnpl",
+    // Backend only accepts cash|card|transfer|bnpl; Wema is told apart by the wemaBnpl payload
+    "wema-bnpl": "bnpl",
     "emergency-credit": "credit",
   };
 

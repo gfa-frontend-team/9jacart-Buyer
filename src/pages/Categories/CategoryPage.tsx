@@ -5,6 +5,7 @@ import { Breadcrumb, Loading, ErrorState } from "../../components/UI";
 import ProductCard from "../../components/Product/ProductCard";
 import CategoriesSidebar from "../../components/HomePage/CategoriesSidebar";
 import RecentlyViewedProductsSection from "../../components/HomePage/RecentlyViewedProductsSection";
+import DiscoverMore from "../../components/Product/DiscoverMore";
 import { useRealProductsByCategory, useFeaturedProducts } from "../../hooks/api/useRealProducts";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
 import { normalizeProductImages } from "@/lib/utils";
@@ -237,18 +238,18 @@ const CategoryPage: React.FC = () => {
                 )}
               </>
             ) : (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <p className="text-gray-500 text-lg">
-                    No products found in this category
-                  </p>
-                  {searchQuery.trim() && (
-                    <p className="text-gray-400 mt-2">
-                      Try adjusting your search terms
+              <>
+                <div className="flex items-center justify-center py-10">
+                  <div className="text-center">
+                    <p className="text-gray-500 text-lg">
+                      {searchQuery.trim()
+                        ? `No products found for "${searchQuery.trim()}" in this category`
+                        : "No products in this category yet"}
                     </p>
-                  )}
+                  </div>
                 </div>
-              </div>
+                <DiscoverMore title="Check these out instead" />
+              </>
             )}
 
             {/* Recently Viewed: hide when category is empty (same as guest empty-category behavior) */}

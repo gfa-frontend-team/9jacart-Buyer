@@ -7,6 +7,7 @@ import { isDiscountedProduct } from '@/lib/productUtils';
 import { useAllRealCategories } from '../../hooks/api/useRealCategories';
 import { normalizeProductImages } from '@/lib/utils';
 import Container from '@/components/Layout/Container';
+import DiscoverMore from '@/components/Product/DiscoverMore';
 
 const DealsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -164,6 +165,15 @@ const DealsPage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Keep buyers browsing after the deals list ends */}
+        {!isInitialLoad && (
+          <DiscoverMore
+            exclude={["deals"]}
+            excludeProductIds={paginatedDeals.map((p) => p.id)}
+            className="mt-12 border-t border-gray-200 pt-8"
+          />
+        )}
       </div>
     </Container>
   );

@@ -15,8 +15,9 @@ import { getCategoryIcon } from "../../lib/categoryIcons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useCart } from "../../hooks/useCart";
 import { useWishlistStore } from "../../store/useWishlistStore";
-import { useAllRealCategories } from "../../hooks/api/useRealCategories";
+import { useShoppableCategories } from "../../hooks/api/useShoppableCategories";
 import SearchSuggestions from "./SearchSuggestions";
+import SearchCategorySelect from "./SearchCategorySelect";
 import logoImage from "../../assets/logo.png";
 
 const NewHeader: React.FC = () => {
@@ -36,11 +37,8 @@ const NewHeader: React.FC = () => {
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Real categories from the API (same source as the category pages)
-  const { categories: allCategories } = useAllRealCategories();
-  const mainCategories = allCategories.filter(
-    (cat) => cat.level === 1 && !cat.archived
-  );
+  // Real categories from the API, minus ones with no products (same source as the category pages)
+  const { categories: allCategories, mainCategories } = useShoppableCategories();
   const getSubcategories = (parentId: string) =>
     allCategories.filter((cat) => cat.parentId === parentId && !cat.archived);
   const [expandedMenuCategory, setExpandedMenuCategory] = useState<string | null>(null);
@@ -56,25 +54,13 @@ const NewHeader: React.FC = () => {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const renderCategorySelect = (selectClassName: string, chevronClassName: string) => (
-    <div className="relative flex-shrink-0 bg-primary">
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        aria-label="Search category"
-        className={`bg-primary text-primary-foreground appearance-none font-normal h-full w-full truncate border-0 outline-none cursor-pointer ${selectClassName}`}
-      >
-        <option value="">All</option>
-        {mainCategories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className={`absolute top-1/2 -translate-y-1/2 text-primary-foreground pointer-events-none ${chevronClassName}`}
-      />
-    </div>
+  const renderCategorySelect = (triggerClassName: string) => (
+    <SearchCategorySelect
+      categories={mainCategories}
+      value={selectedCategory}
+      onChange={setSelectedCategory}
+      triggerClassName={triggerClassName}
+    />
   );
 
   const totalItems = cartTotalItems;
@@ -364,10 +350,7 @@ const NewHeader: React.FC = () => {
               <form onSubmit={handleSearch} className="relative flex-1 max-w-2xl min-w-0">
                 <div className="flex rounded-md overflow-hidden bg-white">
                   {/* Category Dropdown */}
-                  {renderCategorySelect(
-                    "px-3 py-2 pr-8 text-sm min-w-[100px] max-w-[160px]",
-                    "right-2 w-4 h-4"
-                  )}
+                  {renderCategorySelect("w-[150px] text-sm")}
 
                   {/* Search Input */}
                   <input
@@ -528,10 +511,7 @@ const NewHeader: React.FC = () => {
               <form onSubmit={handleSearch} className="relative w-full">
                 <div className="flex rounded-md overflow-hidden bg-white">
                   {/* Category Dropdown - Mobile */}
-                  {renderCategorySelect(
-                    "px-2 sm:px-3 py-2 pr-6 sm:pr-8 text-xs sm:text-sm min-w-[64px] max-w-[110px] sm:max-w-[150px]",
-                    "right-1 sm:right-2 w-3 h-3 sm:w-4 sm:h-4"
-                  )}
+                  {renderCategorySelect("w-[96px] sm:w-[140px] text-xs sm:text-sm")}
 
                   {/* Search Input - Mobile */}
                   <input

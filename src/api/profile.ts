@@ -4,6 +4,7 @@ import { apiClient } from './client';
 export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
+  phoneNumber?: string;
   currentPassword?: string;
   newPassword?: string;
   confirmNewPassword?: string;
@@ -30,6 +31,7 @@ export interface AddressData {
   state: string;
   zipCode: string;
   country: string;
+  phoneNumber?: string | null;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string | null;

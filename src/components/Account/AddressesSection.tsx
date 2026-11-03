@@ -31,6 +31,7 @@ const AddressesSection: React.FC = () => {
     state: '',
     zipCode: '',
     country: 'Nigeria',
+    phoneNumber: '',
     isDefault: false
   });
 
@@ -71,6 +72,7 @@ const AddressesSection: React.FC = () => {
       state: '',
       zipCode: '',
       country: 'Nigeria',
+      phoneNumber: '',
       isDefault: false
     });
   };
@@ -83,6 +85,7 @@ const AddressesSection: React.FC = () => {
       state: address.state,
       zipCode: address.zipCode,
       country: address.country,
+      phoneNumber: address.phoneNumber || '',
       isDefault: address.isDefault
     });
   };
@@ -106,6 +109,7 @@ const AddressesSection: React.FC = () => {
         state: '',
         zipCode: '',
         country: 'Nigeria',
+        phoneNumber: '',
         isDefault: false
       });
     } catch (error) {
@@ -125,6 +129,7 @@ const AddressesSection: React.FC = () => {
       state: '',
       zipCode: '',
       country: 'Nigeria',
+      phoneNumber: '',
       isDefault: false
     });
   };
@@ -204,6 +209,22 @@ const AddressesSection: React.FC = () => {
             placeholder="Country"
             className="!border-gray-400"
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Phone Number</label>
+          <Input
+            name="phoneNumber"
+            type="tel"
+            autoComplete="tel"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            placeholder="+2348000000000"
+            className="!border-gray-400"
+          />
+          <p className="text-xs text-muted-foreground">
+            For delivery to this address
+          </p>
         </div>
         
         <div className="flex items-center space-x-2">

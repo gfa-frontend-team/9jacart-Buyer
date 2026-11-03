@@ -41,6 +41,7 @@ export interface WemaBnplResult {
   consentId: string;
   loanEligibilityId: string;
   merchantCustomerReference: string | null;
+  loanApplicationId: string | null;
   accountNumber: string;
   productAmount: number;
   equityAmount: number;
@@ -274,13 +275,14 @@ const WemaBnplFlow: React.FC<WemaBnplFlowProps> = ({
     setError(null);
     setStep("disbursing");
     try {
-      await wemaBnplApi.disburse(offer.loanEligibilityId);
+      const disbursement = await wemaBnplApi.disburse(offer.loanEligibilityId);
       clearWemaSession();
       setStep("done");
       await onComplete({
         consentId: session.consentId,
         loanEligibilityId: offer.loanEligibilityId,
         merchantCustomerReference: session.merchantCustomerReference,
+        loanApplicationId: disbursement.loanApplicationId,
         accountNumber: session.accountNumber,
         productAmount: session.productAmount,
         equityAmount: session.equityAmount,

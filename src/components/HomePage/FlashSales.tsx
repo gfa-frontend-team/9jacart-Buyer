@@ -103,6 +103,7 @@ export default function FlashSales() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between gap-4">
           <SectionHeader
+            className="min-w-0 flex-1 md:flex-none"
             text="Today's deal"
             subtitle="Explore products with remarkable discounts"
             titleAddon={

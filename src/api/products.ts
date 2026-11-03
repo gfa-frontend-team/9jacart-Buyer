@@ -156,4 +156,23 @@ export const productsApi = {
       false // Use Basic Auth for public ratings
     );
   },
+
+  /**
+   * Best-selling products across all vendors (by units sold).
+   * GET /vendor/best-sellers?limit=&period= (Basic Auth). Returns product ids in rank order.
+   */
+  getBestSellerIds: async (
+    params: { limit?: number; period?: "week" | "month" | "year" } = {}
+  ): Promise<string[]> => {
+    const query = new URLSearchParams({
+      limit: String(params.limit ?? 12),
+      period: params.period ?? "year",
+    });
+    const response = await apiClient.get<{
+      data?: { bestSellers?: Array<{ productId?: string }> };
+    }>(`/vendor/best-sellers?${query.toString()}`, undefined, false);
+    return (response.data?.bestSellers ?? [])
+      .map((item) => item.productId)
+      .filter((id): id is string => typeof id === "string");
+  },
 };

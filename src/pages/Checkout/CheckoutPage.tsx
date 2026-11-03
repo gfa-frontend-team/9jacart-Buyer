@@ -2,6 +2,8 @@
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import visaLogo from "@/assets/payment-logos/visa-logo.png";
 import mastercardLogo from "@/assets/payment-logos/mastercard-logo.png";
+import neocashLogo from "@/assets/payment-logos/neocash-logo.png";
+import alatLogo from "@/assets/payment-logos/alat-logo.png";
 import wakaLineLogoWhite from "@/assets/mywakawaka-logo-white.png";
 import type { WidgetHandle } from "@neocash/bnpl-widget";
 import {
@@ -55,6 +57,8 @@ import { formatPrice } from "../../lib/productUtils";
 import { initNeoCashBnplWidget } from "../../lib/neocashInit";
 import WemaBnplFlow, { type WemaBnplResult } from "../../components/Checkout/WemaBnplFlow";
 import { getWemaEligibility } from "../../lib/wemaBnpl";
+import { getSavedPhone, savePhone } from "../../lib/savedPhone";
+import { profileApi } from "../../api/profile";
 import {
   BNPL_MIN_ORDER_NAIRA,
   BNPL_WIDGET_THEME,
@@ -214,6 +218,12 @@ const CheckoutPage: React.FC = () => {
     emailAddress: "",
   });
 
+  // Saved addresses and the profile usually carry no phone, so fall back to the
+  // number this buyer used at their last checkout instead of asking every time.
+  const phoneStorageKey = user?.id || user?.email || null;
+  const knownPhone = user?.phone || profile?.phone || getSavedPhone(phoneStorageKey);
+  const profileHasPhone = Boolean(user?.phone || profile?.phone);
+
   const isShippingDetailsComplete = useMemo(() => {
     const phoneOptional =
       isGuestCheckoutFlow && selectedPayment !== "buy-now-pay-later";
@@ -250,7 +260,7 @@ const CheckoutPage: React.FC = () => {
           firstName: user?.firstName || profile.firstName || prev.firstName || "",
           lastName: user?.lastName || profile.lastName || prev.lastName || "",
           emailAddress: user?.email || profile.email || prev.emailAddress || "",
-          phoneNumber: user?.phone || profile.phone || prev.phoneNumber || "",
+          phoneNumber: prev.phoneNumber || defaultAddress.phoneNumber || knownPhone || "",
           streetAddress: defaultAddress.streetAddress || prev.streetAddress || "",
           townCity: defaultAddress.state || prev.townCity || "",
           apartment: prev.apartment || "",
@@ -265,7 +275,7 @@ const CheckoutPage: React.FC = () => {
           firstName: user?.firstName || profile.firstName || prev.firstName || "",
           lastName: user?.lastName || profile.lastName || prev.lastName || "",
           emailAddress: user?.email || profile.email || prev.emailAddress || "",
-          phoneNumber: user?.phone || profile.phone || prev.phoneNumber || "",
+          phoneNumber: prev.phoneNumber || knownPhone || "",
         }));
         setIsInitialLoad(false);
       }
@@ -274,7 +284,7 @@ const CheckoutPage: React.FC = () => {
       setShowAddressForm(true);
       setIsInitialLoad(false);
     }
-  }, [isAuthenticated, profile, user, checkoutAsGuest, getDefaultAddress, isInitialLoad]);
+  }, [isAuthenticated, profile, user, checkoutAsGuest, getDefaultAddress, isInitialLoad, knownPhone]);
 
   // Use filtered values from cart (already exclude unavailable products).
   // Coupon discount is shown as its own line and subtracted once from the cart subtotal
@@ -500,7 +510,8 @@ const CheckoutPage: React.FC = () => {
       firstName: prev.firstName || user?.firstName || profile?.firstName || "",
       lastName: prev.lastName || user?.lastName || profile?.lastName || "",
       emailAddress: prev.emailAddress || user?.email || profile?.email || "",
-      phoneNumber: prev.phoneNumber || user?.phone || profile?.phone || "",
+      // Each saved address can carry its own delivery phone
+      phoneNumber: address.phoneNumber || prev.phoneNumber || knownPhone || "",
       apartment: prev.apartment || "",
     }));
     setShowAddressSelector(false);
@@ -540,6 +551,7 @@ const CheckoutPage: React.FC = () => {
         state: billingDetails.townCity.trim(),
         zipCode: "100001", // Default for now - could be made dynamic
         country: "Nigeria",
+        phoneNumber: billingDetails.phoneNumber?.trim() || undefined,
         isDefault: newAddressAsDefault,
       };
 
@@ -846,12 +858,15 @@ const CheckoutPage: React.FC = () => {
     const phoneOptional =
       isGuestCheckoutFlow && selectedPayment !== "buy-now-pay-later";
 
-    // Show form if hidden and validation is needed
+    // Show form if hidden and validation is needed. A missing phone alone doesn't
+    // reopen the address form when a saved address is selected — the inline phone
+    // field under the address summary covers it.
+    const phoneMissing = !phoneOptional && !billingDetails.phoneNumber;
     if (
       !showAddressForm &&
       (!billingDetails.firstName ||
         !billingDetails.emailAddress ||
-        (!phoneOptional && !billingDetails.phoneNumber))
+        (phoneMissing && !(isAuthenticated && selectedAddress)))
     ) {
       setShowAddressForm(true);
     }
@@ -971,11 +986,22 @@ const CheckoutPage: React.FC = () => {
 
     setIsProcessing(true);
     setValidationErrors([]);
+    if (isAuthenticated) {
+      savePhone(phoneStorageKey, billingDetails.phoneNumber);
+      // Save it to the profile too, so it shows up on any device next time
+      const phone = billingDetails.phoneNumber?.trim();
+      if (phone && !profileHasPhone) {
+        profileApi
+          .updateProfile({ phoneNumber: phone })
+          .catch((err) => console.warn("Could not save phone to profile:", err));
+      }
+    }
 
     try {
       const billingData = transformBillingDetails(billingDetails);
       const orderItems = transformCartItemsToOrderItems(itemsForCheckout);
       const paymentMethod = mapPaymentMethodToApi(selectedPayment);
+      const isWemaBnpl = selectedPayment === "wema-bnpl";
 
       if (!orderItems || orderItems.length === 0) {
         throw new Error("No items in order. Please add items to your cart.");
@@ -998,20 +1024,18 @@ const CheckoutPage: React.FC = () => {
         billing: billingData,
         orderItems,
         paymentMethod,
-        ...(paymentMethod === "bnpl" &&
+        ...(!isWemaBnpl &&
+          paymentMethod === "bnpl" &&
           bnplApplicationIdRef.current && {
             applicationId: bnplApplicationIdRef.current,
           }),
-        ...(paymentMethod === "wema-bnpl" &&
+        // Wema: the backend saves this reference on the order and marks it PAID
+        ...(isWemaBnpl &&
           wemaResultRef.current && {
-            wemaBnpl: {
-              consentId: wemaResultRef.current.consentId,
-              loanEligibilityId: wemaResultRef.current.loanEligibilityId,
-              merchantCustomerReference: wemaResultRef.current.merchantCustomerReference,
-              productAmount: wemaResultRef.current.productAmount,
-              equityAmount: wemaResultRef.current.equityAmount,
-              tenure: wemaResultRef.current.tenure,
-            },
+            applicationId:
+              wemaResultRef.current.merchantCustomerReference ||
+              wemaResultRef.current.loanApplicationId ||
+              wemaResultRef.current.loanEligibilityId,
           }),
         ...(isGuestCheckoutFlow && { guestCheckout: 1 }),
         ...(isGuestCheckoutFlow &&
@@ -1033,6 +1057,19 @@ const CheckoutPage: React.FC = () => {
           setOrderNumber(response.orderNo);
         }
 
+        // Wema BNPL works exactly like NeoCash: the BNPL partner handles the down payment,
+        // so any Paystack/redirect URL returned for the order is ignored (same as "bnpl").
+        if (isWemaBnpl) {
+          if (response.paymentData?.authorizationUrl || response.redirectUrl) {
+            console.warn("Ignoring Paystack/redirect URL for Wema BNPL, same as NeoCash.");
+          }
+          persistGuestRegisterPrefill();
+          await clearAllItems();
+          wemaResultRef.current = null;
+          setShowSuccess(true);
+          return;
+        }
+
         if (paymentMethod === "bnpl") {
           if (
             response.paymentData?.authorizationUrl ||
@@ -1045,19 +1082,6 @@ const CheckoutPage: React.FC = () => {
           persistGuestRegisterPrefill();
           bnplOrderCompletedRef.current = true;
           setBnplAwaitingWidgetClose(true);
-          return;
-        }
-
-        // Wema BNPL works exactly like NeoCash: the BNPL partner handles the down payment,
-        // so any Paystack/redirect URL returned for the order is ignored (same as "bnpl").
-        if (paymentMethod === "wema-bnpl") {
-          if (response.paymentData?.authorizationUrl || response.redirectUrl) {
-            console.warn("Ignoring Paystack/redirect URL for Wema BNPL, same as NeoCash.");
-          }
-          persistGuestRegisterPrefill();
-          await clearAllItems();
-          wemaResultRef.current = null;
-          setShowSuccess(true);
           return;
         }
 
@@ -1265,7 +1289,7 @@ const CheckoutPage: React.FC = () => {
 
         {/* Guest Checkout Alert */}
         {!isAuthenticated && checkoutAsGuest && (
-          <Alert className="mb-6">
+          <Alert className="mb-6" showIcon={false}>
             <div>
               <p className="font-medium flex items-center gap-2">
                 <User className="w-4 h-4 flex-shrink-0" />
@@ -1317,6 +1341,46 @@ const CheckoutPage: React.FC = () => {
                           }
                           showChangeOption={getAddresses().length > 1}
                         />
+                      )}
+
+                    {selectedAddress &&
+                      !showAddressForm &&
+                      !showAddressSelector &&
+                      !profileHasPhone &&
+                      !selectedAddress.phoneNumber && (
+                        <div className="mt-4">
+                          <label
+                            htmlFor="checkout-phone-inline"
+                            className="block text-sm font-medium text-gray-700 mb-2"
+                          >
+                            Phone number*
+                          </label>
+                          <Input
+                            id="checkout-phone-inline"
+                            name="phoneNumber"
+                            type="tel"
+                            autoComplete="tel"
+                            value={billingDetails.phoneNumber}
+                            onChange={(e) => handlePhoneChange(e.target.value)}
+                            className={cn(
+                              "w-full",
+                              getFieldError("phoneNumber") &&
+                                "border-red-500 focus:ring-red-500"
+                            )}
+                            placeholder="+2348000000000"
+                            required
+                          />
+                          {getFieldError("phoneNumber") ? (
+                            <div className="flex items-center mt-1 text-sm text-red-600">
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              {getFieldError("phoneNumber")}
+                            </div>
+                          ) : (
+                            <p className="mt-1 text-xs text-gray-500">
+                              For delivery updates. We'll remember it for your next order.
+                            </p>
+                          )}
+                        </div>
                       )}
 
                     {showAddressSelector && (
@@ -1928,7 +1992,7 @@ const CheckoutPage: React.FC = () => {
 
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-sm font-medium text-green-800">
                         Coupon "{appliedCoupon}" applied
@@ -1936,6 +2000,11 @@ const CheckoutPage: React.FC = () => {
                       {couponDiscount > 0 && (
                         <span className="text-sm text-green-600">
                           (-{formatPrice(couponDiscount)})
+                        </span>
+                      )}
+                      {couponPricingSnapshot?.description && (
+                        <span className="basis-full pl-4 text-xs text-green-700">
+                          {couponPricingSnapshot.description}
                         </span>
                       )}
                     </div>
@@ -1969,6 +2038,7 @@ const CheckoutPage: React.FC = () => {
                       />
                       <Button
                         variant="outline"
+                        className="h-10 shrink-0 px-4 border-primary/60 text-primary hover:border-primary hover:bg-[#8DEB6E]/15 disabled:border-gray-300 disabled:text-gray-500 disabled:opacity-100"
                         onClick={() => void handleApplyCoupon()}
                         disabled={!couponCode.trim() || isCouponApplying}
                       >
@@ -2069,6 +2139,20 @@ const CheckoutPage: React.FC = () => {
                                   className="h-7 w-auto object-contain"
                                 />
                               </div>
+                            )}
+                            {method.id === "buy-now-pay-later" && (
+                              <img
+                                src={neocashLogo}
+                                alt="NeoCash"
+                                className={cn("ml-auto h-5 w-auto object-contain", isDisabled && "opacity-50")}
+                              />
+                            )}
+                            {method.id === "wema-bnpl" && (
+                              <img
+                                src={alatLogo}
+                                alt="ALAT by Wema"
+                                className={cn("ml-auto h-7 w-7 rounded-md object-contain", isDisabled && "opacity-50")}
+                              />
                             )}
                           </label>
                           {isDisabled &&

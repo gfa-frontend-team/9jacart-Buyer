@@ -243,7 +243,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ className }) => {
                 />
                 <Button
                   variant="outline"
-                  size="sm"
+                  className="h-10 shrink-0 px-4 border-primary/60 text-primary hover:border-primary hover:bg-[#8DEB6E]/15 disabled:border-gray-300 disabled:text-gray-500 disabled:opacity-100"
                   onClick={() => void handleApplyPromo()}
                   disabled={
                     !promoCode.trim() ||

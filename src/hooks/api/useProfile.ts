@@ -40,6 +40,7 @@ export const useProfile = () => {
           state: addr.state,
           zipCode: addr.zipCode,
           country: addr.country,
+          phoneNumber: addr.phoneNumber || undefined,
           isDefault: addr.isDefault,
           createdAt: addr.createdAt,
           updatedAt: addr.updatedAt,
@@ -76,6 +77,9 @@ export const useProfile = () => {
       }
       if (data.lastName !== undefined) {
         updateData.lastName = data.lastName;
+      }
+      if (data.phoneNumber !== undefined) {
+        updateData.phoneNumber = data.phoneNumber;
       }
 
       await profileApi.updateProfile(updateData);
@@ -128,7 +132,8 @@ export const useProfile = () => {
         addressData.state,
         addressData.zipCode,
         addressData.country,
-        addressData.isDefault
+        addressData.isDefault,
+        addressData.phoneNumber
       );
 
       const response = await addressApi.addAddress(apiData);
@@ -164,7 +169,8 @@ export const useProfile = () => {
         addressData.state,
         addressData.zipCode,
         addressData.country,
-        addressData.isDefault
+        addressData.isDefault,
+        addressData.phoneNumber
       );
 
       const response = await addressApi.editAddress(id, apiData);
