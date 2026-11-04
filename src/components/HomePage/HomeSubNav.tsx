@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { Menu, Zap } from "lucide-react";
-import { useAllRealCategories } from "@/hooks";
+import { useShoppableCategories } from "@/hooks/api/useShoppableCategories";
 import type { Category } from "@/types";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { cn } from "@/lib/utils";
@@ -131,10 +131,8 @@ const HomeSubNav: React.FC = () => {
   const navigate = useNavigate();
   const { categoryId: selectedCategoryId } = useParams<{ categoryId?: string }>();
 
-  const { categories } = useAllRealCategories();
-  const mainCategories = categories.filter(
-    (cat) => cat.level === 1 && !cat.archived,
-  );
+  // Only categories that have products, so every pill leads somewhere
+  const { mainCategories } = useShoppableCategories();
 
   const handleCategoryClick = (category: Category) => {
     navigate(`/category/${category.id}`, {

@@ -67,6 +67,8 @@ export interface WemaLoanOffer {
 export interface WemaDisbursement {
   /** Wema queues the payout ("Processing Disbursement"); final state comes from loan-status */
   message: string | null;
+  /** Loan application id, when Wema returns one with the disbursement */
+  loanApplicationId: string | null;
   raw: unknown;
 }
 
@@ -303,7 +305,11 @@ export const wemaBnplApi = {
     if (data.isSuccessful === false) {
       throw new ApiError(400, asString(data.message) ?? "Wema Bank could not disburse this loan.", raw);
     }
-    return { message: asString(data.message), raw };
+    return {
+      message: asString(data.message),
+      loanApplicationId: asString(findField(data, ["loanApplicationId", "applicationId"])),
+      raw,
+    };
   },
 
   getLoanStatus: async (merchantCustomerReference: string): Promise<Record<string, unknown>> =>

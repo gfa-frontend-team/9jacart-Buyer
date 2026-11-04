@@ -7,6 +7,7 @@ export interface AddAddressRequest {
   state: string;
   zipCode: string;
   country: string;
+  phoneNumber?: string;
   isDefault: number; // 1 for true, 0 for false
   guestCheckout?: number; // 0 for authenticated (required by backend)
 }
@@ -17,6 +18,7 @@ export interface EditAddressRequest {
   state: string;
   zipCode: string;
   country: string;
+  phoneNumber?: string;
   isDefault: number; // 1 for true, 0 for false
   guestCheckout?: number; // 0 for authenticated (required by backend)
 }
@@ -29,6 +31,7 @@ export interface AddressApiResponse {
   state: string;
   zipCode: string;
   country: string;
+  phoneNumber?: string | null;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string | null;
@@ -85,13 +88,15 @@ export const transformAddressToApi = (
   state: string,
   zipCode: string,
   country: string,
-  isDefault: boolean
+  isDefault: boolean,
+  phoneNumber?: string
 ): AddAddressRequest => ({
   streetAddress,
   city,
   state,
   zipCode,
   country,
+  ...(phoneNumber?.trim() && { phoneNumber: phoneNumber.trim() }),
   isDefault: isDefault ? 1 : 0,
 });
 

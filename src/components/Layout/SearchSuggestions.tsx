@@ -42,12 +42,21 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
     setLoading(true);
     const timer = window.setTimeout(async () => {
       try {
-        const params = { page: 1, perPage: MAX_SUGGESTIONS, search: term, isActive: "1" };
-        const response = categoryId
-          ? await productsApi.getProductsByCategory(categoryId, params)
-          : await productsApi.getProducts(params);
+        // Search endpoint ignores category, so fetch a batch and filter by category here
+        const response = await productsApi.getProducts({
+          page: 1,
+          perPage: categoryId ? 100 : MAX_SUGGESTIONS,
+          search: term,
+          isActive: "1",
+        });
         if (cancelled) return;
-        setResults(mapApiProductsToProductSummaries(response.data).slice(0, MAX_SUGGESTIONS));
+        const mapped = mapApiProductsToProductSummaries(response.data);
+        setResults(
+          (categoryId ? mapped.filter((p) => p.categoryId === categoryId) : mapped).slice(
+            0,
+            MAX_SUGGESTIONS
+          )
+        );
         setFailed(false);
       } catch {
         if (!cancelled) {

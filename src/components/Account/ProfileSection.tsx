@@ -19,6 +19,7 @@ const ProfileSection: React.FC = () => {
     firstName: '',
     lastName: '',
     email: '',
+    phoneNumber: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -37,6 +38,7 @@ const ProfileSection: React.FC = () => {
         firstName: profile.firstName,
         lastName: profile.lastName,
         email: profile.email,
+        phoneNumber: profile.phone || '',
       }));
     }
   }, [profile]);
@@ -57,7 +59,10 @@ const ProfileSection: React.FC = () => {
     try {
       // Determine what to update
       const isPasswordUpdate = formData.currentPassword || formData.newPassword || formData.confirmPassword;
-      const isProfileUpdate = formData.firstName !== profile?.firstName || formData.lastName !== profile?.lastName;
+      const isProfileUpdate =
+        formData.firstName !== profile?.firstName ||
+        formData.lastName !== profile?.lastName ||
+        formData.phoneNumber.trim() !== (profile?.phone || '');
 
       if (isPasswordUpdate) {
         // Validate password update
@@ -88,6 +93,7 @@ const ProfileSection: React.FC = () => {
         const profileData: ProfileUpdateData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
+          ...(formData.phoneNumber.trim() && { phoneNumber: formData.phoneNumber.trim() }),
         };
 
         const profileValidation = profileUpdateSchema.safeParse(profileData);
@@ -130,6 +136,7 @@ const ProfileSection: React.FC = () => {
       firstName: profile?.firstName || '',
       lastName: profile?.lastName || '',
       email: profile?.email || '',
+      phoneNumber: profile?.phone || '',
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
@@ -218,6 +225,25 @@ const ProfileSection: React.FC = () => {
             className="bg-muted opacity-60"
           />
           <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Phone Number</label>
+          <Input
+            name="phoneNumber"
+            type="tel"
+            autoComplete="tel"
+            value={formData.phoneNumber}
+            onChange={handleInputChange}
+            disabled={!isEditing}
+            placeholder="+2348000000000"
+            className={`bg-muted ${validationErrors.phoneNumber ? 'border-red-500' : ''}`}
+          />
+          {validationErrors.phoneNumber ? (
+            <p className="text-sm text-red-600">{validationErrors.phoneNumber}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">Used for delivery updates at checkout</p>
+          )}
         </div>
       </div>
 

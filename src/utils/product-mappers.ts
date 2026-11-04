@@ -406,10 +406,11 @@ export const mapApiProductToProductSummary = (apiProduct: ApiProductData): Produ
     alt: apiProduct.productName,
   };
 
-  // Create reviews summary
+  // The list endpoint has no rating data; real ratings load on the product page.
+  // (Previously random 4–5★ placeholders, which showed fake ratings to buyers.)
   const reviews = {
-    average: 4.0 + Math.random(), // Random rating between 4-5
-    total: Math.floor(Math.random() * 100) + 10, // Random review count
+    average: 0,
+    total: 0,
   };
 
   // Create product flags
@@ -438,6 +439,7 @@ export const mapApiProductToProductSummary = (apiProduct: ApiProductData): Produ
     vendorId: apiProduct.vendorId, // Vendor ID from API
     storeName: apiProduct.storeName, // Store/vendor name from API
     vendorLogo: parseVendorLogo(apiProduct.vendorLogo), // Parse and extract vendor logo URL
+    createdAt: apiProduct.createdAt,
   };
 };
 

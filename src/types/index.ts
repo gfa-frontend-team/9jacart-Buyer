@@ -232,6 +232,7 @@ export interface ProductSummary {
   vendorId?: string; // Vendor ID from API
   storeName?: string; // Store/vendor name from API
   vendorLogo?: string; // Vendor logo URL
+  createdAt?: string; // API timestamp, used to sort new arrivals
 }
 
 // Product with populated references (for detailed views)
@@ -317,6 +318,7 @@ export interface UserAddress {
   state: string;
   zipCode: string;
   country: string;
+  phoneNumber?: string;
   isDefault: boolean;
   createdAt: string;
   updatedAt: string | null;
@@ -334,6 +336,7 @@ export interface AuthState {
 export interface ProfileUpdateData {
   firstName?: string;
   lastName?: string;
+  phoneNumber?: string;
 }
 
 export interface PasswordUpdateData {

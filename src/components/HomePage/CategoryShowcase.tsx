@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, type LucideIcon } from "lucide-react";
 import { Button, ErrorState } from "../UI";
 import SectionHeader from "../UI/SectionHeader";
 import { useAllRealCategories } from "../../hooks/api/useRealCategories";
+import { useShoppableCategories } from "../../hooks/api/useShoppableCategories";
 import type { Category } from "../../types";
 import { getCategoryIcon } from "@/lib/categoryIcons";
 import { cn } from "@/lib/utils";
@@ -81,8 +82,12 @@ function ShopCategoryCard({
             </div>
           )}
         </div>
-        <div className="shrink-0 px-1 py-1.5">
-          <span className="block text-center text-sm font-medium leading-snug text-gray-900 line-clamp-2">
+        {/* Fixed-height label: every card is the same size; long names truncate with equal side padding */}
+        <div className="flex h-10 shrink-0 items-center px-3">
+          <span
+            className="block w-full truncate text-center text-sm font-medium text-gray-900"
+            title={category.name}
+          >
             {category.name}
           </span>
         </div>
@@ -92,8 +97,9 @@ function ShopCategoryCard({
 }
 
 const CategoryShowcase: React.FC = () => {
-  const { categories: rawCategories, loading, error, refetch } =
-    useAllRealCategories();
+  const { loading, error, refetch } = useAllRealCategories();
+  // Only categories that have products (hides empty ones like a category with 0 items)
+  const { mainCategories: rawCategories } = useShoppableCategories();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);

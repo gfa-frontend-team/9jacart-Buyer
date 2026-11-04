@@ -239,6 +239,8 @@ export const useRealProductsList = (initialParams: ProductsListParams = {}) => {
 
 // Buyer-side hook: always paginate over ACTIVE products only (no "holes")
 // Uses the same session-backed cache as useRealProductsList so reloads are instant.
+const buyerActiveInFlight = new Map<string, Promise<ProductSummary[]>>();
+
 export const useBuyerActiveProductsList = (params: ProductsListParams = {}) => {
   const clientPage = Math.max(1, params.page ?? 1);
   const clientPerPage = Math.max(1, params.perPage ?? 10);
@@ -291,15 +293,22 @@ export const useBuyerActiveProductsList = (params: ProductsListParams = {}) => {
       setLoading(true);
     }
 
-    fetchAllProductSummaries((page) =>
-      productsApi.getProducts({
-        page,
-        perPage: BUYER_FETCH_PER_PAGE,
-        ...(search ? { search } : {}),
-        // Buyer-side rule: only show active products (API may ignore; we also filter client-side)
-        isActive: "1",
-      })
-    )
+    // Share one request between every mounted instance (header, home sections, etc.)
+    let request = buyerActiveInFlight.get(cacheKey);
+    if (!request) {
+      request = fetchAllProductSummaries((page) =>
+        productsApi.getProducts({
+          page,
+          perPage: BUYER_FETCH_PER_PAGE,
+          ...(search ? { search } : {}),
+          // Buyer-side rule: only show active products (API may ignore; we also filter client-side)
+          isActive: "1",
+        })
+      ).finally(() => buyerActiveInFlight.delete(cacheKey));
+      buyerActiveInFlight.set(cacheKey, request);
+    }
+
+    request
       .then((allActive) => {
         if (requestId !== requestIdRef.current) return;
 
@@ -549,10 +558,13 @@ export const useRealProductsByCategory = (
 
         // Replace each category product's price with the correct totalPrice-based price.
         // If a product is not found in the general set (rare), keep its original price.
-        const enriched = categoryProducts.map((product) => {
+        const priced = categoryProducts.map((product) => {
           const correctPrice = priceMap.get(product.id);
           return correctPrice ? { ...product, price: correctPrice } : product;
         });
+        // The category endpoint ignores `search`; the general fetch above honours it,
+        // so with a search term keep only category products that matched the search.
+        const enriched = search ? priced.filter((product) => priceMap.has(product.id)) : priced;
 
         setAllProducts(enriched);
 

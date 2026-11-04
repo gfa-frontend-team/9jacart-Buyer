@@ -696,9 +696,7 @@ const ProductDetailPage: React.FC = () => {
                   </span>
                   <span className="text-gray-500">({displayReviews.total} Reviews)</span>
                 </div>
-              ) : (
-                <p className="text-sm text-gray-500 italic">Be the first to review</p>
-              )}
+              ) : null}
 
               <div className="space-y-1">
                 <div className="hidden xl:flex items-baseline gap-2 flex-wrap">
@@ -1173,7 +1171,7 @@ const ProductDetailPage: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-center py-2">
-                          <p className="text-gray-600 mb-3">Be the first to review</p>
+                          <p className="text-gray-600 mb-3">No reviews yet</p>
                           {isAuthenticated && (
                             <Button
                               variant="outline"

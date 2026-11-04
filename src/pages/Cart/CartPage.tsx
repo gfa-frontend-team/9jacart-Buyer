@@ -319,9 +319,9 @@ const CartPage: React.FC = () => {
 
             {/* Continue Shopping */}
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
                     <h3 className="font-medium text-gray-900 mb-1">
                       Continue Shopping
                     </h3>
@@ -329,7 +329,11 @@ const CartPage: React.FC = () => {
                       Discover more products you might like
                     </p>
                   </div>
-                  <Button variant="outline" asChild className="border-[#2ac12a]">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="h-10 shrink-0 whitespace-nowrap rounded-lg border-[#2ac12a] px-4 font-medium text-primary hover:bg-[#8DEB6E]/15"
+                  >
                     <Link to="/products">
                       Browse Products
                     </Link>

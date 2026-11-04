@@ -110,17 +110,13 @@ const RelatedProductCard: React.FC<RelatedProductCardProps> = ({ product, classN
           <h3 className="mb-1 line-clamp-2 text-left text-xs font-medium leading-snug text-gray-900 sm:text-sm">
             {product.name}
           </h3>
-          {hasReviews ? (
+          {hasReviews && (
             <div className="mb-1 flex items-center gap-1">
               <div className="flex items-center">{renderStars(reviews.average)}</div>
               <span className="text-[10px] text-gray-600 sm:text-xs">
                 {reviews.average.toFixed(1)} ({reviews.total})
               </span>
             </div>
-          ) : (
-            <p className="mb-1 text-[10px] italic text-gray-500 sm:text-xs">
-              Be the first to review
-            </p>
           )}
           <p className="text-sm font-bold text-[#28a745]">{formatPrice(currentPrice)}</p>
         </div>

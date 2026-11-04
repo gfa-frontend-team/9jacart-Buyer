@@ -170,7 +170,7 @@ const CartItem: React.FC<CartItemProps> = ({
         </div>
 
         {/* Reviews */}
-        <div className={cn("items-center gap-1 mb-3", product.reviews.total > 0 ? "flex" : "hidden sm:flex")}>
+        <div className={cn("items-center gap-1 mb-3", product.reviews.total > 0 ? "flex" : "hidden")}>
           {renderStars(product.reviews.average)}
           <span className="text-sm text-gray-600 ml-1">
             ({product.reviews.total})

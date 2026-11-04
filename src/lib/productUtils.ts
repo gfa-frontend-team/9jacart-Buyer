@@ -252,7 +252,7 @@ export const sortProducts = (
     case 'newest':
       return sorted.sort((a, b) => {
         if ('createdAt' in a && 'createdAt' in b) {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
         }
         return 0;
       });
