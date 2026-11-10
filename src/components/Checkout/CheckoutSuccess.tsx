@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Package, ArrowRight } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { Button, Card, CardContent } from '../UI';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../../lib/productUtils';
@@ -30,6 +30,8 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
         return 'Bank/Card';
       case 'buy-now-pay-later':
         return 'Buy Now, Pay Later';
+      case 'wema-bnpl':
+        return 'Pay later with Wema (ALAT)';
       case 'emergency-credit':
         return 'Emergency Credit';
       default:
@@ -82,8 +84,7 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
 
           {/* Next Steps */}
           <div className="bg-blue-50 rounded-lg p-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <Package className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <div>
               <div className="text-left">
                 <h4 className="text-sm font-medium text-blue-900 mb-1">
                   What's Next?
@@ -106,7 +107,6 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
                     to="/auth/login?redirect=/orders"
                     onClick={onClose}
                   >
-                    <Package className="w-4 h-4 mr-2" />
                     Sign in to track orders
                   </Link>
                 </Button>
@@ -119,7 +119,6 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
             ) : (
               <Button asChild className="w-full">
                 <Link to="/orders" onClick={onClose}>
-                  <Package className="w-4 h-4 mr-2" />
                   View Order Details
                 </Link>
               </Button>
@@ -128,7 +127,6 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
             <Button variant="outline" asChild className="w-full">
               <Link to="/products" onClick={onClose}>
                 Continue Shopping
-                <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
           </div>
