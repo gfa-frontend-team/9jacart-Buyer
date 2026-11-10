@@ -54,11 +54,30 @@ const NewHeader: React.FC = () => {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  // Picking a category takes the buyer somewhere: a search within it when they've typed
+  // something, otherwise straight to that category's page
+  const handleCategoryPick = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    const query = searchQuery.trim();
+    if (query) {
+      const searchParams = new URLSearchParams({ q: query });
+      if (categoryId) searchParams.set("category", categoryId);
+      navigate(`/search?${searchParams.toString()}`);
+    } else if (categoryId) {
+      const category = mainCategories.find((c) => c.id === categoryId);
+      navigate(`/category/${categoryId}`, {
+        state: { categoryName: category?.name },
+      });
+    } else {
+      navigate("/products");
+    }
+  };
+
   const renderCategorySelect = (triggerClassName: string) => (
     <SearchCategorySelect
       categories={mainCategories}
       value={selectedCategory}
-      onChange={setSelectedCategory}
+      onChange={handleCategoryPick}
       triggerClassName={triggerClassName}
     />
   );
@@ -179,6 +198,17 @@ const NewHeader: React.FC = () => {
   useEffect(() => {
     if (location.pathname === "/") {
       setSearchQuery("");
+    }
+  }, [location.pathname]);
+
+  // Keep the category picker in step with the page: show the open category,
+  // and reset to "All" elsewhere (search results keep the category they were run with)
+  useEffect(() => {
+    const match = location.pathname.match(/^\/category\/([^/]+)/);
+    if (match) {
+      setSelectedCategory(decodeURIComponent(match[1]));
+    } else if (location.pathname !== "/search") {
+      setSelectedCategory("");
     }
   }, [location.pathname]);
 
